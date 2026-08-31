@@ -1,0 +1,89 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Treino de {{ workoutsession.date|date:'d/m/Y' }} · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16">
+            <div>
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Sessão</span>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1] mb-2">{{ workoutsession.date|date:'d/m/Y' }}</h1>
+                <p class="text-lg text-[#5c5c5a]">{{ workoutsession.routine_day|default:'Sessão livre' }}{% if workoutsession.duration_minutes %} · {{ workoutsession.duration_minutes }} min{% endif %}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'treino:session_update' workoutsession.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
+                <a href="{% url 'treino:session_delete' workoutsession.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+            </div>
+        </div>
+
+        {% if workoutsession.notes %}
+        <div class="bg-[#e8eae4] rounded-[2rem] p-8 mb-8">
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5c5c5a] block mb-3">Anotações</span>
+            <p class="text-base text-[#1a1a1a] whitespace-pre-line">{{ workoutsession.notes }}</p>
+        </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Exercícios</h2>
+            <a href="{% url 'treino:session_entry_create' workoutsession.pk %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="plus" class="w-4 h-4 stroke-[1.5]"></i> Adicionar exercício
+            </a>
+        </div>
+
+        {% if workoutsession.entries.all %}
+        <div class="flex flex-col gap-6">
+            {% for entry in workoutsession.entries.all %}
+            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <a href="{{ entry.exercise.get_absolute_url }}" class="text-xl tracking-tight font-medium text-[#1a1a1a] hover:text-[#5d674f] transition-colors">{{ entry.exercise.name }}</a>
+                        {% if entry.rest_seconds %}<span class="text-sm text-[#5c5c5a] block">Descanso: {{ entry.rest_seconds }}s</span>{% endif %}
+                    </div>
+                    <form method="post" action="{% url 'treino:session_entry_delete' entry.pk %}" onsubmit="return confirm('Remover {{ entry.exercise.name|escapejs }} desta sessão?')">
+                        {% csrf_token %}
+                        <button type="submit" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Remover</button>
+                    </form>
+                </div>
+
+                {% if entry.sets.all %}
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-4">
+                    {% for set in entry.sets.all %}
+                    <div class="bg-[#f5f4f0] rounded-2xl p-4 text-center relative group">
+                        <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a] block mb-1">Série {{ set.set_number }}</span>
+                        <span class="text-lg font-medium text-[#1a1a1a] block">{{ set.reps }}x{{ set.weight }}kg</span>
+                        <form method="post" action="{% url 'treino:set_log_delete' set.pk %}" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Excluir esta série?')">
+                            {% csrf_token %}
+                            <button type="submit" aria-label="Excluir série" class="text-[#a0a09e] hover:text-[#1a1a1a]"><i data-lucide="x" class="w-3.5 h-3.5 stroke-[1.5]"></i></button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-base text-[#5c5c5a] mb-4">Nenhuma série registrada ainda.</p>
+                {% endif %}
+
+                <a href="{% url 'treino:set_log_create' entry.pk %}" class="inline-flex items-center gap-2 text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 stroke-[1.5]"></i> Registrar série
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-[#f5f4f0] rounded-[2rem] p-16 flex flex-col items-center text-center border border-dashed border-[#dcdacd]">
+            <div class="w-14 h-14 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-white">
+                <i data-lucide="dumbbell" class="w-6 h-6 stroke-[1.5] text-[#5d674f]"></i>
+            </div>
+            <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Nenhum exercício ainda</h2>
+            <p class="text-base text-[#5c5c5a] max-w-sm mb-8">Adicione os exercícios feitos nesta sessão para registrar as séries.</p>
+            <a href="{% url 'treino:session_entry_create' workoutsession.pk %}" class="inline-flex bg-[#5d674f] text-white px-8 py-4 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                <span class="text-base font-normal tracking-wide">Adicionar exercício</span>
+                <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

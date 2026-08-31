@@ -1,0 +1,39 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Sessões · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div>
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Treino</span>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">Sessões</h1>
+            </div>
+            <a href="{% url 'treino:session_create' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group self-start">
+                <span class="text-base font-normal tracking-wide">Nova sessão</span>
+                <i data-lucide="plus" class="w-5 h-5 stroke-[1.5]"></i>
+            </a>
+        </div>
+
+        {% if object_list %}
+        <div class="flex flex-col divide-y divide-[#dcdacd] bg-white rounded-[2rem] border border-[#dcdacd] px-4 md:px-8">
+            {% for session in object_list %}
+            <a href="{{ session.get_absolute_url }}" class="group flex items-center justify-between py-6 hover:bg-[#f5f4f0]/50 transition-colors -mx-4 md:-mx-8 px-4 md:px-8 rounded-xl">
+                <div class="flex items-center gap-4 md:gap-8">
+                    <span class="text-lg font-medium text-[#1a1a1a] w-28">{{ session.date|date:'d/m/Y' }}</span>
+                    <span class="text-base text-[#5c5c5a]">{{ session.routine_day|default:'Sessão livre' }}</span>
+                </div>
+                <span class="text-sm text-[#5c5c5a]">{{ session.entries.count }} exercício{{ session.entries.count|pluralize }}{% if session.duration_minutes %} · {{ session.duration_minutes }} min{% endif %}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% include 'partials/_pagination.html' %}
+        {% else %}
+        {% include 'partials/_empty_state.html' with icon='calendar-check' title='Nenhuma sessão registrada' subtitle='Registre um treino para acompanhar carga, volume e frequência.' create_url='treino:session_create' create_label='Registrar sessão' %}
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

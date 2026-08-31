@@ -38,7 +38,7 @@
         </div>
         {% include 'partials/_pagination.html' %}
         {% else %}
-        {% include 'saude/_empty_state.html' with icon='calendar' title='Nenhuma consulta registrada' subtitle='Registre suas consultas e marque o retorno para não perder a data.' create_url='saude:appointment_create' create_label='Registrar consulta' %}
+        {% include 'partials/_empty_state.html' with icon='calendar' title='Nenhuma consulta registrada' subtitle='Registre suas consultas e marque o retorno para não perder a data.' create_url='saude:appointment_create' create_label='Registrar consulta' %}
         {% endif %}
 
     </div>

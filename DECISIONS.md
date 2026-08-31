@@ -127,3 +127,60 @@ usam `on_delete=models.SET_NULL` (campo `null=True`). Só `Appointment.doctor` �
 **Motivo:** apagar um médico não deveria apagar o exame que ele solicitou — o registro de
 saúde é o que importa, o vínculo é metadado. `Appointment.doctor` é `CASCADE` porque uma
 consulta sem médico nenhum não faz sentido como registro.
+
+---
+
+## Sprint 3 — Treino
+
+### D-018 · `SetLog` por série, não campos fixos em `SessionEntry`
+**Contexto:** o PRD (7.1) marcou explicitamente como decisão em aberto: campo único
+`reps`/`weight` em `SessionEntry`, ou um model `SetLog` por série individual — "decidir na
+Sprint de Treino".
+**Decisão:** `SetLog` por série (`set_number`, `reps`, `weight`), ligado a `SessionEntry` por
+FK. `SessionEntry` guarda só o que é comum ao exercício inteiro (descanso, observação).
+**Motivo:** o próprio PRD já apontava a razão — "viabiliza a evolução de carga fina". Uma
+pirâmide ou um drop-set têm carga diferente por série; achatar isso num `weight` único do
+`SessionEntry` obrigaria a escolher uma média ou o último valor, e o gráfico de evolução
+(7.2) perderia precisão exatamente no dado que o torna útil.
+
+### D-019 · Models aninhados também ganham `user` direto, redundante com o pai
+**Contexto:** `RoutineDay`, `RoutineExerciseTarget`, `SessionEntry`, `SetLog` são sempre
+alcançados por um pai já pertencente ao dono (`routine`, `routine_day`, `session`, `entry`).
+**Decisão:** mesmo assim, todos herdam `OwnedModel` e carregam `user` próprio.
+**Motivo:** dois motivos, um de cada lado da stack. (1) Segurança: `OwnerFormMixin`
+(`core/mixins.py`) só filtra o `queryset` de um campo relacional se o model de destino tiver
+coluna `user` — sem ela, o combo de exercícios de `RoutineExerciseTargetForm`, por exemplo,
+listaria os exercícios de todo mundo. (2) Literal: a diretiva D2 do XML exige FK de dono em
+"todo model que armazena dado de usuário", sem exceção para model filho. Mesmo padrão que
+`_legado_vida` usava em `Resultado.paciente` (redundante com `coleta.paciente` de propósito).
+
+### D-020 · `ChildCreateView` em `core/views.py`, generalizando o padrão de recurso aninhado
+**Decisão:** base nova ao lado de `OwnerCreateView`: recebe `parent_model`/`parent_field` do
+subclasse, resolve o pai pela URL **re-filtrado por `user=request.user`** a cada request, e
+carimba a FK do pai no `form_valid` antes do carimbo de dono. Usada por
+`RoutineDayCreateView`, `RoutineExerciseTargetCreateView`, `SessionEntryCreateView`,
+`SetLogCreateView`.
+**Motivo:** sem isso, cada view aninhada reimplementaria "pegue o pai pela URL, confira que é
+do usuário, senão 404" na mão — e esquecer o filtro de dono no pai seria a mesma classe de
+furo que motivou `OwnerFormMixin` na Sprint 1. `treino/nutricao` seguem herdando dela sempre
+que um recurso pertence a outro (refeição → dieta, item → refeição).
+
+### D-021 · `Exercise.muscle_group`, `RoutineExerciseTarget.exercise` e `SessionEntry.exercise`: `CASCADE`, não `PROTECT`
+**Contexto:** a primeira versão usava `PROTECT` nessas três FKs — parecia a escolha óbvia
+para "não perder histórico de treino por acidente". Bug real, pego pelo teste de exclusão em
+cascata: apagar um `MuscleGroup` com exercício vinculado (ou um usuário, via
+`User.objects.filter(...).delete()`) estourava `ProtectedError`/erro 500. Causa: o
+`Collector` do Django avalia `PROTECT` por FK isolada — não sabe que a linha "protegida"
+(`Exercise`, `SessionEntry`) está sendo apagada na mesma operação por outro caminho
+(`user` → `CASCADE`). `PROTECT` entre dois models do mesmo dono trava a própria cascata do
+dono, sempre, mesmo quando tecnicamente não deveria.
+**Decisão:** as três viraram `CASCADE`. `OwnerDeleteView` (`core/views.py`) ganhou um
+`delete_warning` opcional — texto mostrado na tela de confirmação quando a exclusão arrasta
+histórico junto — e um `try/except ProtectedError` que nunca mais deveria disparar aqui, mas
+protege qualquer `PROTECT` futuro contra um 500 cru.
+**Motivo:** `PROTECT` faz sentido para proteger **catálogo compartilhado** de uma exclusão
+que afetaria outra pessoa — é o que `saude` faz com `Resultado.tipo` → `TipoExame` (no
+legado) e o que esta app não tem: `MuscleGroup`/`Exercise` são dados de uma pessoa só. Regra
+geral daqui pra frente: **nunca `PROTECT` entre dois models que pertencem ao mesmo dono** —
+isso quebra a exclusão de conta (LGPD, Sprint 6) de um jeito que só aparece em teste de
+ponta a ponta, não em `manage.py check`.

@@ -37,7 +37,7 @@
         </div>
         {% include 'partials/_pagination.html' %}
         {% else %}
-        {% include 'saude/_empty_state.html' with icon='activity' title='Nenhum tratamento registrado' subtitle='Crie um tratamento para organizar exames, consultas e remédios ligados a ele.' create_url='saude:treatment_create' create_label='Criar tratamento' %}
+        {% include 'partials/_empty_state.html' with icon='activity' title='Nenhum tratamento registrado' subtitle='Crie um tratamento para organizar exames, consultas e remédios ligados a ele.' create_url='saude:treatment_create' create_label='Criar tratamento' %}
         {% endif %}
 
     </div>

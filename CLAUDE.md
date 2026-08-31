@@ -39,7 +39,7 @@ config/      settings, urls raiz, wsgi/asgi
 core/        base models, mixins de isolamento, CBVs genéricas de dono, landing, dashboard
 accounts/    User (login por e-mail), UserManager, Profile, signal, telas de auth
 saude/       médicos, tratamentos, exames, consultas, medicamentos   (Sprint 2 — pronta)
-treino/      grupos, exercícios, fichas, sessões                     (Sprint 3)
+treino/      grupos, exercícios, fichas, sessões                     (Sprint 3 — pronta)
 nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 4)
 lembretes/   central de lembretes + command agendado                 (Sprint 5)
 billing/     planos, assinatura, gateway                             (Sprint 6)
@@ -63,6 +63,23 @@ mão dentro da view — herde das bases prontas em `core/views.py`:
 novo (`treino`, `nutricao`...) segue o padrão de `saude/views.py`: uma classe por operação,
 `success_message` na de criar/editar, `extra_context` com `page_kicker`/`page_title` nas que
 usam `templates/saude/object_form.html` (ou o equivalente do app).
+
+### Recursos aninhados (item que só existe dentro de outro)
+
+Padrão em `treino` — divisão dentro de ficha, série dentro de exercício de sessão — herde de
+`ChildCreateView` (`core/views.py`) em vez de reimplementar "pegar o pai pela URL e conferir
+dono". Define `parent_model`, `parent_field` (nome da FK no model filho) e, se a URL não usar
+`parent_pk`, `parent_url_kwarg`. `nutricao` repete o padrão: item dentro de refeição, refeição
+dentro de dieta.
+
+**Nunca `on_delete=PROTECT` entre dois models do mesmo dono.** O `Collector` do Django avalia
+`PROTECT` por FK isolada, sem saber que a linha "protegida" está sendo apagada na mesma
+operação por outro caminho (`user` → `CASCADE`) — trava a exclusão em cascata do próprio
+dono, inclusive a futura exclusão de conta (LGPD, Sprint 6), com um 500 cru. Caso real em
+D-021 (`DECISIONS.md`). `PROTECT` só faz sentido para catálogo **compartilhado** entre
+usuários, que esta base ainda não tem. `OwnerDeleteView` aceita `delete_warning` para avisar
+na tela de confirmação quando a exclusão arrasta histórico junto (ex.: excluir exercício
+apaga as séries registradas dele).
 
 ### Anexos (laudo, receita, foto de progresso...)
 

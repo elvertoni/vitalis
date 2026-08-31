@@ -85,9 +85,15 @@
                     </div>
                     <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Treino</span>
                 </div>
-                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Treino de hoje</h2>
-                <p class="text-base text-[#5c5c5a] mb-6 flex-grow">Ficha planejada para o dia e sua aderência na semana.</p>
-                <span class="text-sm text-[#a0a09e]">Disponível na próxima entrega</span>
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Treino da semana</h2>
+                <div class="mb-6 flex-grow">
+                    <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ sessions_this_week }}</span>
+                    <span class="text-sm text-[#5c5c5a]">sessão{{ sessions_this_week|pluralize }} registrada{{ sessions_this_week|pluralize }} esta semana</span>
+                    {% if next_routine_day %}
+                    <p class="text-sm text-[#5c5c5a] mt-4">Ficha ativa: {{ next_routine_day.name }}</p>
+                    {% endif %}
+                </div>
+                <a href="{% url 'treino:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver treino</a>
             </div>
 
             <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col">

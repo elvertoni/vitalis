@@ -39,7 +39,7 @@
         </div>
         {% include 'partials/_pagination.html' %}
         {% else %}
-        {% include 'saude/_empty_state.html' with icon='flask-conical' title='Nenhum exame registrado' subtitle='Cadastre um exame solicitado, agendado ou já realizado, com o laudo em anexo.' create_url='saude:exam_create' create_label='Registrar exame' %}
+        {% include 'partials/_empty_state.html' with icon='flask-conical' title='Nenhum exame registrado' subtitle='Cadastre um exame solicitado, agendado ou já realizado, com o laudo em anexo.' create_url='saude:exam_create' create_label='Registrar exame' %}
         {% endif %}
 
     </div>

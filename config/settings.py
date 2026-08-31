@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'core',
     'accounts',
     'saude',
+    'treino',
 ]
 
 MIDDLEWARE = [

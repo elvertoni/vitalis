@@ -4,7 +4,8 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
+from django.db.models import ProtectedError
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.generic import (
     CreateView,
@@ -40,6 +41,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         from saude.models import Appointment, Exam, Medication
+        from treino.models import WorkoutRoutine, WorkoutSession, week_bounds
 
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -90,6 +92,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 'icon': 'calendar-clock',
             })
         context['reminders_48h'] = reminders[:8]
+
+        # ── Treino ────────────────────────────────────────────────────────
+        monday, sunday = week_bounds(today)
+        context['sessions_this_week'] = WorkoutSession.objects.filter(
+            user=user, date__gte=monday, date__lte=sunday
+        ).count()
+        context['next_routine_day'] = (
+            WorkoutRoutine.objects.filter(user=user, is_active=True)
+            .prefetch_related('days')
+            .first()
+        )
         return context
 
 
@@ -129,9 +142,68 @@ class OwnerUpdateView(OwnerQuerySetMixin, OwnerFormMixin, UpdateView):
 
 
 class OwnerDeleteView(OwnerQuerySetMixin, DeleteView):
+    """
+    Deletes an owned record. Some models use ``on_delete=PROTECT`` on purpose — a piece of
+    training or health history should not vanish just because someone deletes the exercise
+    or the treatment it is filed under. Trying to delete one of those here fails safely,
+    with a plain-language message, instead of a 500.
+    """
+
     template_name = 'core/object_confirm_delete.html'
     success_message = 'Registro excluído.'
+    protected_message = 'Não é possível excluir: há outros registros vinculados a este.'
+    delete_warning = None  # texto opcional exibido na confirmação quando a exclusão arrasta histórico junto
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['delete_warning'] = self.delete_warning
+        return context
 
     def form_valid(self, form):
+        self.object = self.get_object()
+        redirect_url = self.get_success_url()
+        try:
+            self.object.delete()
+        except ProtectedError:
+            messages.error(self.request, self.protected_message)
+            fallback = self.object.get_absolute_url() if hasattr(self.object, 'get_absolute_url') else redirect_url
+            return redirect(fallback)
         messages.success(self.request, self.success_message)
+        return redirect(redirect_url)
+
+
+class ChildCreateView(OwnerCreateView):
+    """
+    Creates a record that hangs off a parent the person already owns.
+
+    A routine day belongs to a routine, a set belongs to a session entry — the parent id
+    comes from the URL, never from the form. ``get_parent()`` re-fetches it scoped to
+    ``request.user`` on every request, so posting a parent id that belongs to someone else
+    404s before any data is touched, the same guarantee ``OwnerQuerySetMixin`` gives reads.
+
+    Subclasses set ``parent_model``, ``parent_field`` (the FK name on the child model) and,
+    if the URL kwarg is not ``parent_pk``, ``parent_url_kwarg``.
+    """
+
+    parent_model = None
+    parent_field = None
+    parent_url_kwarg = 'parent_pk'
+    parent_context_name = 'parent'
+
+    def get_parent(self):
+        return get_object_or_404(
+            self.parent_model, pk=self.kwargs[self.parent_url_kwarg], user=self.request.user
+        )
+
+    def dispatch(self, request, *args, **kwargs):
+        self.parent = self.get_parent()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context[self.parent_context_name] = self.parent
+        return context
+
+    def form_valid(self, form):
+        setattr(form.instance, self.parent_field, self.parent)
         return super().form_valid(form)

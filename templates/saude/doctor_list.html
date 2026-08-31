@@ -30,7 +30,7 @@
         </div>
         {% include 'partials/_pagination.html' %}
         {% else %}
-        {% include 'saude/_empty_state.html' with icon='stethoscope' title='Nenhum médico cadastrado' subtitle='Cadastre o primeiro para vincular tratamentos, exames e consultas.' create_url='saude:doctor_create' create_label='Cadastrar médico' %}
+        {% include 'partials/_empty_state.html' with icon='stethoscope' title='Nenhum médico cadastrado' subtitle='Cadastre o primeiro para vincular tratamentos, exames e consultas.' create_url='saude:doctor_create' create_label='Cadastrar médico' %}
         {% endif %}
 
     </div>

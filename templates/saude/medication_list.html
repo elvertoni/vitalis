@@ -37,7 +37,7 @@
         </div>
         {% include 'partials/_pagination.html' %}
         {% else %}
-        {% include 'saude/_empty_state.html' with icon='pill' title='Nenhum medicamento cadastrado' subtitle='Cadastre o remédio e os horários para gerar lembretes de dose.' create_url='saude:medication_create' create_label='Cadastrar medicamento' %}
+        {% include 'partials/_empty_state.html' with icon='pill' title='Nenhum medicamento cadastrado' subtitle='Cadastre o remédio e os horários para gerar lembretes de dose.' create_url='saude:medication_create' create_label='Cadastrar medicamento' %}
         {% endif %}
 
     </div>
