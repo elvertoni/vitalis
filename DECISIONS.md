@@ -242,3 +242,59 @@ contra a dieta ativa logo ao lado.
 o almoço de terça no meio da lista e escantearia o comparativo com a meta, que é o motivo de
 a tela existir. Consistente com o padrão de `treino`: filtro nativo do Django (`?data=`, sem
 JS) em vez de reinventar seletor de data.
+
+---
+
+## Sprint 5 — Lembretes + Dashboard
+
+### D-027 · Sem lembrete automático de "treino do dia"
+**Contexto:** o PRD (9.1) lista "Treino do dia" entre os cinco gatilhos que a central
+consolida.
+**Decisão:** as outras quatro categorias (remédio, exame, retorno, refeição) têm uma fonte de
+horário real para nascer: `Medication.schedule_times`, `Exam.scheduled_date`,
+`Appointment.next_return_date`, `Meal.time`. Treino não tem — `RoutineDay` não carrega dia da
+semana nem horário nenhum (o PRD tampouco pediu isso na seção 7). Sem uma fonte, não há o que
+sincronizar automaticamente; a categoria `treino` existe em `Reminder.Category` e a pessoa
+pode criar um lembrete manual dessa categoria à mão.
+**Motivo:** inventar um agendamento de dias de treino que o PRD nunca pediu (ex.: "toda
+segunda é Push") seria adicionar escopo não pedido para preencher uma lacuna que a própria
+central não exige — a pessoa já vê "sessões desta semana" ao vivo no painel de treino e no
+dashboard (Sprint 3), o que cobre a necessidade sem inventar modelo novo.
+
+### D-028 · Canal de envio: só e-mail, mesmo com `Profile.notification_channel` aceitando mais opções
+**Contexto:** PRD 9.3 recomenda e-mail para v1, WhatsApp como plugin da fase 2. O campo
+`notification_channel` (criado na Sprint 1) já tem as três opções no `TextChoices`.
+**Decisão:** `send_due_reminders` despacha por e-mail para todo mundo, sem olhar o valor de
+`notification_channel`. O campo continua existindo e editável — é preferência declarada da
+pessoa para quando os outros canais existirem — mas nada lê esse valor para decidir a rota de
+envio ainda.
+**Motivo:** implementar WhatsApp/push exigiria integração externa (Evolution API, Web Push)
+que o PRD explicitamente empurra pra fase 2. Fingir suportar canais que não despacham nada
+seria pior que não oferecer — por isso o comando não checa o campo, e esta decisão fica
+registrada para quem for religar o WhatsApp depois saber onde entrar.
+
+### D-029 · `sync_reminders`: apaga-e-recria os lembretes derivados pendentes na janela, nunca "upsert" incremental
+**Contexto:** um lembrete derivado (remédio, exame, retorno, refeição) muda de horário toda
+vez que a fonte muda — o médico remarca o retorno, a pessoa edita o horário do remédio.
+**Decisão:** a cada chamada, `sync_reminders` apaga todo `Reminder` do usuário com
+`status=pendente`, `content_type` preenchido (ou seja, derivado, não manual) e `remind_at`
+dentro da janela de 7 dias — e recria do zero a partir do estado atual de `Medication`,
+`Exam`, `Appointment` e `Diet`/`Meal`. Lembrete manual (`content_type` nulo) e lembrete já
+`enviado`/`concluído`/`cancelado` nunca são tocados.
+**Motivo:** um `get_or_create` chaveado por `(user, categoria, origem, remind_at)` pareceria
+mais "cirúrgico", mas deixaria lembrete órfão pra trás sempre que a fonte muda de horário — o
+retorno remarcado geraria um lembrete novo E manteria o antigo, pendente, apontando pra uma
+data que não existe mais no registro de origem. Apagar e recriar garante que a lista sempre
+reflete o estado atual dos dados, e é barato o bastante (dezenas de linhas, não milhares) pra
+rodar a cada visita à central, não só no cron.
+
+### D-030 · Central resincroniza a cada visita, comando de cron sincroniza + envia
+**Contexto:** PRD 9.3 pede um `management command` agendado via cron para o MVP.
+**Decisão:** `sync_reminders(user)` roda tanto dentro de `ReminderIndexView.get_context_data`
+(só pro usuário logado, a cada carregamento da página) quanto dentro de
+`send_due_reminders` (pra todo mundo, de uma vez, antes de checar o que venceu).
+**Motivo:** sem isso, a central ficaria vazia ou desatualizada em ambiente de desenvolvimento
+(sem cron rodando) — cadastrar um remédio novo e abrir a central tem que mostrar o lembrete
+na hora, não só depois do próximo tick do cron. Resincronizar por usuário na visita é barato;
+o comando existe pra cobrir todo mundo de uma vez e de fato enviar o e-mail, que a página não
+faz.

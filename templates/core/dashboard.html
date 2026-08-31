@@ -129,19 +129,22 @@
         {# ── Lembretes + resumo do perfil ─────────────────────────────────── #}
         <div class="grid lg:grid-cols-12 gap-8">
             <div class="lg:col-span-7 bg-[#e8eae4] rounded-[2rem] p-8">
-                <div class="flex items-center gap-3 mb-6">
-                    <i data-lucide="bell" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i>
-                    <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Lembretes das próximas 48h</h2>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="bell" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i>
+                        <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Lembretes das próximas 48h</h2>
+                    </div>
+                    <a href="{% url 'lembretes:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver central</a>
                 </div>
                 {% if reminders_48h %}
                 <div class="flex flex-col divide-y divide-[#dcdacd]">
                     {% for reminder in reminders_48h %}
                     <div class="flex items-center justify-between py-3">
                         <div class="flex items-center gap-3">
-                            <i data-lucide="{{ reminder.icon }}" class="w-4 h-4 stroke-[1.5] text-[#5d674f] shrink-0"></i>
+                            <i data-lucide="{% if reminder.category == 'remedio' %}pill{% elif reminder.category == 'exame' %}flask-conical{% elif reminder.category == 'retorno' %}calendar-clock{% elif reminder.category == 'nutricao' %}notebook-pen{% else %}bell{% endif %}" class="w-4 h-4 stroke-[1.5] text-[#5d674f] shrink-0"></i>
                             <span class="text-base text-[#1a1a1a]">{{ reminder.title }}</span>
                         </div>
-                        <span class="text-sm text-[#5c5c5a]">{{ reminder.when }}</span>
+                        <span class="text-sm text-[#5c5c5a]">{{ reminder.remind_at|date:'d/m H:i' }}</span>
                     </div>
                     {% endfor %}
                 </div>

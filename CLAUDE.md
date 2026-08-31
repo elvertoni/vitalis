@@ -41,7 +41,7 @@ accounts/    User (login por e-mail), UserManager, Profile, signal, telas de aut
 saude/       médicos, tratamentos, exames, consultas, medicamentos   (Sprint 2 — pronta)
 treino/      grupos, exercícios, fichas, sessões                     (Sprint 3 — pronta)
 nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 4 — pronta)
-lembretes/   central de lembretes + command agendado                 (Sprint 5)
+lembretes/   central de lembretes + command agendado                 (Sprint 5 — pronta)
 billing/     planos, assinatura, gateway                             (Sprint 6)
 ```
 
@@ -147,6 +147,25 @@ usuário, editável a qualquer momento; congelar o macro deixaria totais antigos
 dessincronizados sem aviso. Regra geral: **congele um valor histórico só quando a fonte é
 externa e imutável por natureza** (laudo de exame, já em `saude`); calcule em runtime quando
 a fonte é um cadastro que o próprio usuário edita.
+
+## Lembretes: derivado × manual
+
+`lembretes.Reminder` tem duas origens. **Derivado** — `content_type`/`object_id` preenchidos,
+aponta pra `Medication`, `Exam`, `Appointment` ou `Meal` — é gerado por
+`lembretes.services.sync_reminders(user)`, chamada tanto na visita à central
+(`ReminderIndexView`) quanto no `dashboard` quanto no comando `send_due_reminders`. **Nunca
+edite um `Reminder` derivado na mão nem tente fazer `get_or_create` incremental nele** — o
+padrão é apaga-e-recria (D-029): toda chamada de `sync_reminders` apaga os pendentes
+derivados da janela de 7 dias e recria do zero a partir do estado atual das apps de origem.
+**Manual** — `content_type` nulo, criado pela pessoa em `/lembretes/novo/` — nunca é tocado
+pelo sync.
+
+Categoria nova de lembrete automático (ex.: um dia vier agendamento de treino) segue o padrão
+de `lembretes/services.py`: uma função `_algo_reminders(user, today, horizon)` que devolve
+uma lista de `Reminder(...)` não salvos, somada em `sync_reminders`, com `content_type` da
+model de origem e `object_id` do registro. Rode `python manage.py send_due_reminders` pra
+disparar manualmente em dev — ele sincroniza todo mundo e envia (console, `EMAIL_BACKEND`
+atual) o que já venceu.
 
 ## LGPD
 

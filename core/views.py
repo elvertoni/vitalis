@@ -73,26 +73,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # ── Lembretes das próximas 48h ───────────────────────────────────────
         #
-        # Antecipa aqui o que a app `lembretes` da Sprint 5 vai formalizar num model
-        # próprio: dose de hoje, exame marcado e retorno médico dentro da janela curta.
-        soon = today + timedelta(days=2)
-        reminders = []
-        for medication in context['today_medications']:
-            for time in medication.schedule_times:
-                reminders.append({'title': medication.name, 'when': f'hoje, {time}', 'icon': 'pill'})
-        for exam in Exam.objects.filter(
-            user=user, scheduled_date__gte=today, scheduled_date__lte=soon, done_date__isnull=True
-        ):
-            reminders.append({'title': exam.name, 'when': exam.scheduled_date.strftime('%d/%m'), 'icon': 'flask-conical'})
-        for appointment in Appointment.objects.filter(
-            user=user, next_return_date__gte=today, next_return_date__lte=soon
-        ).select_related('doctor'):
-            reminders.append({
-                'title': f'Retorno · {appointment.doctor}',
-                'when': appointment.next_return_date.strftime('%d/%m'),
-                'icon': 'calendar-clock',
-            })
-        context['reminders_48h'] = reminders[:8]
+        # A app `lembretes` (Sprint 5) formaliza isso num model próprio, sincronizado a
+        # cada visita: dose de hoje, exame marcado, retorno médico e refeição da dieta
+        # ativa, todos derivados dos dados reais — nada computado à parte aqui.
+        from lembretes.models import Reminder
+        from lembretes.services import sync_reminders
+
+        sync_reminders(user)
+        soon = timezone.now() + timedelta(days=2)
+        context['reminders_48h'] = Reminder.objects.filter(
+            user=user, status=Reminder.Status.PENDING, remind_at__lte=soon,
+        ).order_by('remind_at')[:8]
 
         # ── Treino ────────────────────────────────────────────────────────
         monday, sunday = week_bounds(today)

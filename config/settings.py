@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'saude',
     'treino',
     'nutricao',
+    'lembretes',
 ]
 
 MIDDLEWARE = [

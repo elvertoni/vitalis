@@ -7,6 +7,7 @@
     <a href="{% url 'saude:index' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Saúde</a>
     <a href="{% url 'treino:index' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Treino</a>
     <a href="{% url 'nutricao:index' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Nutrição</a>
+    <a href="{% url 'lembretes:index' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Lembretes</a>
     <a href="{% url 'accounts:profile' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Perfil</a>
 {% endblock %}
 
@@ -23,6 +24,7 @@
     <a href="{% url 'saude:index' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Saúde</a>
     <a href="{% url 'treino:index' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Treino</a>
     <a href="{% url 'nutricao:index' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Nutrição</a>
+    <a href="{% url 'lembretes:index' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Lembretes</a>
     <a href="{% url 'accounts:profile' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Perfil</a>
     <form method="post" action="{% url 'accounts:logout' %}">
         {% csrf_token %}

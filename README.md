@@ -36,5 +36,15 @@ Sem Docker, sem suíte de testes automatizados — decisão explícita do projet
 | S2 | Saúde (`saude`) | ✅ |
 | S3 | Treino (`treino`) | ✅ |
 | S4 | Nutrição (`nutricao`) | ✅ |
-| S5 | Lembretes + Dashboard consolidado | parcial (painéis de saúde, treino e nutrição já alimentam o dashboard) |
+| S5 | Lembretes (`lembretes`) + Dashboard consolidado | ✅ |
 | S6 | SaaS (`billing`) | — |
+
+## Lembretes em desenvolvimento
+
+Sem cron rodando localmente, a central (`/lembretes/`) e o dashboard já resincronizam os
+lembretes derivados a cada visita — não precisa do comando pra ver a lista atualizada. O
+comando existe pra efetivamente **enviar** (e-mail, via `EMAIL_BACKEND` de console em dev):
+
+```powershell
+.\.venv\Scripts\python manage.py send_due_reminders
+```
