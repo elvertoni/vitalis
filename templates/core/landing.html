@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Vitalis · Saúde, treino e nutrição num só lugar{% endblock %}
+
+{% block nav_links %}
+    <a href="#produto" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Produto</a>
+    <a href="#areas" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Áreas</a>
+    <a href="#planos" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Planos</a>
+{% endblock %}
+
+{% block mobile_links %}
+    <a href="#produto" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Produto</a>
+    <a href="#areas" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Áreas</a>
+    <a href="#planos" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Planos</a>
+    <a href="{% url 'accounts:login' %}" class="text-3xl font-medium tracking-tight text-[#5c5c5a] mobile-link">Entrar</a>
+    <a href="{% url 'accounts:signup' %}" class="text-3xl font-medium tracking-tight text-[#5d674f] mobile-link">Começar</a>
+{% endblock %}
+
+{% block content %}
+
+{# ── Hero: 5 / 7 colunas, conforme o layout do design system ─────────────── #}
+<section class="relative min-h-screen pt-32 lg:pt-40 pb-0 overflow-hidden flex flex-col justify-between">
+    <div class="max-w-screen-2xl mx-auto px-6 md:px-12 w-full grid lg:grid-cols-12 gap-12 lg:gap-0 relative z-10 flex-grow">
+        <div class="lg:col-span-5 flex flex-col justify-center relative z-20 pb-24 lg:pb-32 mt-12 lg:mt-0">
+            <h1 class="text-6xl md:text-7xl lg:text-[5.5rem] leading-[1.05] tracking-tighter font-medium text-[#1a1a1a] mb-8">
+                Cuide.<br>Registre.<br>Evolua.
+            </h1>
+            <div class="pl-6 border-l-[1.5px] border-[#dcdacd] mb-12">
+                <p class="text-lg md:text-xl text-[#5c5c5a] font-normal leading-relaxed max-w-md">
+                    Exames, tratamentos, treino e dieta num só lugar — com lembretes para você
+                    não esquecer remédio, exame nem retorno médico.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+                <a href="{% url 'accounts:signup' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                    <span class="text-base font-normal tracking-wide">Começar agora</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+                </a>
+                <a href="{% url 'accounts:login' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Já tenho conta</a>
+            </div>
+        </div>
+        <div class="lg:col-span-7 relative min-h-[500px] lg:min-h-full w-full lg:h-[85vh]">
+            <div class="absolute top-[-5%] lg:top-[-10%] right-[-10%] lg:right-[-15%] w-[120%] lg:w-[110%] aspect-square rounded-full overflow-hidden z-0">
+                <img src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=2070&auto=format&fit=crop"
+                     alt="Pessoa praticando yoga" class="w-full h-full object-cover object-[60%_30%]">
+                <div class="absolute inset-0 bg-black/5 mix-blend-overlay"></div>
+            </div>
+            <div class="absolute top-0 lg:top-[15%] left-[20%] lg:left-[10%] bg-[#f2ece5] rounded-full w-36 h-36 flex flex-col items-center justify-center p-6 text-center shadow-sm z-20">
+                <i data-lucide="asterisk" class="w-5 h-5 stroke-[1] mb-2 text-[#5d674f]"></i>
+                <span class="text-[9px] tracking-[0.2em] font-medium uppercase text-[#1a1a1a] leading-tight">Sua vida<br>registrada<br>no tempo</span>
+            </div>
+            <div class="absolute top-[40%] lg:top-[50%] left-[-5%] lg:left-[-10%] bg-[#5d674f] rounded-full w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center z-20 shadow-md">
+                <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full animate-[spin_25s_linear_infinite] p-2">
+                    <path id="curve" d="M 50, 50 m -42, 0 a 42,42 0 1,1 84,0 a 42,42 0 1,1 -84,0" fill="transparent"></path>
+                    <text class="text-[7.5px] fill-white/80 font-medium tracking-[0.25em] uppercase">
+                        <textPath href="#curve" startOffset="0">Saúde • Treino • Nutrição • Lembretes •</textPath>
+                    </text>
+                </svg>
+                <div class="flex flex-col items-center">
+                    <div class="w-12 h-1 border-b-[1.5px] border-white/80 mb-2"></div>
+                    <i data-lucide="heart" class="w-8 h-8 stroke-[1.5] text-white"></i>
+                </div>
+            </div>
+            <div class="hidden lg:flex absolute bottom-[15%] right-[5%] bg-gradient-to-br from-[#f2ece5] to-[#f5f4f0] rounded-t-full rounded-bl-full rounded-br-sm w-40 h-40 flex-col items-center justify-center text-center p-6 shadow-sm z-20">
+                <span class="text-sm font-medium text-[#1a1a1a] mb-2">Sem papel</span>
+                <p class="text-xs text-[#5c5c5a] mb-3">Seu histórico sempre à mão</p>
+                <i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5] text-[#1a1a1a]"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="relative w-full z-20 mt-auto">
+        <div class="bg-[#e8eae4] w-[95%] md:w-[85%] lg:w-[65%] rounded-tr-[80px] lg:rounded-tr-[120px] pt-12 pb-10 px-6 md:px-12 pr-16 lg:pr-32">
+            <div class="max-w-xl grid grid-cols-3 gap-6 lg:gap-12">
+                <div class="flex flex-col">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-4 bg-white/50"><i data-lucide="heart-pulse" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i></div>
+                    <span class="text-3xl lg:text-4xl font-medium tracking-tight text-[#1a1a1a] mb-1">03</span>
+                    <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Áreas Integradas</span>
+                </div>
+                <div class="flex flex-col relative before:content-[''] before:absolute before:left-[-1.5rem] before:top-0 before:h-full before:w-[1px] before:bg-[#dcdacd]/50">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-4 bg-white/50"><i data-lucide="bell" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i></div>
+                    <span class="text-3xl lg:text-4xl font-medium tracking-tight text-[#1a1a1a] mb-1">00</span>
+                    <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Doses Esquecidas</span>
+                </div>
+                <div class="flex flex-col relative before:content-[''] before:absolute before:left-[-1.5rem] before:top-0 before:h-full before:w-[1px] before:bg-[#dcdacd]/50">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-4 bg-white/50"><i data-lucide="lock" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i></div>
+                    <span class="text-3xl lg:text-4xl font-medium tracking-tight text-[#1a1a1a] mb-1">01</span>
+                    <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Dono Dos Dados</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Produto ────────────────────────────────────────────────────────────── #}
+<section id="produto" class="py-32 bg-white border-t border-[#dcdacd]">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+        <div class="mb-16">
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">O problema</span>
+            <h2 class="text-4xl md:text-5xl lg:text-6xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1] mb-6 max-w-3xl">
+                Exame na gaveta. Treino na planilha. Dieta no papel.
+            </h2>
+            <p class="text-lg md:text-xl text-[#5c5c5a] font-normal leading-relaxed max-w-2xl">
+                O que é seu vive espalhado, e sem histórico não dá para ver evolução nenhuma.
+                O Vitalis junta tudo numa linha do tempo só.
+            </p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1000&auto=format&fit=crop"
+                 alt="Registro de treino" class="w-full aspect-[4/3] object-cover rounded-3xl">
+            <div class="flex flex-col gap-8">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center shrink-0 bg-[#f5f4f0]"><i data-lucide="layers" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                    <div>
+                        <h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Um lugar só</h3>
+                        <p class="text-base text-[#5c5c5a] leading-relaxed">Médicos, tratamentos, exames com laudo anexado, consultas, remédios, fichas de treino e cardápio.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center shrink-0 bg-[#f5f4f0]"><i data-lucide="bell-ring" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                    <div>
+                        <h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Nada esquecido</h3>
+                        <p class="text-base text-[#5c5c5a] leading-relaxed">Lembrete de dose, de exame marcado e de retorno médico chega antes da hora.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center shrink-0 bg-[#f5f4f0]"><i data-lucide="trending-up" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                    <div>
+                        <h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Evolução visível</h3>
+                        <p class="text-base text-[#5c5c5a] leading-relaxed">Carga por exercício, peso corporal e aderência à dieta desenhados ao longo do tempo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Áreas ──────────────────────────────────────────────────────────────── #}
+<section id="areas" class="py-32 bg-[#f5f4f0]">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+        <div class="mb-16">
+            <h2 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] mb-4">Três áreas, uma vida</h2>
+            <p class="text-lg text-[#5c5c5a] max-w-xl">Cada uma com o seu registro, todas na mesma linha do tempo.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-[2rem] p-4 group cursor-default hover:shadow-xl transition-shadow duration-300">
+                <div class="relative w-full aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-6">
+                    <img src="https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?q=80&w=2070&auto=format&fit=crop"
+                         alt="Saúde" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium uppercase tracking-widest text-[#1a1a1a]">Saúde</div>
+                </div>
+                <div class="px-2 pb-4">
+                    <h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Histórico clínico</h3>
+                    <p class="text-base text-[#5c5c5a]">Médicos, tratamentos, exames com laudo, consultas e medicamentos em uso.</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-[2rem] p-4 group cursor-default hover:shadow-xl transition-shadow duration-300">
+                <div class="relative w-full aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-6">
+                    <img src="https://images.unsplash.com/photo-1593164842264-854604db2260?q=80&w=1000&auto=format&fit=crop"
+                         alt="Treino" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium uppercase tracking-widest text-[#1a1a1a]">Treino</div>
+                </div>
+                <div class="px-2 pb-4">
+                    <h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Carga e frequência</h3>
+                    <p class="text-base text-[#5c5c5a]">Fichas, sessões registradas e a curva de carga de cada exercício.</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-[2rem] p-4 group cursor-default hover:shadow-xl transition-shadow duration-300">
+                <div class="relative w-full aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-6">
+                    <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1000&auto=format&fit=crop"
+                         alt="Nutrição" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium uppercase tracking-widest text-[#1a1a1a]">Nutrição</div>
+                </div>
+                <div class="px-2 pb-4">
+                    <h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Dieta e macros</h3>
+                    <p class="text-base text-[#5c5c5a]">Plano alimentar, registro diário, calorias e evolução do peso.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Planos ─────────────────────────────────────────────────────────────── #}
+<section id="planos" class="py-32 bg-white border-t border-[#dcdacd]">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+        <div class="mb-16">
+            <h2 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] mb-4">Planos</h2>
+            <p class="text-lg text-[#5c5c5a] max-w-xl">Comece de graça. Assine quando quiser os lembretes automáticos.</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8 max-w-3xl">
+            <div class="bg-[#f5f4f0] rounded-[2rem] p-8 flex flex-col border border-[#dcdacd]">
+                <h3 class="text-xl font-medium mb-2 text-[#1a1a1a]">Free</h3>
+                <div class="flex items-baseline gap-1 mb-6">
+                    <span class="text-5xl tracking-tight font-medium text-[#1a1a1a]">R$ 0</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-grow">
+                    <li class="flex items-start gap-3 text-base text-[#5c5c5a]"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> Histórico de saúde completo</li>
+                    <li class="flex items-start gap-3 text-base text-[#5c5c5a]"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> Treino ilimitado</li>
+                    <li class="flex items-start gap-3 text-base text-[#5c5c5a]"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> 1 dieta ativa</li>
+                </ul>
+                <a href="{% url 'accounts:signup' %}" class="w-full border border-[#1a1a1a] text-[#1a1a1a] py-3 rounded-full font-medium text-center hover:bg-[#1a1a1a] hover:text-white transition-colors">Criar conta</a>
+            </div>
+            <div class="bg-[#1a1a1a] text-white rounded-[2rem] p-8 flex flex-col shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-[#5d674f] text-[10px] tracking-widest uppercase font-medium px-4 py-1 rounded-bl-xl">Mais completo</div>
+                <h3 class="text-xl font-medium mb-2 text-white/90">Premium</h3>
+                <div class="flex items-baseline gap-1 mb-6">
+                    <span class="text-5xl tracking-tight font-medium">Em breve</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-grow">
+                    <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Tudo do Free, sem limites</li>
+                    <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Lembretes automáticos</li>
+                    <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Dietas ilimitadas</li>
+                </ul>
+                <a href="{% url 'accounts:signup' %}" class="w-full bg-white text-[#1a1a1a] py-3 rounded-full font-medium text-center hover:bg-[#f5f4f0] transition-colors">Começar pelo Free</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── CTA final ──────────────────────────────────────────────────────────── #}
+<section class="py-32 bg-[#5d674f] text-white">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12 text-center">
+        <h2 class="text-4xl md:text-5xl lg:text-6xl tracking-tight font-medium mb-6 leading-[1.1]">
+            Sua vida merece<br>um histórico.
+        </h2>
+        <p class="text-lg text-white/80 max-w-xl mx-auto mb-12">
+            Comece hoje e tenha, daqui a um ano, a evolução inteira registrada.
+        </p>
+        <a href="{% url 'accounts:signup' %}" class="inline-flex bg-white text-[#1a1a1a] px-10 py-5 rounded-full items-center gap-3 font-normal text-lg hover:bg-[#f5f4f0] transition-colors group">
+            Criar minha conta
+            <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+        </a>
+    </div>
+</section>
+
+{% endblock %}

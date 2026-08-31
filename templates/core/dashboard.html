@@ -1,0 +1,158 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Painel · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-2xl mx-auto px-6 md:px-12">
+
+        <div class="mb-16">
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Painel</span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">
+                Olá, {{ user.get_short_name }}.
+            </h1>
+        </div>
+
+        {# ── Perfil incompleto: o cálculo de macros e IMC depende desses dados ─ #}
+        {% if not profile.birth_date or not profile.height_cm %}
+        <div class="bg-[#f2ece5] rounded-[2rem] p-8 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center shrink-0 bg-white/60">
+                    <i data-lucide="user" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-1">Complete seu perfil</h2>
+                    <p class="text-base text-[#5c5c5a]">Altura e data de nascimento são a base do cálculo de IMC e da meta calórica.</p>
+                </div>
+            </div>
+            <a href="{% url 'accounts:profile_edit' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors whitespace-nowrap self-start md:self-auto">Preencher</a>
+        </div>
+        {% endif %}
+
+        {# ── Atalhos rápidos ──────────────────────────────────────────────── #}
+        <div class="flex flex-wrap gap-3 mb-12">
+            <a href="{% url 'saude:exam_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="flask-conical" class="w-4 h-4 stroke-[1.5]"></i> Novo exame
+            </a>
+            <a href="{% url 'saude:appointment_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="calendar" class="w-4 h-4 stroke-[1.5]"></i> Nova consulta
+            </a>
+            <a href="{% url 'saude:medication_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="pill" class="w-4 h-4 stroke-[1.5]"></i> Novo medicamento
+            </a>
+        </div>
+
+        {# ── As três áreas ────────────────────────────────────────────────── #}
+        <div class="grid md:grid-cols-3 gap-8 mb-8">
+            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
+                        <i data-lucide="heart-pulse" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                    </div>
+                    <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Saúde</span>
+                </div>
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Próximos compromissos</h2>
+                <div class="flex flex-col gap-3 mb-6 flex-grow">
+                    {% for medication in today_medications %}
+                    <a href="{{ medication.get_absolute_url }}" class="flex items-center justify-between text-sm hover:opacity-70 transition-opacity">
+                        <span class="text-[#1a1a1a]">{{ medication.name }}</span>
+                        <span class="text-[#5c5c5a]">{{ medication.times_display|default:'hoje' }}</span>
+                    </a>
+                    {% endfor %}
+                    {% for exam in upcoming_exams %}
+                    <a href="{{ exam.get_absolute_url }}" class="flex items-center justify-between text-sm hover:opacity-70 transition-opacity">
+                        <span class="text-[#1a1a1a]">{{ exam.name }}</span>
+                        <span class="text-[#5c5c5a]">{{ exam.scheduled_date|date:'d/m' }}</span>
+                    </a>
+                    {% endfor %}
+                    {% for appointment in upcoming_appointments %}
+                    <a href="{{ appointment.get_absolute_url }}" class="flex items-center justify-between text-sm hover:opacity-70 transition-opacity">
+                        <span class="text-[#1a1a1a]">Retorno · {{ appointment.doctor }}</span>
+                        <span class="text-[#5c5c5a]">{{ appointment.next_return_date|date:'d/m' }}</span>
+                    </a>
+                    {% endfor %}
+                    {% if not today_medications and not upcoming_exams and not upcoming_appointments %}
+                    <p class="text-sm text-[#5c5c5a]">Nada nos próximos 30 dias.</p>
+                    {% endif %}
+                </div>
+                <a href="{% url 'saude:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver saúde</a>
+            </div>
+
+            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
+                        <i data-lucide="dumbbell" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                    </div>
+                    <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Treino</span>
+                </div>
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Treino de hoje</h2>
+                <p class="text-base text-[#5c5c5a] mb-6 flex-grow">Ficha planejada para o dia e sua aderência na semana.</p>
+                <span class="text-sm text-[#a0a09e]">Disponível na próxima entrega</span>
+            </div>
+
+            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
+                        <i data-lucide="salad" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                    </div>
+                    <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Nutrição</span>
+                </div>
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Dieta do dia</h2>
+                <p class="text-base text-[#5c5c5a] mb-6 flex-grow">Calorias e macros consumidos contra a meta do plano ativo.</p>
+                <span class="text-sm text-[#a0a09e]">Disponível na próxima entrega</span>
+            </div>
+        </div>
+
+        {# ── Lembretes + resumo do perfil ─────────────────────────────────── #}
+        <div class="grid lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-7 bg-[#e8eae4] rounded-[2rem] p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="bell" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i>
+                    <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Lembretes das próximas 48h</h2>
+                </div>
+                {% if reminders_48h %}
+                <div class="flex flex-col divide-y divide-[#dcdacd]">
+                    {% for reminder in reminders_48h %}
+                    <div class="flex items-center justify-between py-3">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="{{ reminder.icon }}" class="w-4 h-4 stroke-[1.5] text-[#5d674f] shrink-0"></i>
+                            <span class="text-base text-[#1a1a1a]">{{ reminder.title }}</span>
+                        </div>
+                        <span class="text-sm text-[#5c5c5a]">{{ reminder.when }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-base text-[#5c5c5a]">
+                    Nada por aqui ainda. Assim que você cadastrar remédios, exames e retornos,
+                    os lembretes aparecem nesta lista.
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="lg:col-span-5 bg-[#1a1a1a] text-white rounded-[2rem] p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="user" class="w-5 h-5 stroke-[1.5] text-[#e8eae4]"></i>
+                    <h2 class="text-2xl tracking-tight font-medium">Seu perfil</h2>
+                </div>
+                <dl class="space-y-4 mb-8">
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-white/60">Idade</dt>
+                        <dd class="text-base font-medium">{% if profile.age %}{{ profile.age }} anos{% else %}—{% endif %}</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-white/60">Altura</dt>
+                        <dd class="text-base font-medium">{% if profile.height_cm %}{{ profile.height_cm }} cm{% else %}—{% endif %}</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-white/60">Lembretes por</dt>
+                        <dd class="text-base font-medium">{{ profile.get_notification_channel_display }}</dd>
+                    </div>
+                </dl>
+                <a href="{% url 'accounts:profile' %}" class="w-full bg-white text-[#1a1a1a] py-3 rounded-full font-medium text-center block hover:bg-[#f5f4f0] transition-colors">Ver perfil</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

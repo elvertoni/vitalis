@@ -1,0 +1,12 @@
+{# Shared empty state for list pages. Expects: icon, title, subtitle, create_url, create_label. #}
+<div class="bg-[#f5f4f0] rounded-[2rem] p-16 flex flex-col items-center text-center border border-dashed border-[#dcdacd]">
+    <div class="w-14 h-14 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-white">
+        <i data-lucide="{{ icon }}" class="w-6 h-6 stroke-[1.5] text-[#5d674f]"></i>
+    </div>
+    <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">{{ title }}</h2>
+    <p class="text-base text-[#5c5c5a] max-w-sm mb-8">{{ subtitle }}</p>
+    <a href="{% url create_url %}" class="inline-flex bg-[#5d674f] text-white px-8 py-4 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+        <span class="text-base font-normal tracking-wide">{{ create_label }}</span>
+        <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+    </a>
+</div>

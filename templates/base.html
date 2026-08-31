@@ -1,0 +1,138 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vitalis{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind = { config: { theme: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="bg-[#f5f4f0] text-[#1a1a1a] antialiased selection:bg-[#5d674f] selection:text-white font-sans max-w-full overflow-x-hidden">
+
+{% block nav %}
+<nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#f5f4f0]/80 backdrop-blur-md border-b border-transparent" id="navbar">
+    <div class="max-w-screen-2xl mx-auto px-6 md:px-12 h-24 flex items-center justify-between">
+        <a href="{% url 'core:landing' %}" class="flex items-center gap-3 z-50">
+            {% include 'partials/_logo.html' %}
+            <div class="flex flex-col">
+                <span class="text-base font-medium tracking-widest uppercase leading-none">Vitalis</span>
+                <span class="text-[10px] tracking-widest text-[#5c5c5a] uppercase mt-1">Saúde · Treino · Nutrição</span>
+            </div>
+        </a>
+        <div class="hidden lg:flex items-center gap-6">
+            {% block nav_links %}{% endblock %}
+        </div>
+        <div class="hidden lg:flex items-center gap-4">
+            {% block nav_actions %}
+                {% if user.is_authenticated %}
+                    <a href="{% url 'core:dashboard' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Painel</a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Entrar</a>
+                    <a href="{% url 'accounts:signup' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Começar</a>
+                {% endif %}
+            {% endblock %}
+        </div>
+        <button class="lg:hidden z-50 p-2" id="mobile-menu-btn" aria-label="Abrir navegação">
+            <i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>
+        </button>
+    </div>
+    <div id="mobile-menu" class="fixed inset-0 bg-[#f5f4f0] z-40 flex flex-col justify-center items-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300">
+        {% block mobile_links %}
+            {% if user.is_authenticated %}
+                <a href="{% url 'core:dashboard' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Painel</a>
+                <a href="{% url 'accounts:profile' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Perfil</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Entrar</a>
+                <a href="{% url 'accounts:signup' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Começar</a>
+            {% endif %}
+        {% endblock %}
+    </div>
+</nav>
+{% endblock %}
+
+{% if messages %}
+<div class="fixed top-28 right-6 z-[60] flex flex-col gap-3 w-[min(24rem,90vw)]" id="messages">
+    {% for message in messages %}
+    <div class="bg-white border border-[#dcdacd] rounded-[1.5rem] shadow-sm px-6 py-4 flex items-start gap-3">
+        <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check{% endif %}" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5 text-[#5d674f]"></i>
+        <span class="text-base text-[#1a1a1a]">{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+<footer class="bg-[#f5f4f0] pt-24 pb-12 border-t border-[#dcdacd]">
+    <div class="max-w-screen-2xl mx-auto px-6 md:px-12">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <span class="text-sm text-[#5c5c5a]">Vitalis · Sua vida em um só lugar</span>
+            <span class="text-sm text-[#5c5c5a]">Não substitui acompanhamento profissional de saúde.</span>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+<script>
+    lucide.createIcons();
+
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+    let isMenuOpen = false;
+
+    function toggleMenu() {
+        isMenuOpen = !isMenuOpen;
+        if (isMenuOpen) {
+            mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
+            mobileMenu.classList.add('opacity-100', 'pointer-events-auto');
+            menuBtn.innerHTML = '<i data-lucide="x" class="w-6 h-6 stroke-[1.5]"></i>';
+            document.body.classList.add('overflow-hidden');
+        } else {
+            mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+            mobileMenu.classList.remove('opacity-100', 'pointer-events-auto');
+            menuBtn.innerHTML = '<i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>';
+            document.body.classList.remove('overflow-hidden');
+        }
+        lucide.createIcons();
+    }
+
+    if (menuBtn) {
+        menuBtn.addEventListener('click', toggleMenu);
+        mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
+    }
+
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('shadow-sm', 'border-[#dcdacd]/50');
+                navbar.classList.remove('border-transparent');
+            } else {
+                navbar.classList.remove('shadow-sm', 'border-[#dcdacd]/50');
+                navbar.classList.add('border-transparent');
+            }
+        });
+    }
+
+    const messagesBox = document.getElementById('messages');
+    if (messagesBox) {
+        setTimeout(() => {
+            messagesBox.classList.add('opacity-0');
+            messagesBox.style.transition = 'opacity 500ms';
+        }, 4000);
+    }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,68 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Saúde · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-2xl mx-auto px-6 md:px-12">
+
+        <div class="mb-16">
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Saúde</span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">
+                Seu histórico clínico.
+            </h1>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
+            <a href="{% url 'saude:doctor_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow group">
+                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="stethoscope" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ doctor_count }}</span>
+                <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Médicos</span>
+            </a>
+            <a href="{% url 'saude:treatment_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow group">
+                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="activity" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ treatment_count }}</span>
+                <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Tratamentos ativos</span>
+            </a>
+            <a href="{% url 'saude:exam_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow group">
+                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="flask-conical" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ exam_count }}</span>
+                <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Exames</span>
+            </a>
+            <a href="{% url 'saude:appointment_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow group">
+                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="calendar" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ appointment_count }}</span>
+                <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Consultas</span>
+            </a>
+            <a href="{% url 'saude:medication_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow group">
+                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="pill" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
+                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ medication_count }}</span>
+                <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Em uso</span>
+            </a>
+        </div>
+
+        <div class="bg-[#e8eae4] rounded-[2rem] p-8">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Próximos retornos</h2>
+                <a href="{% url 'saude:appointment_list' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver consultas</a>
+            </div>
+            {% if upcoming %}
+            <div class="flex flex-col divide-y divide-[#dcdacd]">
+                {% for appointment in upcoming %}
+                <a href="{{ appointment.get_absolute_url }}" class="flex items-center justify-between py-4 hover:opacity-70 transition-opacity">
+                    <div>
+                        <span class="text-base font-medium text-[#1a1a1a] block">{{ appointment.doctor }}</span>
+                        <span class="text-sm text-[#5c5c5a]">{{ appointment.reason|default:'Retorno' }}</span>
+                    </div>
+                    <span class="text-base font-medium text-[#1a1a1a]">{{ appointment.next_return_date|date:'d/m/Y' }}</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-base text-[#5c5c5a]">Nenhum retorno marcado nos próximos 60 dias.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{# Single form field rendered with the Soluna underlined input style. #}
+<div class="mb-8">
+    <label for="{{ field.id_for_label }}" class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-3">
+        {{ field.label }}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+        <p class="text-sm text-[#5c5c5a] mt-2">{{ field.help_text }}</p>
+    {% endif %}
+    {% for error in field.errors %}
+        <p class="text-sm text-[#5d674f] mt-2 flex items-center gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 stroke-[1.5] shrink-0"></i>{{ error }}
+        </p>
+    {% endfor %}
+</div>

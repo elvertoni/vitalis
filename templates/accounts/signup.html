@@ -1,0 +1,33 @@
+{% extends 'accounts/base_auth.html' %}
+
+{% block title %}Criar conta · Vitalis{% endblock %}
+{% block auth_title %}Comece<br>por você.{% endblock %}
+{% block auth_subtitle %}Saúde, treino e nutrição num só lugar. Leva menos de um minuto.{% endblock %}
+
+{% block auth_body %}
+<form method="post" class="max-w-md">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="bg-[#f2ece5] rounded-[1.5rem] px-6 py-4 mb-8 flex items-start gap-3">
+        <i data-lucide="alert-circle" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5 text-[#5d674f]"></i>
+        <div class="text-base text-[#1a1a1a]">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% for field in form %}{% include 'partials/_field.html' %}{% endfor %}
+
+    <button type="submit" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+        <span class="text-base font-normal tracking-wide">Criar conta</span>
+        <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+    </button>
+
+    <div class="mt-10 pt-8 border-t border-[#dcdacd]">
+        <a href="{% url 'accounts:login' %}" class="text-base font-medium text-[#1a1a1a] hover:text-[#5d674f] transition-colors inline-flex items-center gap-2">
+            Já tenho conta <i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5]"></i>
+        </a>
+    </div>
+</form>
+{% endblock %}

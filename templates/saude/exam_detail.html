@@ -1,0 +1,63 @@
+{% extends 'app_base.html' %}
+
+{% block title %}{{ exam.name }} · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16">
+            <div>
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Exame</span>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1] mb-2">{{ exam.name }}</h1>
+                <p class="text-lg text-[#5c5c5a]">{{ exam.doctor|default:'Sem solicitante' }}{% if exam.treatment %} · {{ exam.treatment }}{% endif %}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'saude:exam_update' exam.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
+                <a href="{% url 'saude:exam_delete' exam.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-8">Detalhes</h2>
+                <dl class="space-y-5">
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Situação</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ exam.get_status_display }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Solicitado em</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ exam.requested_date|date:'d/m/Y' }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Agendado para</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ exam.scheduled_date|date:'d/m/Y'|default:'—' }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-[#5c5c5a]">Realizado em</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ exam.done_date|date:'d/m/Y'|default:'—' }}</dd>
+                    </div>
+                </dl>
+
+                {% if exam.attachment %}
+                <a href="{% url 'saude:exam_attachment' exam.pk %}" class="mt-8 inline-flex items-center gap-3 bg-[#f5f4f0] rounded-full px-6 py-3 hover:bg-[#e8eae4] transition-colors">
+                    <i data-lucide="paperclip" class="w-4 h-4 stroke-[1.5] text-[#5d674f]"></i>
+                    <span class="text-base font-medium text-[#1a1a1a]">Abrir laudo</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="bg-[#e8eae4] rounded-[2rem] p-8">
+                <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-6">Resumo do resultado</h2>
+                {% if exam.result_summary %}
+                <p class="text-base text-[#1a1a1a] whitespace-pre-line leading-relaxed">{{ exam.result_summary }}</p>
+                {% else %}
+                <p class="text-base text-[#5c5c5a]">Nenhum resumo registrado ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soluna — Design System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind = { config: { theme: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-[#f5f4f0] text-[#1a1a1a] antialiased selection:bg-[#5d674f] selection:text-white font-sans max-w-full overflow-x-hidden">
+
+    <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#f5f4f0]/80 backdrop-blur-md border-b border-transparent" id="navbar">
+        <div class="max-w-screen-2xl mx-auto px-6 md:px-12 h-24 flex items-center justify-between">
+            <a href="#0" class="flex items-center gap-3 z-50">
+                <div class="relative w-8 h-8">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full text-[#1a1a1a]">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                        <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"></path>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-base font-medium tracking-widest uppercase leading-none">Soluna</span>
+                    <span class="text-[10px] tracking-widest text-[#5c5c5a] uppercase mt-1">Design System</span>
+                </div>
+            </a>
+            <div class="hidden lg:flex items-center gap-6">
+                <a href="#0" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Hero</a>
+                <a href="#1" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Tipografia</a>
+                <a href="#2" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Cores</a>
+                <a href="#3" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Componentes</a>
+                <a href="#4" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Layout</a>
+                <a href="#5" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Motion</a>
+                <a href="#6" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Ícones</a>
+            </div>
+            <button class="lg:hidden z-50 p-2" id="mobile-menu-btn" aria-label="Abrir navegação">
+                <i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="fixed inset-0 bg-[#f5f4f0] z-40 flex flex-col justify-center items-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300">
+            <a href="#0" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Hero</a>
+            <a href="#1" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Tipografia</a>
+            <a href="#2" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Cores</a>
+            <a href="#3" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Componentes</a>
+            <a href="#4" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Layout</a>
+            <a href="#5" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Motion</a>
+            <a href="#6" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Ícones</a>
+        </div>
+    </nav>
+
+    <main>
+        <section id="0" class="relative min-h-screen pt-32 lg:pt-40 pb-0 overflow-hidden flex flex-col justify-between">
+            <div class="max-w-screen-2xl mx-auto px-6 md:px-12 w-full grid lg:grid-cols-12 gap-12 lg:gap-0 relative z-10 flex-grow">
+                <div class="lg:col-span-5 flex flex-col justify-center relative z-20 pb-24 lg:pb-32 mt-12 lg:mt-0">
+                    <h1 class="text-6xl md:text-7xl lg:text-[5.5rem] leading-[1.05] tracking-tighter font-medium text-[#1a1a1a] mb-8">
+                        See.<br>Reuse.<br>Build Better.
+                    </h1>
+                    <div class="pl-6 border-l-[1.5px] border-[#dcdacd] mb-12">
+                        <p class="text-lg md:text-xl text-[#5c5c5a] font-normal leading-relaxed max-w-md">
+                            Um sistema vivo para conhecer, combinar e aplicar cada padrão da experiência Soluna.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="#1" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                            <span class="text-base font-normal tracking-wide">Explorar Sistema</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="lg:col-span-7 relative min-h-[500px] lg:min-h-full w-full lg:h-[85vh]">
+                    <div class="absolute top-[-5%] lg:top-[-10%] right-[-10%] lg:right-[-15%] w-[120%] lg:w-[110%] aspect-square rounded-full overflow-hidden z-0">
+                        <img src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=2070&auto=format&fit=crop" alt="Mulher praticando yoga" class="w-full h-full object-cover object-[60%_30%]">
+                        <div class="absolute inset-0 bg-black/5 mix-blend-overlay"></div>
+                    </div>
+                    <div class="absolute top-0 lg:top-[15%] left-[20%] lg:left-[10%] bg-[#f2ece5] rounded-full w-36 h-36 flex flex-col items-center justify-center p-6 text-center shadow-sm z-20">
+                        <i data-lucide="asterisk" class="w-5 h-5 stroke-[1] mb-2 text-[#5d674f]"></i>
+                        <span class="text-[9px] tracking-[0.2em] font-medium uppercase text-[#1a1a1a] leading-tight">Sistema<br>Visual Vivo<br>Para Criar</span>
+                    </div>
+                    <div class="absolute top-[40%] lg:top-[50%] left-[-5%] lg:left-[-10%] bg-[#5d674f] rounded-full w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center z-20 shadow-md">
+                        <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full animate-[spin_25s_linear_infinite] p-2">
+                            <path id="curve" d="M 50, 50 m -42, 0 a 42,42 0 1,1 84,0 a 42,42 0 1,1 -84,0" fill="transparent"></path>
+                            <text class="text-[7.5px] fill-white/80 font-medium tracking-[0.25em] uppercase">
+                                <textPath href="#curve" startOffset="0">Tipografia • Cores • Componentes • Layout • Motion •</textPath>
+                            </text>
+                        </svg>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-1 border-b-[1.5px] border-white/80 mb-2"></div>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-8 h-8 text-white">
+                                <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+                                <path d="M16 12a4 4 0 1 1-8 0"></path>
+                                <path d="M4 22h16"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="hidden lg:flex absolute bottom-[15%] right-[5%] bg-gradient-to-br from-[#f2ece5] to-[#f5f4f0] rounded-t-full rounded-bl-full rounded-br-sm w-40 h-40 flex-col items-center justify-center text-center p-6 shadow-sm z-20">
+                        <span class="text-sm font-medium text-[#1a1a1a] mb-2">Começando?</span>
+                        <p class="text-xs text-[#5c5c5a] mb-3">Navegue pelos fundamentos</p>
+                        <i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5] text-[#1a1a1a]"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="relative w-full z-20 mt-auto">
+                <div class="bg-[#e8eae4] w-[95%] md:w-[85%] lg:w-[65%] rounded-tr-[80px] lg:rounded-tr-[120px] pt-12 pb-10 px-6 md:px-12 pr-16 lg:pr-32">
+                    <div class="max-w-xl grid grid-cols-3 gap-6 lg:gap-12">
+                        <div class="flex flex-col">
+                            <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-4 bg-white/50"><i data-lucide="type" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i></div>
+                            <span class="text-3xl lg:text-4xl font-medium tracking-tight text-[#1a1a1a] mb-1">10</span>
+                            <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Estilos de Texto</span>
+                        </div>
+                        <div class="flex flex-col relative before:content-[''] before:absolute before:left-[-1.5rem] before:top-0 before:h-full before:w-[1px] before:bg-[#dcdacd]/50">
+                            <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-4 bg-white/50"><i data-lucide="palette" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i></div>
+                            <span class="text-3xl lg:text-4xl font-medium tracking-tight text-[#1a1a1a] mb-1">07</span>
+                            <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Cores Essenciais</span>
+                        </div>
+                        <div class="flex flex-col relative before:content-[''] before:absolute before:left-[-1.5rem] before:top-0 before:h-full before:w-[1px] before:bg-[#dcdacd]/50">
+                            <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-4 bg-white/50"><i data-lucide="sparkles" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i></div>
+                            <span class="text-3xl lg:text-4xl font-medium tracking-tight text-[#1a1a1a] mb-1">01</span>
+                            <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a]">Linguagem Coesa</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="1" class="py-32 bg-white border-t border-[#dcdacd]">
+            <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+                <div class="mb-16">
+                    <h2 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] mb-4">Tipografia</h2>
+                    <p class="text-lg text-[#5c5c5a] max-w-xl">Inter sustenta uma escala direta, leve e altamente legível.</p>
+                </div>
+                <div class="flex flex-col">
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Heading 1</span><h1 class="text-6xl md:text-7xl lg:text-[5.5rem] leading-[1.05] tracking-tighter font-medium text-[#1a1a1a] md:col-span-8">Move. Breathe.</h1><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">88px / 92.4px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Heading 2</span><h2 class="text-4xl md:text-5xl lg:text-6xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1] md:col-span-8">Rooted in tradition.</h2><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">60px / 66px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Heading 3</span><h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] md:col-span-8">Vinyasa Flow</h3><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">24px / 32px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Heading 4</span><h4 class="text-xl tracking-tight font-medium text-[#1a1a1a] md:col-span-8">Sunrise Vinyasa</h4><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">20px / 28px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Bold M</span><span class="text-base font-medium text-[#1a1a1a] md:col-span-8">Explore Class</span><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">16px / 24px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Bold S</span><span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] md:col-span-8">Our Philosophy</span><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">14px / 20px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Paragraph</span><p class="text-lg md:text-xl text-[#5c5c5a] font-normal leading-relaxed md:col-span-8">A serene space to flow, grow and reconnect. Your practice, elevated.</p><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">20px / 32.5px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Regular L</span><span class="text-lg text-[#5c5c5a] font-normal md:col-span-8">Choose the plan that fits your practice.</span><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">18px / 28px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 border-b border-[#dcdacd] items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Regular M</span><span class="text-base text-[#5c5c5a] font-normal md:col-span-8">Movement, mindfulness and community.</span><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">16px / 24px</span></div>
+                    <div class="grid md:grid-cols-12 gap-6 py-8 items-center"><span class="text-sm font-medium text-[#5c5c5a] md:col-span-2">Regular S</span><span class="text-sm text-[#5c5c5a] md:col-span-8">60 min • All Levels</span><span class="text-sm text-[#5c5c5a] md:col-span-2 md:text-center">14px / 20px</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="2" class="py-32 bg-[#f5f4f0]">
+            <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+                <div class="mb-16"><h2 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] mb-4">Cores e Superfícies</h2><p class="text-lg text-[#5c5c5a] max-w-xl">Uma paleta natural alterna base, contraste e acolhimento.</p></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                    <div class="rounded-[2rem] overflow-hidden border border-[#dcdacd]"><div class="h-40 bg-[#f5f4f0]"></div><div class="p-6 bg-white"><h3 class="text-xl font-medium mb-2">Página · #F5F4F0</h3><p class="text-sm text-[#5c5c5a]">Base marfim e navegação.</p></div></div>
+                    <div class="rounded-[2rem] overflow-hidden border border-[#dcdacd]"><div class="h-40 bg-white"></div><div class="p-6 bg-white border-t border-[#dcdacd]"><h3 class="text-xl font-medium mb-2">Seção · #FFFFFF</h3><p class="text-sm text-[#5c5c5a]">Respiro e conteúdo principal.</p></div></div>
+                    <div class="rounded-[2rem] overflow-hidden"><div class="h-40 bg-[#e8eae4]"></div><div class="p-6 bg-white"><h3 class="text-xl font-medium mb-2">Superfície · #E8EAE4</h3><p class="text-sm text-[#5c5c5a]">Stats, CTA e controles.</p></div></div>
+                    <div class="rounded-[2rem] overflow-hidden"><div class="h-40 bg-[#5d674f]"></div><div class="p-6 bg-white"><h3 class="text-xl font-medium mb-2">Acento · #5D674F</h3><p class="text-sm text-[#5c5c5a]">Ações e superfícies de destaque.</p></div></div>
+                    <div class="rounded-[2rem] overflow-hidden"><div class="h-40 bg-[#1a1a1a]"></div><div class="p-6 bg-white"><h3 class="text-xl font-medium mb-2">Ink · #1A1A1A</h3><p class="text-sm text-[#5c5c5a]">Texto e cartões escuros.</p></div></div>
+                    <div class="rounded-[2rem] overflow-hidden border border-[#dcdacd]"><div class="h-40 bg-[#f2ece5]"></div><div class="p-6 bg-white"><h3 class="text-xl font-medium mb-2">Warm · #F2ECE5</h3><p class="text-sm text-[#5c5c5a]">Badges e detalhes suaves.</p></div></div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="p-8 bg-white rounded-[2rem] border border-[#dcdacd]"><div class="h-24 bg-gradient-to-br from-[#f2ece5] to-[#f5f4f0] rounded-[1.5rem] mb-6"></div><h3 class="text-xl font-medium mb-2">Gradiente suave</h3><p class="text-base text-[#5c5c5a]">Badges e superfícies ornamentais.</p></div>
+                    <div class="p-8 bg-[#f5f4f0]/80 backdrop-blur-md rounded-[2rem] border border-[#dcdacd]/50"><h3 class="text-xl font-medium mb-2">Glass / Blur</h3><p class="text-base text-[#5c5c5a]">Navegação fixa: 80% de opacidade e blur de 12px.</p></div>
+                    <div class="p-8 bg-white rounded-[2rem] shadow-2xl"><h3 class="text-xl font-medium mb-2">Elevação</h3><p class="text-base text-[#5c5c5a]">Sombra forte reservada ao plano em destaque.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="3" class="py-32 bg-white border-t border-[#dcdacd]">
+            <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+                <div class="mb-16"><h2 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] mb-4">Componentes de UI</h2><p class="text-lg text-[#5c5c5a] max-w-xl">Estados são demonstrados pelos mesmos seletores interativos da referência.</p></div>
+
+                <div class="mb-20">
+                    <h3 class="text-2xl tracking-tight font-medium mb-8">Botões</h3>
+                    <div class="grid md:grid-cols-4 gap-8 items-start">
+                        <div><span class="text-sm text-[#5c5c5a] block mb-4">Default / Hover</span><button class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group"><span class="text-base font-normal tracking-wide">Explore Classes</span><i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i></button></div>
+                        <div><span class="text-sm text-[#5c5c5a] block mb-4">Outline / Hover</span><button class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Book</button></div>
+                        <div><span class="text-sm text-[#5c5c5a] block mb-4">Active</span><button class="px-6 py-2 rounded-full bg-white text-[#1a1a1a] font-medium text-sm shadow-sm">Today</button></div>
+                        <div><span class="text-sm text-[#5c5c5a] block mb-4">Disabled</span><button class="border border-[#dcdacd] text-[#a0a09e] px-6 py-2 rounded-full text-sm font-medium cursor-not-allowed" disabled>Waitlist</button></div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-16 mb-20">
+                    <div>
+                        <h3 class="text-2xl tracking-tight font-medium mb-8">Input · Default / Focus</h3>
+                        <form class="relative flex items-center">
+                            <input type="email" placeholder="Email address" class="w-full bg-transparent border-b border-[#dcdacd] py-2 text-base text-[#1a1a1a] placeholder:text-[#a0a09e] focus:outline-none focus:border-[#1a1a1a] transition-colors pb-3">
+                            <button type="submit" class="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-[#1a1a1a] hover:text-[#5d674f] transition-colors" aria-label="Enviar"><i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5]"></i></button>
+                        </form>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl tracking-tight font-medium mb-8">Tabs · Active / Hover</h3>
+                        <div class="inline-flex bg-[#f5f4f0] p-1 rounded-full">
+                            <button class="px-6 py-2 rounded-full bg-white text-[#1a1a1a] font-medium text-sm shadow-sm">Today</button>
+                            <button class="px-6 py-2 rounded-full text-[#5c5c5a] font-medium text-sm hover:text-[#1a1a1a] transition-colors">Tomorrow</button>
+                            <button class="px-6 py-2 rounded-full text-[#5c5c5a] font-medium text-sm hover:text-[#1a1a1a] transition-colors">Full Week</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-20">
+                    <div>
+                        <h3 class="text-2xl tracking-tight font-medium mb-8">Class Card</h3>
+                        <div class="bg-[#f5f4f0] rounded-[2rem] p-4 group cursor-pointer hover:shadow-xl transition-shadow duration-300">
+                            <div class="relative w-full aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-6"><img src="https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?q=80&w=2070&auto=format&fit=crop" alt="Yin Yoga" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"><div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium uppercase tracking-widest text-[#1a1a1a]">Restorative</div></div>
+                            <div class="px-2 pb-4"><h3 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Yin & Restore</h3><p class="text-base text-[#5c5c5a] mb-6 line-clamp-2">Slow-paced practice with postures held for longer periods.</p><div class="flex items-center text-[#5d674f] font-medium text-sm group-hover:gap-2 transition-all">Explore Class <i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5] ml-1"></i></div></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl tracking-tight font-medium mb-8">Pricing Card</h3>
+                        <div class="bg-[#1a1a1a] text-white rounded-[2rem] p-8 flex flex-col shadow-2xl relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-[#5d674f] text-[10px] tracking-widest uppercase font-medium px-4 py-1 rounded-bl-xl">Most Popular</div>
+                            <h3 class="text-xl font-medium mb-2 text-white/90">Unlimited Monthly</h3>
+                            <div class="flex items-baseline gap-1 mb-6"><span class="text-5xl tracking-tight font-medium">$150</span><span class="text-sm text-white/60">/mo</span></div>
+                            <ul class="space-y-4 mb-8"><li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Unlimited classes</li><li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> 2 guest passes/mo</li><li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Free premium mat storage</li></ul>
+                            <button class="w-full bg-white text-[#1a1a1a] py-3 rounded-full font-medium hover:bg-[#f5f4f0] transition-colors">Subscribe Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl tracking-tight font-medium mb-8">Schedule Row</h3>
+                    <div class="group flex flex-col md:flex-row md:items-center justify-between py-6 border-b border-[#dcdacd] hover:bg-[#f5f4f0]/50 transition-colors px-4 -mx-4 rounded-xl cursor-pointer">
+                        <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-16 lg:w-1/2"><span class="text-xl font-medium text-[#1a1a1a] w-24">07:00 AM</span><div><h4 class="text-xl tracking-tight font-medium text-[#1a1a1a]">Sunrise Vinyasa</h4><span class="text-sm text-[#5c5c5a]">60 min • All Levels</span></div></div>
+                        <div class="flex items-center justify-between mt-4 md:mt-0 lg:w-1/2"><div class="flex items-center gap-3"><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop" alt="Sarah" class="w-10 h-10 rounded-full object-cover grayscale"><span class="text-base text-[#1a1a1a] font-medium">Sarah J.</span></div><button class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Book</button></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="4" class="py-32 bg-[#f5f4f0]">
+            <div class="max-w-screen-2xl mx-auto px-6 md:px-12">
+                <div class="mb-16"><h2 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] mb-4">Layout e Espaçamento</h2><p class="text-lg text-[#5c5c5a] max-w-xl">Containers de 1280–1536px, padding lateral de 24–48px e seções de 96–128px.</p></div>
+                <div class="space-y-8">
+                    <div class="bg-white rounded-[2rem] p-8"><div class="flex items-center justify-between mb-8"><h3 class="text-2xl tracking-tight font-medium">Hero · 5 / 7 colunas</h3><span class="text-sm text-[#5c5c5a]">max-w-screen-2xl · grid-cols-12</span></div><div class="grid lg:grid-cols-12 gap-12 lg:gap-0"><div class="lg:col-span-5 bg-[#e8eae4] rounded-[1.5rem] p-8"><h4 class="text-xl font-medium">Conteúdo</h4><p class="text-base text-[#5c5c5a] mt-4">5 colunas para título, apoio e CTA.</p></div><div class="lg:col-span-7 bg-[#5d674f] rounded-[1.5rem] p-8 text-white"><h4 class="text-xl font-medium">Imagem</h4><p class="text-base text-white/80 mt-4">7 colunas para composição visual.</p></div></div></div>
+                    <div class="bg-white rounded-[2rem] p-8"><div class="flex items-center justify-between mb-8"><h3 class="text-2xl tracking-tight font-medium">Grid · 3 colunas</h3><span class="text-sm text-[#5c5c5a]">gap-8 · responsivo</span></div><div class="grid md:grid-cols-3 gap-8"><div class="bg-[#f5f4f0] rounded-[1.5rem] p-8"><span class="text-xl font-medium">01</span></div><div class="bg-[#e8eae4] rounded-[1.5rem] p-8"><span class="text-xl font-medium">02</span></div><div class="bg-[#f2ece5] rounded-[1.5rem] p-8"><span class="text-xl font-medium">03</span></div></div></div>
+                    <div class="bg-white rounded-[2rem] p-8"><div class="flex items-center justify-between mb-8"><h3 class="text-2xl tracking-tight font-medium">Split · 1 / 1</h3><span class="text-sm text-[#5c5c5a]">gap-16 / gap-24</span></div><div class="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center"><img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1000&auto=format&fit=crop" alt="Studio" class="w-full aspect-[4/3] object-cover rounded-3xl"><div><h3 class="text-4xl tracking-tight font-medium mb-6">Imagem e narrativa</h3><p class="text-lg text-[#5c5c5a] leading-relaxed">A composição alterna mídia de proporção forte com blocos editoriais de leitura confortável.</p></div></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="5" class="py-32 bg-white border-t border-[#dcdacd]">
+            <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+                <div class="mb-16"><h2 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] mb-4">Motion e Interação</h2><p class="text-lg text-[#5c5c5a] max-w-xl">A linguagem combina rotação contínua, zoom de mídia, revelação por opacidade e microdeslocamento.</p></div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="bg-[#f5f4f0] rounded-[2rem] p-8 flex flex-col items-center text-center"><div class="bg-[#5d674f] rounded-full w-40 h-40 flex items-center justify-center mb-8 shadow-md"><svg viewBox="0 0 100 100" class="w-full h-full animate-[spin_25s_linear_infinite] p-2"><path id="motion-curve" d="M 50, 50 m -42, 0 a 42,42 0 1,1 84,0 a 42,42 0 1,1 -84,0" fill="transparent"></path><text class="text-[7.5px] fill-white/80 font-medium tracking-[0.25em] uppercase"><textPath href="#motion-curve">Awaken • Elevate • Practice • Center •</textPath></text></svg></div><h3 class="text-xl font-medium mb-2">Spin</h3><p class="text-sm text-[#5c5c5a]">25s · linear · infinite</p></div>
+                    <div class="bg-[#f5f4f0] rounded-[2rem] p-4 group cursor-pointer overflow-hidden"><div class="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-6"><img src="https://images.unsplash.com/photo-1593164842264-854604db2260?q=80&w=1000&auto=format&fit=crop" alt="Motion zoom" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"><div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500"><span class="text-white text-lg tracking-widest uppercase font-medium">The Space</span></div></div><h3 class="text-xl font-medium px-2">Zoom + Reveal</h3><p class="text-sm text-[#5c5c5a] px-2 mt-2">1000ms / 500ms</p></div>
+                    <div class="bg-[#f5f4f0] rounded-[2rem] p-8 flex flex-col justify-center items-center"><button class="bg-[#1a1a1a] text-white px-10 py-5 rounded-full flex items-center gap-3 font-normal text-lg hover:bg-[#333] transition-colors group">Claim Offer <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i></button><h3 class="text-xl font-medium mt-8 mb-2">Button Motion</h3><p class="text-sm text-[#5c5c5a]">150ms · ease padrão</p></div>
+                    <div class="bg-[#f5f4f0] rounded-[2rem] p-8 flex flex-col items-center group cursor-pointer"><div class="w-40 h-40 rounded-full p-1 border border-transparent group-hover:border-[#5d674f] transition-colors mb-6"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop" alt="Teacher" class="w-full h-full object-cover rounded-full filter grayscale group-hover:grayscale-0 transition-all duration-500"></div><h3 class="text-xl font-medium mb-2">Filter Reveal</h3><p class="text-sm text-[#5c5c5a]">500ms · grayscale → color</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="6" class="py-32 bg-[#5d674f] text-white">
+            <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+                <div class="mb-16"><h2 class="text-4xl md:text-5xl tracking-tight font-medium mb-4">Ícones</h2><p class="text-lg text-white/80 max-w-xl">Lucide com stroke de 1–1.5px, dimensões de 16, 20 e 32px e cor herdada do contexto.</p></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+                    <div class="flex flex-col items-center text-center"><i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5] text-[#e8eae4] mb-6"></i><span class="text-base font-medium">16px</span></div>
+                    <div class="flex flex-col items-center text-center"><i data-lucide="heart" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] mb-6"></i><span class="text-base font-medium">20px</span></div>
+                    <div class="flex flex-col items-center text-center"><i data-lucide="sun" class="w-8 h-8 stroke-[1.5] text-[#e8eae4] mb-6"></i><span class="text-base font-medium">32px</span></div>
+                    <div class="flex flex-col items-center text-center"><i data-lucide="asterisk" class="w-8 h-8 stroke-[1] text-[#e8eae4] mb-6"></i><span class="text-base font-medium">Stroke 1px</span></div>
+                </div>
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-8 pt-12 border-t border-white/80">
+                    <div class="flex flex-col items-center gap-4"><i data-lucide="user" class="w-5 h-5 stroke-[1.5]"></i><span class="text-xs text-white/80">user</span></div>
+                    <div class="flex flex-col items-center gap-4"><i data-lucide="heart" class="w-5 h-5 stroke-[1.5]"></i><span class="text-xs text-white/80">heart</span></div>
+                    <div class="flex flex-col items-center gap-4"><i data-lucide="flower-2" class="w-5 h-5 stroke-[1.5]"></i><span class="text-xs text-white/80">flower-2</span></div>
+                    <div class="flex flex-col items-center gap-4"><i data-lucide="sun" class="w-5 h-5 stroke-[1.5]"></i><span class="text-xs text-white/80">sun</span></div>
+                    <div class="flex flex-col items-center gap-4"><i data-lucide="droplets" class="w-5 h-5 stroke-[1.5]"></i><span class="text-xs text-white/80">droplets</span></div>
+                    <div class="flex flex-col items-center gap-4"><i data-lucide="users" class="w-5 h-5 stroke-[1.5]"></i><span class="text-xs text-white/80">users</span></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-[#f5f4f0] pt-24 pb-12 border-t border-[#dcdacd]">
+        <div class="max-w-screen-2xl mx-auto px-6 md:px-12">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <span class="text-sm text-[#5c5c5a]">Soluna Design System</span>
+                <a href="#0" class="inline-flex items-center gap-2 text-base font-medium text-[#1a1a1a] hover:text-[#5d674f] transition-colors">Voltar ao topo <i data-lucide="arrow-up" class="w-4 h-4 stroke-[1.5]"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
+                mobileMenu.classList.add('opacity-100', 'pointer-events-auto');
+                menuBtn.innerHTML = '<i data-lucide="x" class="w-6 h-6 stroke-[1.5]"></i>';
+                document.body.classList.add('overflow-hidden');
+            } else {
+                mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+                mobileMenu.classList.remove('opacity-100', 'pointer-events-auto');
+                menuBtn.innerHTML = '<i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>';
+                document.body.classList.remove('overflow-hidden');
+            }
+            lucide.createIcons();
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
+
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('shadow-sm', 'border-[#dcdacd]/50');
+                navbar.classList.remove('border-transparent');
+            } else {
+                navbar.classList.remove('shadow-sm', 'border-[#dcdacd]/50');
+                navbar.classList.add('border-transparent');
+            }
+        });
+    </script>
+</body>
+</html>

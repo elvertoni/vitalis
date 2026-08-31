@@ -1,0 +1,29 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Editar conta · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+        <div class="max-w-xl">
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Conta</span>
+            <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1] mb-4">Dados de acesso</h1>
+            <div class="pl-6 border-l-[1.5px] border-[#dcdacd] mb-12">
+                <p class="text-lg text-[#5c5c5a] leading-relaxed">O e-mail aqui é o mesmo que você usa para entrar.</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}{% include 'partials/_field.html' %}{% endfor %}
+                <div class="flex items-center gap-4 mt-4">
+                    <button type="submit" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                        <span class="text-base font-normal tracking-wide">Salvar</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    <a href="{% url 'accounts:profile' %}" class="text-base text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
