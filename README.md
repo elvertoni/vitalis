@@ -34,7 +34,7 @@ Sem Docker, sem suíte de testes automatizados — decisão explícita do projet
 |---|---|---|
 | S1 | Fundação (`config`, `accounts`, `core`) | ✅ |
 | S2 | Saúde (`saude`) | ✅ |
-| S3 | Treino (`treino`) | — |
-| S4 | Nutrição (`nutricao`) | — |
-| S5 | Lembretes + Dashboard consolidado | parcial (painel de saúde já alimenta o dashboard) |
+| S3 | Treino (`treino`) | ✅ |
+| S4 | Nutrição (`nutricao`) | ✅ |
+| S5 | Lembretes + Dashboard consolidado | parcial (painéis de saúde, treino e nutrição já alimentam o dashboard) |
 | S6 | SaaS (`billing`) | — |

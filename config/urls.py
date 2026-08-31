@@ -8,6 +8,7 @@ urlpatterns = [
     path('conta/', include('accounts.urls')),
     path('saude/', include('saude.urls')),
     path('treino/', include('treino.urls')),
+    path('nutricao/', include('nutricao.urls')),
     path('', include('core.urls')),
 ]
 

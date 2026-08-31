@@ -104,6 +104,14 @@ class Profile(TimeStampedModel):
         choices=NotificationChannel.choices,
         default=NotificationChannel.EMAIL,
     )
+    target_weight_kg = models.DecimalField(
+        'peso-alvo (kg)',
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Linha de meta no gráfico de evolução de peso. Em branco, o gráfico mostra só o real.',
+    )
 
     class Meta:
         verbose_name = 'perfil'

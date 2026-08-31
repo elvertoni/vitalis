@@ -1,0 +1,17 @@
+{# Consumed-vs-target bar. Expects: label, unit, consumed (number), target (number or None). #}
+<div>
+    <div class="flex items-baseline justify-between mb-2">
+        <span class="text-sm font-medium tracking-widest uppercase text-[#5c5c5a]">{{ label }}</span>
+        <span class="text-base font-medium text-[#1a1a1a]">
+            {{ consumed|floatformat:0 }}{% if target %} / {{ target|floatformat:0 }}{% endif %} {{ unit }}
+        </span>
+    </div>
+    <div class="h-2 rounded-full bg-[#f5f4f0] overflow-hidden">
+        {% if target %}
+        <div class="h-full rounded-full {% if consumed > target %}bg-[#1a1a1a]{% else %}bg-[#5d674f]{% endif %}" style="width: {% widthratio consumed target 100 %}%; max-width: 100%;"></div>
+        {% else %}
+        <div class="h-full rounded-full bg-[#dcdacd] w-full"></div>
+        {% endif %}
+    </div>
+    {% if not target %}<span class="text-xs text-[#a0a09e] mt-1 block">Sem meta definida</span>{% endif %}
+</div>

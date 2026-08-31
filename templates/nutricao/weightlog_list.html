@@ -1,0 +1,108 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Peso corporal · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div>
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Nutrição</span>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">Peso corporal</h1>
+            </div>
+            <a href="{% url 'nutricao:weightlog_create' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group self-start">
+                <span class="text-base font-normal tracking-wide">Registrar peso</span>
+                <i data-lucide="plus" class="w-5 h-5 stroke-[1.5]"></i>
+            </a>
+        </div>
+
+        <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] mb-8">
+            <div class="flex items-center gap-3 mb-8">
+                <i data-lucide="trending-down" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Evolução</h2>
+                {% if not target_weight %}
+                <a href="{% url 'accounts:profile_edit' %}" class="ml-auto text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Definir peso-alvo</a>
+                {% endif %}
+            </div>
+            {% if chart_points %}
+            <div class="relative h-64">
+                <canvas id="weight-chart"></canvas>
+            </div>
+            {% else %}
+            <p class="text-base text-[#5c5c5a]">Registre seu peso para ver o gráfico de evolução.</p>
+            {% endif %}
+        </div>
+
+        {% if object_list %}
+        <div class="flex flex-col divide-y divide-[#dcdacd] bg-white rounded-[2rem] border border-[#dcdacd] px-4 md:px-8">
+            {% for entry in object_list %}
+            <div class="flex items-center justify-between py-4">
+                <div>
+                    <span class="text-base font-medium text-[#1a1a1a] block">{{ entry.date|date:'d/m/Y' }}</span>
+                    {% if entry.notes %}<span class="text-sm text-[#5c5c5a]">{{ entry.notes }}</span>{% endif %}
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-base font-medium text-[#1a1a1a]">{{ entry.weight_kg }} kg</span>
+                    <a href="{% url 'nutricao:weightlog_update' entry.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Editar</a>
+                    <form method="post" action="{% url 'nutricao:weightlog_delete' entry.pk %}" onsubmit="return confirm('Excluir este registro de peso?')">
+                        {% csrf_token %}
+                        <button type="submit" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Excluir</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% include 'partials/_pagination.html' %}
+        {% else %}
+        {% include 'partials/_empty_state.html' with icon='scale' title='Nenhum peso registrado' subtitle='Registre seu peso regularmente para acompanhar a evolução.' create_url='nutricao:weightlog_create' create_label='Registrar peso' %}
+        {% endif %}
+
+    </div>
+</section>
+
+{{ chart_points|json_script:'weight-data' }}
+{% endblock %}
+
+{% block scripts %}
+{% if chart_points %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+    const points = JSON.parse(document.getElementById('weight-data').textContent);
+    const target = {{ target_weight|default:'null' }};
+    const datasets = [{
+        label: 'Peso (kg)',
+        data: points.map(p => p.weight),
+        borderColor: '#5d674f',
+        backgroundColor: 'rgba(93, 103, 79, 0.12)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointBackgroundColor: '#5d674f',
+    }];
+    if (target) {
+        datasets.push({
+            label: 'Meta',
+            data: points.map(() => target),
+            borderColor: '#a0a09e',
+            borderDash: [6, 6],
+            pointRadius: 0,
+            fill: false,
+        });
+    }
+    new Chart(document.getElementById('weight-chart'), {
+        type: 'line',
+        data: { labels: points.map(p => p.date), datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: !!target, labels: { color: '#5c5c5a' } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#5c5c5a' } },
+                y: { grid: { color: '#dcdacd' }, ticks: { color: '#5c5c5a' } },
+            },
+        },
+    });
+</script>
+{% endif %}
+{% endblock %}

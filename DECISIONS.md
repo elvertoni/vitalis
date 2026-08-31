@@ -184,3 +184,61 @@ legado) e o que esta app não tem: `MuscleGroup`/`Exercise` são dados de uma pe
 geral daqui pra frente: **nunca `PROTECT` entre dois models que pertencem ao mesmo dono** —
 isso quebra a exclusão de conta (LGPD, Sprint 6) de um jeito que só aparece em teste de
 ponta a ponta, não em `manage.py check`.
+
+---
+
+## Sprint 4 — Nutrição
+
+### D-022 · Macros calculados sempre em runtime, nunca guardados em `MealItem`/`DailyLog`
+**Contexto:** o PRD (8.2) define o cálculo como `item.food.macros × quantity / portion_base`,
+mas não diz se o resultado é persistido.
+**Decisão:** `MealItem.macros` e `DailyLog.macros` são `@property`, recalculadas a cada
+acesso a partir de `Food` e `quantity_g`. Nada de `calories`/`protein_g` gravado na linha do
+item ou do registro.
+**Motivo:** `Food` é dado do próprio usuário (não catálogo global), editável a qualquer
+momento — se `MealItem` guardasse macro congelado, editar um alimento depois de já usado em
+três refeições deixaria os totais dessincronizados sem nenhum sinal de que isso aconteceu.
+Diferente de `saude.Resultado.faixa`, que **precisa** congelar (é laudo histórico: mudar o
+catálogo não pode reescrever o passado) — aqui é o oposto, o item aponta pro alimento vivo.
+
+### D-023 · `Profile.target_weight_kg` novo, para viabilizar a "linha de meta" do gráfico
+**Contexto:** o PRD (8.2) pede "gráfico temporal de `WeightLog` + linha de meta", mas nenhum
+model do PRD tem campo de peso-alvo — nem `WeightLog`, nem `Diet`, nem `Profile` original.
+**Decisão:** baixo impacto, decidido e registrado: campo novo `target_weight_kg` em
+`accounts.Profile` (mesma migração de perfil que já guarda altura, sexo, nascimento).
+Opcional — em branco, o gráfico mostra só a curva real, sem a linha tracejada.
+**Motivo:** meta de peso é dado da pessoa, não da dieta (ela pode trocar de dieta sem mudar
+onde quer chegar) nem de um registro pontual de peso — `Profile` é o único lugar que já reúne
+"dado biométrico estável da pessoa" (altura está lá pelo mesmo motivo).
+
+### D-024 · Sugestão de TMB/GET (Mifflin-St Jeor) implementada, mas nunca grava por cima da meta
+**Contexto:** PRD 8.2 marca como "(Opcional) cálculo de TMB/GET... para sugerir meta
+calórica".
+**Decisão:** `nutricao.models.estimate_daily_calories()` calcula BMR de Mifflin-St Jeor ×
+fator de atividade leve (1.375) × ajuste por objetivo da dieta (-15% emagrecimento / +15%
+ganho), usando `Profile` (nascimento, sexo, altura) + o `WeightLog` mais recente. Mostrado
+como texto informativo na página da dieta — `daily_calorie_target` continua um campo comum
+que a pessoa preenche e edita como quiser, a sugestão nunca sobrescreve.
+**Motivo:** é estimativa, não prescrição — a linha do README ("o sistema registra, não
+interpreta") vale aqui também. Retorna `None` sem quebrar nada quando faltam dados (perfil
+incompleto, nenhum peso registrado).
+
+### D-025 · Seed de tabela TACO (alimentos de referência) não implementado nesta sprint
+**Contexto:** PRD 8.1 sugere "pré-carregar referência tipo tabela TACO como seed opcional".
+**Decisão:** não implementado. `Food` funciona via CRUD normal — a pessoa cadastra os
+próprios alimentos, testado de ponta a ponta.
+**Motivo:** o próprio PRD marca como opcional. Importar a TACO direito (centenas de itens,
+valores por 100g conferidos) é trabalho de fonte de dados, não de código — melhor como
+`management command` dedicado quando houver um dataset confiável à mão, e assim não arrisca
+poluir o banco de cada usuário com um seed malfeito. Documentado aqui para não se perder.
+
+### D-026 · `DailyLog` sem `Meal` como pai, filtro por `?data=` em vez de paginação
+**Contexto:** o PRD já separa: `Meal`/`MealItem` são o *plano* (dieta), `DailyLog` é o que
+*aconteceu de fato* — independentes um do outro, `DailyLog.meal_name` é texto livre.
+**Decisão:** `DailyLogListView` não herda de `OwnerListView`/`ListView` — é uma `TemplateView`
+que lê `?data=YYYY-MM-DD` (hoje por padrão) e mostra o dia inteiro de uma vez, com os totais
+contra a dieta ativa logo ao lado.
+**Motivo:** um registro diário se lê por dia, não por página de 20 em 20 — paginação cortaria
+o almoço de terça no meio da lista e escantearia o comparativo com a meta, que é o motivo de
+a tela existir. Consistente com o padrão de `treino`: filtro nativo do Django (`?data=`, sem
+JS) em vez de reinventar seletor de data.

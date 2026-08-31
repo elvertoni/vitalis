@@ -40,6 +40,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'core/dashboard.html'
 
     def get_context_data(self, **kwargs):
+        from nutricao.models import Diet, daily_totals
         from saude.models import Appointment, Exam, Medication
         from treino.models import WorkoutRoutine, WorkoutSession, week_bounds
 
@@ -103,6 +104,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             .prefetch_related('days')
             .first()
         )
+
+        # ── Nutrição ──────────────────────────────────────────────────────
+        context['active_diet'] = Diet.objects.filter(user=user, is_active=True).first()
+        context['today_totals'] = daily_totals(user, today)
         return context
 
 

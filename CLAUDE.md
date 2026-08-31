@@ -40,7 +40,7 @@ core/        base models, mixins de isolamento, CBVs genéricas de dono, landing
 accounts/    User (login por e-mail), UserManager, Profile, signal, telas de auth
 saude/       médicos, tratamentos, exames, consultas, medicamentos   (Sprint 2 — pronta)
 treino/      grupos, exercícios, fichas, sessões                     (Sprint 3 — pronta)
-nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 4)
+nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 4 — pronta)
 lembretes/   central de lembretes + command agendado                 (Sprint 5)
 billing/     planos, assinatura, gateway                             (Sprint 6)
 ```
@@ -138,6 +138,15 @@ aplicadas pelo `StyledFormMixin`. Formulário novo herda dele.
 Botão primário: `rounded-full px-8 py-5`, ícone `arrow-right` que desliza no hover. Cartão:
 `rounded-[2rem]`. Container: `max-w-screen-xl` ou `2xl` com `px-6 md:px-12`. Seção: `py-32`.
 Tipografia Inter, peso máximo 600. Ícones Lucide com `stroke-[1.5]`.
+
+### Macro calculado, não guardado
+
+`nutricao.MealItem.macros` e `nutricao.DailyLog.macros` são `@property`, recalculadas de
+`Food` + `quantity_g` a cada leitura — nunca gravadas na linha. `Food` é dado do próprio
+usuário, editável a qualquer momento; congelar o macro deixaria totais antigos
+dessincronizados sem aviso. Regra geral: **congele um valor histórico só quando a fonte é
+externa e imutável por natureza** (laudo de exame, já em `saude`); calcule em runtime quando
+a fonte é um cadastro que o próprio usuário edita.
 
 ## LGPD
 

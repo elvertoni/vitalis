@@ -1,0 +1,44 @@
+{% extends 'app_base.html' %}
+
+{% block title %}{{ food.name }} · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-xl mx-auto px-6 md:px-12">
+
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16">
+            <div>
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Alimento</span>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">{{ food.name }}</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'nutricao:food_update' food.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
+                <a href="{% url 'nutricao:food_delete' food.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
+            <p class="text-sm text-[#5c5c5a] mb-8">Valores por {{ food.portion_base_g }}g</p>
+            <dl class="space-y-5">
+                <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                    <dt class="text-base text-[#5c5c5a]">Calorias</dt>
+                    <dd class="text-base font-medium text-[#1a1a1a]">{{ food.calories }} kcal</dd>
+                </div>
+                <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                    <dt class="text-base text-[#5c5c5a]">Proteína</dt>
+                    <dd class="text-base font-medium text-[#1a1a1a]">{{ food.protein_g }} g</dd>
+                </div>
+                <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                    <dt class="text-base text-[#5c5c5a]">Carboidrato</dt>
+                    <dd class="text-base font-medium text-[#1a1a1a]">{{ food.carbs_g }} g</dd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <dt class="text-base text-[#5c5c5a]">Gordura</dt>
+                    <dd class="text-base font-medium text-[#1a1a1a]">{{ food.fat_g }} g</dd>
+                </div>
+            </dl>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

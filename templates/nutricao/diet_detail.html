@@ -1,0 +1,120 @@
+{% extends 'app_base.html' %}
+
+{% block title %}{{ diet.name }} · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16">
+            <div>
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">{{ diet.get_goal_display }}{% if not diet.is_active %} · Inativa{% endif %}</span>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">{{ diet.name }}</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'nutricao:diet_update' diet.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
+                <a href="{% url 'nutricao:diet_delete' diet.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-8">Meta diária</h2>
+                {% if diet.daily_calorie_target or diet.protein_target_g or diet.carbs_target_g or diet.fat_target_g %}
+                <dl class="space-y-5">
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Calorias</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ diet.daily_calorie_target|default:'—' }} kcal</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Proteína</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ diet.protein_target_g|default:'—' }} g</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Carboidrato</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ diet.carbs_target_g|default:'—' }} g</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-[#5c5c5a]">Gordura</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ diet.fat_target_g|default:'—' }} g</dd>
+                    </div>
+                </dl>
+                {% else %}
+                <p class="text-base text-[#5c5c5a]">Nenhuma meta numérica definida ainda.</p>
+                {% endif %}
+
+                {% if suggested_calories %}
+                <div class="mt-8 pt-8 border-t border-[#dcdacd] flex items-start gap-3">
+                    <i data-lucide="lightbulb" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0 mt-0.5"></i>
+                    <p class="text-sm text-[#5c5c5a]">
+                        Sugestão a partir do seu perfil e último peso registrado: <strong class="text-[#1a1a1a]">{{ suggested_calories }} kcal/dia</strong> para {{ diet.get_goal_display|lower }}.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="bg-[#e8eae4] rounded-[2rem] p-8">
+                <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-6">Somado das refeições</h2>
+                {% with planned=diet.planned_macros %}
+                <dl class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-[#5c5c5a]">Calorias</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ planned.calories|floatformat:0 }} kcal</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-[#5c5c5a]">Proteína</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ planned.protein_g|floatformat:0 }} g</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-[#5c5c5a]">Carboidrato</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ planned.carbs_g|floatformat:0 }} g</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-base text-[#5c5c5a]">Gordura</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ planned.fat_g|floatformat:0 }} g</dd>
+                    </div>
+                </dl>
+                {% endwith %}
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Refeições</h2>
+            <a href="{% url 'nutricao:meal_create' diet.pk %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="plus" class="w-4 h-4 stroke-[1.5]"></i> Nova refeição
+            </a>
+        </div>
+
+        {% if diet.meals.all %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for meal in diet.meals.all %}
+            <a href="{{ meal.get_absolute_url }}" class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] hover:shadow-xl transition-shadow">
+                <h3 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-1">{{ meal.name }}</h3>
+                <p class="text-sm text-[#5c5c5a] mb-4">{% if meal.time %}{{ meal.time|time:'H:i' }} · {% endif %}{{ meal.macros.calories|floatformat:0 }} kcal</p>
+                <div class="flex flex-col gap-1">
+                    {% for item in meal.items.all|slice:':4' %}
+                    <span class="text-sm text-[#1a1a1a]">{{ item.food.name }} · {{ item.quantity_g }}g</span>
+                    {% empty %}
+                    <span class="text-sm text-[#a0a09e]">Nenhum item ainda</span>
+                    {% endfor %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-[#f5f4f0] rounded-[2rem] p-16 flex flex-col items-center text-center border border-dashed border-[#dcdacd]">
+            <div class="w-14 h-14 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-white">
+                <i data-lucide="utensils" class="w-6 h-6 stroke-[1.5] text-[#5d674f]"></i>
+            </div>
+            <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Nenhuma refeição ainda</h2>
+            <p class="text-base text-[#5c5c5a] max-w-sm mb-8">Adicione café da manhã, almoço, jantar e lanches para montar o cardápio.</p>
+            <a href="{% url 'nutricao:meal_create' diet.pk %}" class="inline-flex bg-[#5d674f] text-white px-8 py-4 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                <span class="text-base font-normal tracking-wide">Nova refeição</span>
+                <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

@@ -40,6 +40,15 @@
             <a href="{% url 'saude:medication_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
                 <i data-lucide="pill" class="w-4 h-4 stroke-[1.5]"></i> Novo medicamento
             </a>
+            <a href="{% url 'treino:session_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="dumbbell" class="w-4 h-4 stroke-[1.5]"></i> Registrar treino
+            </a>
+            <a href="{% url 'nutricao:dailylog_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="notebook-pen" class="w-4 h-4 stroke-[1.5]"></i> Registrar refeição
+            </a>
+            <a href="{% url 'nutricao:weightlog_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                <i data-lucide="scale" class="w-4 h-4 stroke-[1.5]"></i> Registrar peso
+            </a>
         </div>
 
         {# ── As três áreas ────────────────────────────────────────────────── #}
@@ -103,9 +112,17 @@
                     </div>
                     <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Nutrição</span>
                 </div>
-                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Dieta do dia</h2>
-                <p class="text-base text-[#5c5c5a] mb-6 flex-grow">Calorias e macros consumidos contra a meta do plano ativo.</p>
-                <span class="text-sm text-[#a0a09e]">Disponível na próxima entrega</span>
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Dieta do dia</h2>
+                <div class="mb-6 flex-grow">
+                    <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ today_totals.calories|floatformat:0 }}</span>
+                    <span class="text-sm text-[#5c5c5a]">kcal consumidas hoje{% if active_diet.daily_calorie_target %} de {{ active_diet.daily_calorie_target }}{% endif %}</span>
+                    {% if active_diet %}
+                    <p class="text-sm text-[#5c5c5a] mt-4">Plano ativo: {{ active_diet.name }}</p>
+                    {% else %}
+                    <p class="text-sm text-[#5c5c5a] mt-4">Sem dieta ativa</p>
+                    {% endif %}
+                </div>
+                <a href="{% url 'nutricao:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver nutrição</a>
             </div>
         </div>
 

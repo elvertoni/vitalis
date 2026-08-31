@@ -94,13 +94,14 @@ class ProfileForm(StyledFormMixin, forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['birth_date', 'sex', 'height_cm', 'phone', 'notification_channel']
+        fields = ['birth_date', 'sex', 'height_cm', 'target_weight_kg', 'phone', 'notification_channel']
         widgets = {'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['birth_date'].input_formats = ['%Y-%m-%d']
         self.fields['height_cm'].widget.attrs['placeholder'] = 'Ex.: 178'
+        self.fields['target_weight_kg'].widget.attrs['placeholder'] = 'Ex.: 78.5'
         self.fields['phone'].widget.attrs['placeholder'] = '(00) 00000-0000'
 
 

@@ -1,0 +1,54 @@
+{% extends 'app_base.html' %}
+
+{% block title %}{{ meal.name }} · {{ meal.diet.name }} · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-xl mx-auto px-6 md:px-12">
+
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16">
+            <div>
+                <a href="{{ meal.diet.get_absolute_url }}" class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4 hover:text-[#4a523f] transition-colors">{{ meal.diet.name }}</a>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">{{ meal.name }}</h1>
+                {% if meal.time %}<p class="text-lg text-[#5c5c5a] mt-2">{{ meal.time|time:'H:i' }}</p>{% endif %}
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'nutricao:meal_update' meal.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
+                <a href="{% url 'nutricao:meal_delete' meal.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Itens</h2>
+                <a href="{% url 'nutricao:meal_item_create' meal.pk %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 stroke-[1.5]"></i> Adicionar
+                </a>
+            </div>
+            {% if meal.items.all %}
+            <div class="flex flex-col divide-y divide-[#dcdacd] mb-6">
+                {% for item in meal.items.all %}
+                <div class="flex items-center justify-between py-4">
+                    <div>
+                        <a href="{{ item.food.get_absolute_url }}" class="text-base font-medium text-[#1a1a1a] hover:text-[#5d674f] transition-colors">{{ item.food.name }}</a>
+                        <span class="text-sm text-[#5c5c5a] block">{{ item.quantity_g }}g · {{ item.macros.calories|floatformat:0 }} kcal</span>
+                    </div>
+                    <form method="post" action="{% url 'nutricao:meal_item_delete' item.pk %}" onsubmit="return confirm('Remover {{ item.food.name|escapejs }} desta refeição?')">
+                        {% csrf_token %}
+                        <button type="submit" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Remover</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="pt-6 border-t border-[#dcdacd] flex items-center justify-between">
+                <span class="text-base font-medium text-[#1a1a1a]">Total da refeição</span>
+                <span class="text-base font-medium text-[#1a1a1a]">{{ meal.macros.calories|floatformat:0 }} kcal · {{ meal.macros.protein_g|floatformat:0 }}P {{ meal.macros.carbs_g|floatformat:0 }}C {{ meal.macros.fat_g|floatformat:0 }}G</span>
+            </div>
+            {% else %}
+            <p class="text-base text-[#5c5c5a]">Nenhum item nesta refeição ainda.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}
