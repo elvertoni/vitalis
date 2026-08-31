@@ -59,6 +59,13 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
     template_name = 'accounts/profile.html'
 
+    def get_context_data(self, **kwargs):
+        from billing.models import current_subscription
+
+        context = super().get_context_data(**kwargs)
+        context['subscription'] = current_subscription(self.request.user)
+        return context
+
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     form_class = ProfileForm

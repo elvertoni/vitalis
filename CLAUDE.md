@@ -42,7 +42,7 @@ saude/       médicos, tratamentos, exames, consultas, medicamentos   (Sprint 2 
 treino/      grupos, exercícios, fichas, sessões                     (Sprint 3 — pronta)
 nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 4 — pronta)
 lembretes/   central de lembretes + command agendado                 (Sprint 5 — pronta)
-billing/     planos, assinatura, gateway                             (Sprint 6)
+billing/     planos, assinatura, gateway                             (Sprint 6 — pronta)
 ```
 
 ### Isolamento de dados — requisito de segurança nº 1
@@ -166,6 +166,33 @@ uma lista de `Reminder(...)` não salvos, somada em `sync_reminders`, com `conte
 model de origem e `object_id` do registro. Rode `python manage.py send_due_reminders` pra
 disparar manualmente em dev — ele sincroniza todo mundo e envia (console, `EMAIL_BACKEND`
 atual) o que já venceu.
+
+## Billing: `Plan` é catálogo, `Subscription` é do dono
+
+`Plan` (Free/Premium, semeado por `billing/migrations/0002_seed_plans.py`) é o único model
+sem `OwnedModel` de todo o domínio — é público, igual pra todo mundo, sem login inclusive
+(aparece na landing). **Não** dê FK de dono a ele nem filtre por usuário pra lê-lo.
+`Subscription` é `OwnedModel` normal, uma linha aberta por vez por pessoa
+(`status in trial/active/past_due`), garantida por `UniqueConstraint` — **por usuário, não
+por usuário+plano**: trocar de plano exige fechar (`status = cancelled`) a assinatura aberta
+atual antes de abrir outra, sempre (D-035). Use `billing.models.current_subscription(user)` /
+`current_plan(user)`, nunca consulte `Subscription` direto pra descobrir "o plano de alguém".
+
+`Subscription.plan` é `on_delete=PROTECT` — e está certo assim. A regra de D-021 ("nunca
+`PROTECT` entre models do mesmo dono") não se aplica aqui: `Plan` não é do dono de ninguém.
+Antes de copiar `PROTECT` em qualquer FK nova, pergunte "os dois lados são do mesmo usuário?"
+— se sim, `CASCADE`; se um lado é catálogo compartilhado (como `Plan`), `PROTECT` é o certo.
+
+Gate de plano vive em `billing/gating.py` (`diet_limit_exceeded`, `auto_reminders_enabled`),
+importado pelas apps de domínio — nunca o contrário, `billing/models.py` não importa
+`nutricao`/`lembretes`. Nova regra de limite: adicione a chave em `Plan.limits` (JSON, editável
+no admin sem migração) e uma função em `gating.py` que a lê via `limit_for(user, chave, default)`.
+
+**`MERCADOPAGO_ACCESS_TOKEN` não está configurado neste ambiente** — não há conta de
+vendedor real. O checkout (`billing/services.py`, `MercadoPagoGateway`) tem a forma correta
+da API real (Checkout Pro, `urllib` puro, sem SDK nova) mas nunca rodou contra o Mercado Pago
+de verdade. Em dev, `/assinatura/ativar-teste/` (só com `DEBUG=True`, rotulado `[Teste]` na
+UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcionando.
 
 ## LGPD
 

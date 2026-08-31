@@ -33,7 +33,18 @@ def _aware(day, at_time):
 
 
 def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
-    """Rebuilds every derived, still-pending reminder for ``user`` within the next days."""
+    """
+    Rebuilds every derived, still-pending reminder for ``user`` within the next days.
+
+    Free plan (PRD 10.2, "sem lembretes automáticos"): this clears any derived reminder
+    instead of generating new ones. Manual reminders are untouched either way — the limit
+    is specifically on the *automatic* kind.
+    """
+    from billing.gating import auto_reminders_enabled
+
+    if not auto_reminders_enabled(user):
+        return clear_derived_reminders(user)
+
     today = timezone.localdate()
     horizon = today + timedelta(days=horizon_days)
     window_start = timezone.make_aware(datetime.combine(today, time.min))
@@ -51,6 +62,12 @@ def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
     batch += _meal_reminders(user, today, horizon)
     Reminder.objects.bulk_create(batch)
     return len(batch)
+
+
+def clear_derived_reminders(user):
+    """Removes every pending derived reminder — used when the plan doesn't allow them."""
+    deleted, _ = Reminder.objects.filter(user=user, status=Reminder.Status.PENDING, content_type__isnull=False).delete()
+    return deleted
 
 
 def _medication_reminders(user, today, horizon):

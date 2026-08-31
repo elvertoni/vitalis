@@ -298,3 +298,88 @@ rodar a cada visita à central, não só no cron.
 na hora, não só depois do próximo tick do cron. Resincronizar por usuário na visita é barato;
 o comando existe pra cobrir todo mundo de uma vez e de fato enviar o e-mail, que a página não
 faz.
+
+---
+
+## Sprint 6 — SaaS (billing)
+
+### D-031 · Gateway: Mercado Pago, seguindo a recomendação explícita do PRD
+**Contexto:** PRD 10.3 marca `⚠️` mas já recomenda: "Mercado Pago com Pix + cartão" pro
+público brasileiro.
+**Decisão:** `MercadoPagoGateway` como única implementação de `PaymentGateway`. Nenhuma
+alternativa (Stripe) foi construída.
+**Motivo:** o `ambiguity_protocol` manda seguir a recomendação registrada quando ela existe.
+Existe, é explícita, e cabe ao público-alvo do produto (seção 2 do PRD: usuário final BR).
+
+### D-032 · Preço do Premium: R$ 29,90/mês, placeholder documentado, vive no banco
+**Contexto:** PRD 10.2 marca preço do Premium como "⚠️ definir", sem recomendação em lugar
+nenhum do documento — ao contrário do gateway, aqui não há decisão a seguir, só a decidir.
+**Decisão:** R$ 29,90/mês, semeado por migração de dados (`billing/migrations/0002_seed_plans.py`),
+não hardcoded em código nenhum. Trocar o preço é editar a linha do `Plan` no admin — zero
+deploy, zero migração nova.
+**Motivo:** decisão de baixo impacto pelo `ambiguity_protocol` — "escolha a opção mais
+simples e reversível e documente o motivo". Preço de SaaS pessoal de saúde/treino/nutrição no
+Brasil gira nessa faixa (comparáveis de app de hábito/saúde ficam entre R$ 20–40/mês); o valor
+exato é a decisão de negócio mais fácil de mudar depois de todo o PRD, porque não exige tocar
+em uma linha de código — só justifica por que não travei a sprint esperando essa resposta.
+
+### D-033 · `Plan` é o único model não-`OwnedModel` de todo o app de domínio
+**Contexto:** todo model deste projeto até aqui pertence a um usuário. `Plan` é catálogo
+puro — Free e Premium são as mesmas duas linhas pra todo mundo.
+**Decisão:** `Plan(TimeStampedModel)`, sem FK de dono, sem `OwnerQuerySetMixin` em view
+nenhuma que o leia (é lido livre, tipo `saude.Laboratorio` seria se este build tivesse
+catálogo — este é o primeiro caso real).
+**Motivo:** um `Plan` "do usuário X" não faz sentido — outro usuário não pode "ver o plano
+Premium de outra pessoa" porque não há dado nenhum ali que pertença a alguém; o preço e os
+limites são públicos por natureza (aparecem até na landing page, sem login). Forçar
+`OwnedModel` aqui seria contorcer o padrão pra um caso que não é dele.
+
+### D-034 · `Subscription.plan` é `PROTECT` — o primeiro `PROTECT` legítimo do projeto
+**Contexto:** D-021 (Sprint 3) baniu `PROTECT` entre models do mesmo dono, depois de um bug
+real (exclusão em cascata travando com `ProtectedError`).
+**Decisão:** `Subscription.plan` usa `PROTECT` mesmo assim.
+**Motivo:** esta FK não é entre dois models do mesmo dono — `Plan` não pertence a ninguém.
+A cascata de exclusão de um `User` passa por `Subscription` (que É do dono, `CASCADE`) e
+para; ela nunca precisa atravessar `Plan` pra terminar. `PROTECT` aqui bloqueia exatamente o
+que deveria: apagar um plano com assinantes ativos pelo admin. É a mesma distinção que
+`saude` faria com um catálogo global (`TipoExame` no `_legado_vida`) — a regra de D-021 é
+"nunca entre dois do mesmo dono", não "nunca `PROTECT`".
+
+### D-035 · Constraint de assinatura corrente é por usuário, não por usuário+plano
+**Contexto:** achado testando, não planejado: `SubscribeView` tentava criar uma `Subscription`
+trial nova pro Premium sem fechar a `Subscription` Free ainda `active` da mesma pessoa — a
+`UniqueConstraint` (`fields=['user']`, `condition=status in trial/active/past_due`) rejeitou
+com `IntegrityError`, porque ela permite **uma linha aberta por usuário**, não uma por
+usuário-e-plano.
+**Decisão:** `SubscribeView` fecha (`status = cancelled`) qualquer assinatura aberta da
+pessoa antes de abrir uma nova trial — mesmo padrão que a troca gratuita já fazia. Reaproveita
+uma trial pendente do mesmo plano em vez de duplicar (retry de checkout sem gerar lixo).
+**Motivo:** é a leitura certa de "uma assinatura corrente" — a pessoa está num plano de cada
+vez, nunca em dois simultaneamente, então trocar de plano sempre fecha o anterior primeiro.
+Pego pelo mesmo hábito que salvou a Sprint 3 e a Sprint 4: rodar o fluxo de ponta a ponta de
+verdade antes de dar por encerrado, não só `manage.py check`.
+
+### D-036 · Gate de plano: dieta ativa e lembrete automático, não IA (ainda não existe)
+**Contexto:** PRD 10.2 lista três diferenças Free × Premium: "1 dieta ativa" / "sem lembretes
+automáticos" / "sem IA".
+**Decisão:** os dois primeiros ganharam gate de verdade — `billing/gating.py`,
+`diet_limit_exceeded()` em `nutricao.views.DietPlanLimitMixin`, `auto_reminders_enabled()`
+dentro do próprio `lembretes.services.sync_reminders()` (Free limpa os derivados em vez de
+gerar). "Sem IA" não tem código nenhum: não existe camada de IA neste build — é fase 7 do
+roadmap (recomendação do PRD, item 4 da seção 16) — então a restrição já vale por
+inexistência, não por gate.
+**Motivo:** gatear algo que não existe seria código morto. Quando a S7 (IA) nascer, o gate
+natural é checar `limit_for(user, 'ai_enabled')` no ponto de entrada da funcionalidade — a
+chave já está semeada em `Plan.limits` (`False` no Free, `False` no Premium também, porque a
+IA nem começou a existir) esperando por isso.
+
+### D-037 · "Ativar sem cobrança" só com `DEBUG=True`, rotulado como ambiente de teste
+**Contexto:** não há conta de vendedor Mercado Pago de verdade nem access token neste
+ambiente — sem eles, o checkout genuíno nunca roda de ponta a ponta aqui.
+**Decisão:** `DevActivateSubscriptionView` marca a assinatura trial pendente como ativa sem
+passar pelo gateway, mas só responde quando `settings.DEBUG` é `True`; a UI rotula o botão
+como `[Teste]` e a mensagem de sucesso deixa claro que não houve cobrança real.
+**Motivo:** sem isso, o fluxo de assinatura paga simplesmente não seria testável nem
+demonstrável neste ambiente — mas fingir que um clique qualquer "paga de verdade" seria
+enganoso. `DEBUG=False` desliga a view inteira (retorna 405 mesmo com o POST certo), então
+não sobrevive a um deploy de produção por acidente.

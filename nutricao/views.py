@@ -14,6 +14,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import TemplateView
 
+from billing.gating import diet_limit_exceeded
 from core.views import (
     ChildCreateView,
     OwnerCreateView,
@@ -108,7 +109,30 @@ class DietDetailView(OwnerDetailView):
         return context
 
 
-class DietCreateView(OwnerCreateView):
+class DietPlanLimitMixin:
+    """
+    Blocks activating a diet past the plan's ``active_diets`` limit (Free = 1, PRD 10.2).
+
+    Checked on the view, not the form: the limit depends on who is asking, which a plain
+    ``ModelForm`` has no way to know without the request being threaded through it.
+    """
+
+    limit_excluding_self = False
+
+    def form_valid(self, form):
+        if form.cleaned_data.get('is_active'):
+            excluding_pk = self.object.pk if self.limit_excluding_self and self.object else None
+            if diet_limit_exceeded(self.request.user, excluding_pk=excluding_pk):
+                form.add_error(
+                    'is_active',
+                    'Seu plano permite só uma dieta ativa por vez. Desative outra ou '
+                    'assine o Premium para ter dietas ilimitadas.',
+                )
+                return self.form_invalid(form)
+        return super().form_valid(form)
+
+
+class DietCreateView(DietPlanLimitMixin, OwnerCreateView):
     model = Diet
     form_class = DietForm
     template_name = 'nutricao/object_form.html'
@@ -116,11 +140,12 @@ class DietCreateView(OwnerCreateView):
     extra_context = {'page_kicker': 'Dietas', 'page_title': 'Nova dieta'}
 
 
-class DietUpdateView(OwnerUpdateView):
+class DietUpdateView(DietPlanLimitMixin, OwnerUpdateView):
     model = Diet
     form_class = DietForm
     template_name = 'nutricao/object_form.html'
     extra_context = {'page_kicker': 'Dietas', 'page_title': 'Editar dieta'}
+    limit_excluding_self = True
 
 
 class DietDeleteView(OwnerDeleteView):

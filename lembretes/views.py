@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 
+from billing.gating import auto_reminders_enabled
 from core.views import OwnerCreateView
 
 from .forms import ReminderForm
@@ -31,6 +32,7 @@ class ReminderIndexView(LoginRequiredMixin, TemplateView):
         context['due_now'] = pending.filter(remind_at__lte=now)
         context['upcoming'] = pending.filter(remind_at__gt=now)
         context['channel'] = user.profile.get_notification_channel_display()
+        context['auto_reminders_enabled'] = auto_reminders_enabled(user)
         return context
 
 

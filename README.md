@@ -37,7 +37,19 @@ Sem Docker, sem suíte de testes automatizados — decisão explícita do projet
 | S3 | Treino (`treino`) | ✅ |
 | S4 | Nutrição (`nutricao`) | ✅ |
 | S5 | Lembretes (`lembretes`) + Dashboard consolidado | ✅ |
-| S6 | SaaS (`billing`) | — |
+| S6 | SaaS (`billing`) | ✅ |
+
+## Assinatura em desenvolvimento
+
+Sem conta de vendedor Mercado Pago configurada, o checkout de verdade não roda. Pra testar o
+fluxo de assinatura sem cobrança real, use o botão `[Teste]` que aparece em `/assinatura/`
+quando `DJANGO_DEBUG=1` — nunca disponível com `DJANGO_DEBUG=0`. Pra ligar o gateway de
+verdade, defina a variável de ambiente antes de rodar (não é lida de arquivo `.env` — este
+projeto não tem loader de dotenv, `config/settings.py` só lê `os.environ` puro):
+
+```powershell
+$env:MERCADOPAGO_ACCESS_TOKEN = "seu-access-token"
+```
 
 ## Lembretes em desenvolvimento
 

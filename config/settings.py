@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'treino',
     'nutricao',
     'lembretes',
+    'billing',
 ]
 
 MIDDLEWARE = [

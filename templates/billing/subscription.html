@@ -1,0 +1,96 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Assinatura · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+
+        <div class="mb-16">
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Conta</span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">Assinatura</h1>
+        </div>
+
+        {% if subscription %}
+        <div class="bg-[#e8eae4] rounded-[2rem] p-8 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-2">Seu plano atual</span>
+                <h2 class="text-3xl tracking-tight font-medium text-[#1a1a1a]">{{ subscription.plan.name }}</h2>
+                <p class="text-base text-[#5c5c5a] mt-2">
+                    {{ subscription.get_status_display }}
+                    {% if subscription.status == 'trial' %} · aguardando pagamento{% endif %}
+                    {% if subscription.expires_at %} · válido até {{ subscription.expires_at|date:'d/m/Y' }}{% endif %}
+                </p>
+            </div>
+            {% if subscription.plan.price > 0 and subscription.status == 'active' %}
+            <form method="post" action="{% url 'billing:cancel' %}" onsubmit="return confirm('Cancelar sua assinatura e voltar para o plano Free?')">
+                {% csrf_token %}
+                <button type="submit" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Cancelar assinatura</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if subscription.status == 'trial' and not gateway_configured %}
+        <div class="bg-[#f2ece5] rounded-[1.5rem] px-6 py-6 mb-12 flex items-start gap-4">
+            <i data-lucide="flask-conical" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5 text-[#5d674f]"></i>
+            <div>
+                <p class="text-base text-[#1a1a1a] mb-3">
+                    O gateway de pagamento (Mercado Pago) não está configurado neste ambiente —
+                    falta o <code class="bg-white/60 px-1.5 py-0.5 rounded">MERCADOPAGO_ACCESS_TOKEN</code>.
+                    Em desenvolvimento, você pode ativar a assinatura sem cobrança real:
+                </p>
+                <form method="post" action="{% url 'billing:dev_activate' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                        [Teste] Ativar {{ subscription.plan.name }} sem cobrança
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="grid md:grid-cols-2 gap-8 max-w-3xl">
+            {% for plan in plans %}
+            <div class="rounded-[2rem] p-8 flex flex-col {% if plan.slug == 'premium' %}bg-[#1a1a1a] text-white shadow-2xl relative overflow-hidden{% else %}bg-[#f5f4f0] border border-[#dcdacd]{% endif %}">
+                {% if plan.slug == 'premium' %}
+                <div class="absolute top-0 right-0 bg-[#5d674f] text-[10px] tracking-widest uppercase font-medium px-4 py-1 rounded-bl-xl">Mais completo</div>
+                {% endif %}
+                <h3 class="text-xl font-medium mb-2 {% if plan.slug == 'premium' %}text-white/90{% else %}text-[#1a1a1a]{% endif %}">{{ plan.name }}</h3>
+                <div class="flex items-baseline gap-1 mb-6">
+                    {% if plan.price > 0 %}
+                    <span class="text-5xl tracking-tight font-medium">R$ {{ plan.price|floatformat:2 }}</span>
+                    <span class="text-sm {% if plan.slug == 'premium' %}text-white/60{% else %}text-[#5c5c5a]{% endif %}">/{% if plan.billing_period == 'monthly' %}mês{% else %}ano{% endif %}</span>
+                    {% else %}
+                    <span class="text-5xl tracking-tight font-medium">R$ 0</span>
+                    {% endif %}
+                </div>
+                <ul class="space-y-4 mb-8 flex-grow">
+                    {% if plan.slug == 'free' %}
+                    <li class="flex items-start gap-3 text-base {% if plan.slug == 'premium' %}text-white/80{% else %}text-[#5c5c5a]{% endif %}"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> Histórico de saúde completo</li>
+                    <li class="flex items-start gap-3 text-base text-[#5c5c5a]"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> Treino ilimitado</li>
+                    <li class="flex items-start gap-3 text-base text-[#5c5c5a]"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> 1 dieta ativa</li>
+                    <li class="flex items-start gap-3 text-base text-[#a0a09e]"><i data-lucide="x" class="w-5 h-5 stroke-[1.5] shrink-0"></i> Sem lembretes automáticos</li>
+                    {% else %}
+                    <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Tudo do Free, sem limites</li>
+                    <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Lembretes automáticos</li>
+                    <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Dietas ilimitadas</li>
+                    {% endif %}
+                </ul>
+                {% if subscription.plan_id == plan.pk and subscription.status == 'active' %}
+                <span class="w-full py-3 rounded-full font-medium text-center block {% if plan.slug == 'premium' %}bg-white/10 text-white{% else %}bg-[#e8eae4] text-[#1a1a1a]{% endif %}">Plano atual</span>
+                {% else %}
+                <form method="post" action="{% url 'billing:subscribe' plan.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-3 rounded-full font-medium {% if plan.slug == 'premium' %}bg-white text-[#1a1a1a] hover:bg-[#f5f4f0]{% else %}border border-[#1a1a1a] text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white{% endif %} transition-colors">
+                        {% if plan.price > 0 %}Assinar {{ plan.name }}{% else %}Mudar para o Free{% endif %}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

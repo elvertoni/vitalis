@@ -67,6 +67,17 @@
                     </a>
                 </div>
 
+                <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="credit-card" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                            <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a]">Assinatura</h2>
+                        </div>
+                        <a href="{% url 'billing:subscription' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Gerenciar</a>
+                    </div>
+                    <p class="text-base text-[#5c5c5a]">Plano atual: {{ subscription.plan.name|default:'Free' }}</p>
+                </div>
+
                 <div class="bg-[#e8eae4] rounded-[2rem] p-8">
                     <div class="flex items-center gap-3 mb-4">
                         <i data-lucide="shield" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
@@ -74,7 +85,7 @@
                     </div>
                     <p class="text-base text-[#5c5c5a]">
                         Nenhum outro usuário enxerga o que é seu. Exportação e exclusão completa da
-                        conta entram junto com a área de assinatura.
+                        conta ficam para uma próxima entrega.
                     </p>
                 </div>
             </div>
