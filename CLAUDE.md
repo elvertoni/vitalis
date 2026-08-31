@@ -145,10 +145,3 @@ Anexo de exame é dado sensível. `MEDIA_URL` só é servido pelo Django com `DE
 produção o laudo tem de sair por view autenticada que confere o dono, nunca por URL direta.
 Exclusão e exportação completas da conta são entrega da Sprint 6.
 
-## `_legado_vida/`
-
-Sistema anterior e incompatível: PostgreSQL com Row-Level Security, Docker, código em
-português, apps `contas`/`exames`/`medicacao`. **Não é referência de arquitetura** — foi
-substituído pelo Vitalis. Serve só como fonte de domínio para as sprints de saúde e nutrição
-(modelagem de exame laboratorial, faixa de referência, posologia em fases). Nada dali deve ser
-importado como está.

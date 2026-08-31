@@ -5,7 +5,3 @@ media/
 staticfiles/
 .venv/
 *.sqlite3
-
-# Sistema anterior, arquivado: outra arquitetura (Postgres/RLS), fica só como
-# referência local de domínio. Não faz parte do histórico do Vitalis.
-_legado_vida/
