@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 
+from accounts.models import Profile
 from billing.gating import auto_reminders_enabled
 from core.views import OwnerCreateView
 
@@ -31,7 +32,10 @@ class ReminderIndexView(LoginRequiredMixin, TemplateView):
         pending = Reminder.objects.filter(user=user, status=Reminder.Status.PENDING).order_by('remind_at')
         context['due_now'] = pending.filter(remind_at__lte=now)
         context['upcoming'] = pending.filter(remind_at__gt=now)
+        # A tela não promete o que o sistema não faz: e-mail é o único canal que despacha
+        # (D-028). Se a pessoa escolheu outro no perfil, dizemos que está em preparo.
         context['channel'] = user.profile.get_notification_channel_display()
+        context['channel_pending'] = user.profile.notification_channel != Profile.NotificationChannel.EMAIL
         context['auto_reminders_enabled'] = auto_reminders_enabled(user)
         return context
 

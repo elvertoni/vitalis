@@ -33,9 +33,9 @@
         <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
             <div class="flex items-center justify-between mb-2">
                 <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Próximos</h2>
-                <span class="text-sm text-[#5c5c5a]">Lembretes por {{ channel }}</span>
+                <span class="text-sm text-[#5c5c5a]">Avisos de agendamento por e-mail{% if channel_pending %} · {{ channel }} em preparo{% endif %}</span>
             </div>
-            <p class="text-sm text-[#5c5c5a] mb-6">Sincronizados automaticamente com exames marcados, retornos, remédios ativos e a dieta ativa — próximos 7 dias.</p>
+            <p class="text-sm text-[#5c5c5a] mb-6">Sincronizados automaticamente com exames, retornos, remédios ativos e a dieta ativa — próximos 7 dias. Só o que ainda precisa ser <strong class="font-medium">agendado</strong> é enviado; o resto fica nesta tela.</p>
             {% if upcoming %}
             <div class="flex flex-col">
                 {% for reminder in upcoming %}{% include 'lembretes/_reminder_row.html' with reminder=reminder due=False %}{% endfor %}
