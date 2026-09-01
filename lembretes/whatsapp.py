@@ -24,6 +24,11 @@ from django.conf import settings
 TIMEOUT_SECONDS = 15
 BRAZIL_COUNTRY_CODE = '55'
 
+# O gateway pode estar atrás de um proxy que barra cliente sem identidade: o Cloudflare
+# devolve 403 "error code: 1010" para o User-Agent padrão do urllib. Identificar-se resolve,
+# e é o que qualquer cliente educado faz.
+USER_AGENT = 'Vitalis/1.0 (+https://vitalis.tonicoimbra.com)'
+
 
 class WhatsAppError(Exception):
     """Gateway refused the message, or was unreachable."""
@@ -52,27 +57,72 @@ def normalize_phone(raw):
     return digits
 
 
-def send_text(phone, message):
-    """Sends one text message. Raises ``WhatsAppError`` — never swallows a failure."""
+def _call(method, path, payload=None):
+    """One request to the gateway. Raises ``WhatsAppError`` — never swallows a failure."""
     if not is_configured():
         raise WhatsAppError('Evolution API não configurada (EVOLUTION_API_URL/_KEY/_INSTANCE).')
-    number = normalize_phone(phone)
-    if number is None:
-        raise WhatsAppError(f'Telefone inválido para envio: {phone!r}')
-
-    url = f'{settings.EVOLUTION_API_URL}/message/sendText/{settings.EVOLUTION_INSTANCE}'
-    payload = json.dumps({'number': number, 'text': message}).encode('utf-8')
     request = urllib.request.Request(
-        url,
-        data=payload,
-        headers={'Content-Type': 'application/json', 'apikey': settings.EVOLUTION_API_KEY},
-        method='POST',
+        f'{settings.EVOLUTION_API_URL}{path}',
+        data=json.dumps(payload).encode('utf-8') if payload is not None else None,
+        headers={
+            'Content-Type': 'application/json',
+            'apikey': settings.EVOLUTION_API_KEY,
+            'User-Agent': USER_AGENT,
+        },
+        method=method,
     )
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
-            return json.loads(response.read().decode('utf-8'))
+            body = response.read().decode('utf-8')
+            return json.loads(body) if body else {}
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode('utf-8', errors='replace')[:300]
         raise WhatsAppError(f'HTTP {exc.code} do gateway: {detail}') from exc
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise WhatsAppError(f'Falha ao falar com o gateway: {exc}') from exc
+
+
+def send_text(phone, message):
+    """Sends one text message to a phone number."""
+    number = normalize_phone(phone)
+    if number is None:
+        raise WhatsAppError(f'Telefone inválido para envio: {phone!r}')
+    instance = settings.EVOLUTION_INSTANCE
+    return _call('POST', f'/message/sendText/{instance}', {'number': number, 'text': message})
+
+
+def connection_state():
+    """``'open'`` when the session is live, ``'connecting'`` while waiting for the QR scan."""
+    data = _call('GET', f'/instance/connectionState/{settings.EVOLUTION_INSTANCE}')
+    return (data.get('instance') or {}).get('state', 'unknown')
+
+
+def connect():
+    """
+    Asks for a fresh pairing QR. Returns ``(base64_image, pairing_code)``.
+
+    The gateway regenerates the code on every call and each one lives well under a minute,
+    so the panel refetches instead of caching: a stale QR is a dead end for whoever is
+    holding a phone in front of the screen.
+    """
+    data = _call('GET', f'/instance/connect/{settings.EVOLUTION_INSTANCE}')
+    payload = data.get('qrcode') or data
+    return payload.get('base64'), payload.get('pairingCode') or payload.get('code')
+
+
+def connected_number():
+    """The phone number the live session belongs to, or ``None`` when disconnected."""
+    instance = settings.EVOLUTION_INSTANCE
+    data = _call('GET', f'/instance/fetchInstances?instanceName={instance}')
+    items = data if isinstance(data, list) else [data]
+    for item in items:
+        info = item.get('instance', item)
+        if info.get('name') == instance or info.get('instanceName') == instance:
+            owner = info.get('ownerJid') or info.get('owner') or ''
+            return owner.split('@')[0] or None
+    return None
+
+
+def logout():
+    """Drops the session. The phone stops being the sender until someone scans again."""
+    return _call('DELETE', f'/instance/logout/{settings.EVOLUTION_INSTANCE}')

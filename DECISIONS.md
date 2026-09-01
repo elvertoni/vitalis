@@ -549,3 +549,24 @@ frágil de toda a cadeia, porque depende de uma sessão que pode ser desconectad
 **Telefone:** `whatsapp.normalize_phone` aceita o que a pessoa digitou (`(41) 99115-8701`) e
 devolve `5541991158701`; número sem DDD é recusado, e o envio cai para e-mail em vez de
 entregar no vazio.
+
+### D-046 · O painel de pareamento do WhatsApp é de quem administra, não do usuário
+**Contexto:** o dono pediu "um painel na própria área do usuário para conectar o WhatsApp".
+Ao implementar, a base já tinha **duas** contas.
+**Decisão:** o painel (`/lembretes/whatsapp/`) exige `is_staff` e responde **404** — não 403 —
+para quem não é, seguindo a mesma escolha do isolamento por dono: rota que a pessoa não pode
+usar não se anuncia. O usuário comum continua controlando o que é dele: o telefone e o canal,
+no perfil. O link para o painel também só aparece na central para staff.
+**Motivo:** a instância da Evolution é o **remetente do sistema**, uma só para todas as contas
+— não o WhatsApp pessoal de cada pessoa. Desconectar aquela sessão tira o canal de todo mundo,
+e um QR de pareamento na tela é, literalmente, acesso à sessão de WhatsApp: quem escaneia
+passa a enviar como o Vitalis. Isso é operação de instalação, não preferência de conta.
+**Sobre o QR:** é pedido ao gateway a cada carregamento em vez de guardado, porque cada
+código vive menos de um minuto — QR velho é beco sem saída para quem está com o celular na
+mão. Enquanto ele está exposto, a página consulta `/lembretes/whatsapp/estado/` a cada 5s e
+se recarrega sozinha quando o pareamento conclui.
+**Achado de infraestrutura:** o Cloudflare na frente de `evoapi.tonicoimbra.com` devolve
+403 (`error code: 1010`) para o User-Agent padrão do `urllib` — o cliente agora se identifica
+como `Vitalis/1.0`. Em produção a chamada nem sai para a internet: `EVOLUTION_API_URL` aponta
+para `http://work_evolution-api:8080`, a rede interna do EasyPanel, o que também evita expor
+conteúdo de lembrete de saúde ao CDN.

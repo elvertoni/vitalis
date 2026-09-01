@@ -259,7 +259,14 @@ texto e entrega. O comando `send_due_reminders` decide *quando*, nunca *o quê* 
 Canais: e-mail sempre, e **WhatsApp** por `lembretes/whatsapp.py` (Evolution API, instância
 própria `vitalis` — D-045) quando a pessoa escolheu esse canal no perfil, o gateway está
 configurado e há telefone. Qualquer falha do gateway cai para e-mail com `logger.warning`:
-lembrete que chega pelo canal errado vale mais que lembrete que não chega. Os links dentro da
+lembrete que chega pelo canal errado vale mais que lembrete que não chega.
+
+O pareamento da sessão fica em `/lembretes/whatsapp/`, **só para `is_staff`** e devolvendo 404
+para os demais (D-046): a instância é o remetente do sistema, não o WhatsApp de cada conta —
+derrubar aquela sessão tira o canal de todo mundo. Em produção o `EVOLUTION_API_URL` aponta
+para `http://work_evolution-api:8080` (rede interna do EasyPanel); pela URL pública o
+Cloudflare barra o User-Agent do `urllib` com 403 `error code: 1010`, por isso o cliente se
+identifica como `Vitalis/1.0`. Os links dentro da
 mensagem usam `settings.SITE_URL` (env `DJANGO_SITE_URL`), porque quem envia está fora do
 ciclo HTTP e não tem `request` para montar URL absoluta.
 

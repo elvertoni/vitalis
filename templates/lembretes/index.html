@@ -33,7 +33,10 @@
         <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
             <div class="flex items-center justify-between mb-2">
                 <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Próximos</h2>
-                <span class="text-sm text-[#5c5c5a]">Avisos de agendamento por e-mail{% if channel_pending %} · {{ channel }} em preparo{% endif %}</span>
+                <span class="text-sm text-[#5c5c5a]">
+                    Avisos de agendamento por {{ channel }}{% if channel_pending %} <span class="text-[#686865]">(em preparo — sai por e-mail)</span>{% endif %}{% if can_manage_whatsapp %}
+                    · <a href="{% url 'lembretes:whatsapp' %}" class="text-[#5d674f] hover:text-[#4a523f] underline underline-offset-4 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">conectar WhatsApp</a>{% endif %}
+                </span>
             </div>
             <p class="text-sm text-[#5c5c5a] mb-6">Sincronizados automaticamente com exames, retornos, remédios ativos e a dieta ativa — próximos 7 dias. Só o que ainda precisa ser <strong class="font-medium">agendado</strong> é enviado; o resto fica nesta tela.</p>
             {% if upcoming %}
