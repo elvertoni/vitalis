@@ -213,6 +213,12 @@ Botão primário: `rounded-full px-8 py-5`, ícone `arrow-right` que desliza no 
 `rounded-[2rem]`. Container: `max-w-screen-xl` ou `2xl` com `px-6 md:px-12`. Seção: `py-32`.
 Tipografia Inter, peso máximo 600. Ícones Lucide com `stroke-[1.5]`.
 
+### Peso e macro: a fonte é o histórico, o formulário é só a porta
+
+`ProfileForm.current_weight_kg` não é coluna de `Profile` — é campo de formulário que lê a
+última pesagem e grava um `WeightLog` de hoje ao salvar (D-047). Se precisar do peso atual em
+alguma tela nova, leia `WeightLog` (`.order_by('-date').first()`), nunca o perfil.
+
 ### Macro calculado, não guardado
 
 `nutricao.MealItem.macros` e `nutricao.DailyLog.macros` são `@property`, recalculadas de

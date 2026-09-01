@@ -36,6 +36,21 @@
                         <dd class="text-base font-medium text-[#1a1a1a]">{% if user.profile.height_cm %}{{ user.profile.height_cm }} cm{% else %}&mdash;{% endif %}</dd>
                     </div>
                     <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Peso atual</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a] text-right">
+                            {% if latest_weight %}
+                                {{ latest_weight.weight_kg }} kg
+                                <span class="block text-sm font-normal text-[#5c5c5a]">pesagem de {{ latest_weight.date|date:'d/m/Y' }}</span>
+                            {% else %}
+                                <a href="{% url 'nutricao:weightlog_create' %}" class="text-[#5d674f] hover:text-[#4a523f] underline underline-offset-4 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">Registrar o primeiro</a>
+                            {% endif %}
+                        </dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
+                        <dt class="text-base text-[#5c5c5a]">Peso alvo</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{% if user.profile.target_weight_kg %}{{ user.profile.target_weight_kg }} kg{% else %}&mdash;{% endif %}</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
                         <dt class="text-base text-[#5c5c5a]">Telefone</dt>
                         <dd class="text-base font-medium text-[#1a1a1a]">{{ user.profile.phone|default:'—' }}</dd>
                     </div>

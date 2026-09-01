@@ -4,6 +4,8 @@ Widget classes come straight from the Soluna design system: underlined inputs on
 transparent background, olive focus ring, pill shaped selects.
 """
 
+from decimal import Decimal
+
 from django import forms
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -11,6 +13,7 @@ from django.contrib.auth.forms import (
     PasswordResetForm,
     SetPasswordForm,
 )
+from django.utils import timezone
 
 from .models import Profile, User
 
@@ -113,7 +116,29 @@ class StyledSetPasswordForm(StyledFormMixin, SetPasswordForm):
 
 
 class ProfileForm(StyledFormMixin, forms.ModelForm):
-    """Biometric data and reminder channel."""
+    """
+    Biometric data and reminder channel.
+
+    ``current_weight_kg`` is not a column: it reads and writes today's ``WeightLog``. The
+    weight is a series, and the profile is where everyone looks for it first — both people
+    using this install filled the whole profile and left with zero weigh-ins, because the
+    only door was a menu item in the dashboard. Keeping a copy on ``Profile`` would be the
+    easy fix and the wrong one: two records of the same number drift apart within weeks
+    (same reasoning as D-022, macros are never frozen either).
+    """
+
+    current_weight_kg = forms.DecimalField(
+        label='Peso atual (kg)',
+        required=False,
+        max_digits=5,
+        decimal_places=2,
+        min_value=Decimal('20'),
+        max_value=Decimal('400'),
+        help_text='Vira uma pesagem de hoje no histórico. Deixe em branco para não registrar nada.',
+    )
+
+    field_order = ['birth_date', 'sex', 'height_cm', 'current_weight_kg', 'target_weight_kg',
+                   'phone', 'notification_channel']
 
     class Meta:
         model = Profile
@@ -125,9 +150,35 @@ class ProfileForm(StyledFormMixin, forms.ModelForm):
         self.fields['birth_date'].input_formats = ['%Y-%m-%d']
         self.fields['birth_date'].widget.attrs['autocomplete'] = 'bday'
         self.fields['height_cm'].widget.attrs['placeholder'] = 'Ex.: 178'
+        self.fields['current_weight_kg'].widget.attrs['placeholder'] = 'Ex.: 84.2'
         self.fields['target_weight_kg'].widget.attrs['placeholder'] = 'Ex.: 78.5'
         self.fields['phone'].widget.attrs['placeholder'] = '(00) 00000-0000'
         self.fields['phone'].widget.attrs['autocomplete'] = 'tel'
+        self.fields['current_weight_kg'].initial = self._latest_weight()
+
+    def _latest_weight(self):
+        """Last reading on record, so the field opens showing where the person is today."""
+        # Import local: accounts é a base de tudo e não deve depender de nutrição no topo.
+        from nutricao.models import WeightLog
+
+        if self.instance.pk is None:
+            return None
+        latest = WeightLog.objects.filter(user=self.instance.user).order_by('-date').first()
+        return latest.weight_kg if latest else None
+
+    def save(self, commit=True):
+        from nutricao.models import WeightLog
+
+        profile = super().save(commit=commit)
+        weight = self.cleaned_data.get('current_weight_kg')
+        if commit and weight is not None and weight != self._latest_weight():
+            # Uma pesagem por dia (constraint em WeightLog): repesar hoje corrige a de hoje.
+            WeightLog.objects.update_or_create(
+                user=profile.user,
+                date=timezone.localdate(),
+                defaults={'weight_kg': weight},
+            )
+        return profile
 
 
 class UserForm(StyledFormMixin, forms.ModelForm):

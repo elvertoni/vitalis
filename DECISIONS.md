@@ -570,3 +570,21 @@ se recarrega sozinha quando o pareamento conclui.
 como `Vitalis/1.0`. Em produção a chamada nem sai para a internet: `EVOLUTION_API_URL` aponta
 para `http://work_evolution-api:8080`, a rede interna do EasyPanel, o que também evita expor
 conteúdo de lembrete de saúde ao CDN.
+
+### D-047 · "Peso atual" é campo do formulário de perfil, não coluna do `Profile`
+**Contexto:** duas pessoas — o dono e o segundo usuário da instalação — preencheram o perfil
+inteiro (nascimento, sexo, altura, **peso alvo**, telefone) e ficaram com **zero pesagens**.
+As duas procuraram o peso atual no perfil, acharam só a meta e pararem por aí. O caminho real
+(Nutrição → Peso → novo) existia, mas nada levava até ele: o cadastro joga direto no painel e
+o único acesso era um item no menu de ações rápidas.
+**Decisão:** `ProfileForm` ganha `current_weight_kg`, um campo **do formulário**, posicionado
+entre a altura e o peso alvo (`field_order`). Ele abre mostrando a última pesagem e, ao
+salvar, faz `update_or_create` de um `WeightLog` com a data de hoje. Em branco não mexe em
+nada; o mesmo valor de novo não cria linha; valor diferente no mesmo dia corrige a pesagem de
+hoje, respeitando a constraint `um_peso_por_dia`.
+**Motivo de não virar coluna:** peso é série histórica, e o gráfico de evolução, o IMC e a
+meta calórica leem de `WeightLog`. Uma cópia em `Profile` seria a correção fácil e errada:
+duas verdades sobre o mesmo número divergem em semanas — a mesma razão pela qual macro é
+calculado e nunca congelado (D-022). O formulário é só uma porta melhor para o mesmo dado.
+**Também:** a tela de perfil passa a mostrar "Peso atual" com a data da pesagem, ou um link
+para registrar a primeira quando não existe nenhuma.

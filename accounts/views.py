@@ -61,9 +61,14 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         from billing.models import current_subscription
+        from nutricao.models import WeightLog
 
         context = super().get_context_data(**kwargs)
         context['subscription'] = current_subscription(self.request.user)
+        # O peso não é campo do perfil: é a última linha do histórico de pesagens (D-047).
+        context['latest_weight'] = (
+            WeightLog.objects.filter(user=self.request.user).order_by('-date').first()
+        )
         return context
 
 
