@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `PROMPT-EXEC-vitalis.xml` | **COMO** executar. Diretivas absolutas, ordem das sprints, definition of done. |
 | `design_system/design-system.html` | A referência visual. Nenhum estilo fora dela. |
 | `DECISIONS.md` | Decisões tomadas sob o `ambiguity_protocol`. Toda decisão ambígua entra aqui. |
+| `AGENTS.md` | Mesmas regras num resumo curto para outros agentes. Mantenha os dois em sincronia ao mudar convenção. |
 
 Conflito de **escopo** → o PRD vence. Conflito de **convenção de código** → o XML vence.
 
@@ -20,11 +21,35 @@ Conflito de **escopo** → o PRD vence. Conflito de **convenção de código** �
 .\.venv\Scripts\python.exe manage.py makemigrations
 .\.venv\Scripts\python.exe manage.py migrate
 .\.venv\Scripts\python.exe manage.py createsuperuser
+.\.venv\Scripts\python.exe manage.py check          # validação de config — o mais perto de "lint" que existe
+.\.venv\Scripts\python.exe manage.py send_due_reminders  # sincroniza e envia lembretes vencidos
 ```
 
-Sem Docker, sem suíte de testes — ambos proibidos pela diretiva D10. Banco: SQLite em
-`db.sqlite3`. E-mail sai no console em desenvolvimento; o link de recuperação de senha aparece
-no terminal do `runserver`.
+Sem Docker, sem suíte de testes — ambos proibidos pela diretiva D10. Verificação de mudança:
+`manage.py check`, inspecionar a migration gerada antes de aplicar, e smoke test no navegador
+(criar/editar/apagar, erro de validação, acesso cruzado entre usuários devolvendo 404).
+
+Banco: SQLite em `db.sqlite3`. E-mail sai no console em desenvolvimento; o link de recuperação
+de senha aparece no terminal do `runserver`.
+
+### Stack e assets
+
+Python 3.12+ · Django 6.0 (única dependência, ver `requirements.txt`) · SQLite. **Tailwind vem
+do CDN** (`cdn.tailwindcss.com` em `templates/base.html`), config inline no `<script>` daquele
+head — **não há npm, nem build de CSS, nem `tailwind.config.js` em arquivo**. `static/` só tem
+o favicon. Lucide também via CDN. Fonte Inter via Google Fonts.
+
+### Configuração — só `os.environ`, sem loader de `.env`
+
+O código lê variáveis de ambiente puras via `os.environ.get` (nenhum `python-dotenv`). Defina
+no shell antes do `runserver`:
+
+| Variável | Lida em | Default | Efeito |
+|---|---|---|---|
+| `DJANGO_DEBUG` | `config/settings.py` | `1` | `0` liga `SECURE_SSL_REDIRECT`, HSTS, cookies seguros. Também esconde `/assinatura/ativar-teste/`. |
+| `DJANGO_SECRET_KEY` | `config/settings.py` | chave insegura embutida | trocar em produção |
+| `DJANGO_ALLOWED_HOSTS` | `config/settings.py` | `localhost,127.0.0.1` | lista separada por vírgula |
+| `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | ver seção Billing |
 
 ## Idioma — a regra que mais se erra
 
@@ -44,6 +69,13 @@ nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 
 lembretes/   central de lembretes + command agendado                 (Sprint 5 — pronta)
 billing/     planos, assinatura, gateway                             (Sprint 6 — pronta)
 ```
+
+### Rotas
+
+`config/urls.py` monta cada app num prefixo pt-BR (`conta/`, `saude/`, `treino/`, `nutricao/`,
+`lembretes/`, `assinatura/`; `core` na raiz). Todo app tem `app_name` — refira URL sempre por
+namespace (`accounts:login`, `core:dashboard`). `settings.LOGIN_URL` / `LOGIN_REDIRECT_URL` /
+`LOGOUT_REDIRECT_URL` apontam pra esses nomes. `MEDIA_URL` só é servido pelo Django com `DEBUG`.
 
 ### Isolamento de dados — requisito de segurança nº 1
 

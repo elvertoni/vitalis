@@ -1,7 +1,31 @@
+# Python
 __pycache__/
 *.py[cod]
-.env
-media/
-staticfiles/
+*.egg-info/
 .venv/
+
+# Django
+db.sqlite3
 *.sqlite3
+/media/
+/staticfiles/
+
+# Env
+.env
+.env.*
+
+# Tooling junk
+.impeccable/
+.impeccable-server.err
+.impeccable-server.out
+.playwright-mcp/
+codex-session-*.md
+
+# Tooling screenshots dropped in repo root
+/vitalis-*.png
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
