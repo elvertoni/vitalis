@@ -38,8 +38,25 @@
                 {% if appointment.next_return_date %}
                 <p class="text-3xl tracking-tight font-medium text-[#1a1a1a] mb-2">{{ appointment.next_return_date|date:'d/m/Y' }}</p>
                 <p class="text-base text-[#5c5c5a]">{% if appointment.return_is_pending %}Vira lembrete automaticamente.{% else %}Já passou.{% endif %}</p>
+
+                <div class="mt-6 pt-6 border-t border-[#dcdacd]">
+                    <span class="text-sm font-medium tracking-widest uppercase text-[#5c5c5a] block mb-2">Aviso para agendar</span>
+                    {% if appointment.return_is_booked %}
+                    <p class="text-base text-[#1a1a1a] flex items-start gap-2">
+                        <i data-lucide="check" class="w-4 h-4 stroke-[1.5] shrink-0 mt-1 text-[#5d674f]"></i>
+                        <span>Já existe consulta mais recente com este médico — o aviso de agendamento não é enviado.</span>
+                    </p>
+                    {% elif appointment.return_is_pending %}
+                    <p class="text-base text-[#1a1a1a] flex items-start gap-2">
+                        <i data-lucide="bell" class="w-4 h-4 stroke-[1.5] shrink-0 mt-1 text-[#5d674f]"></i>
+                        <span>Em {{ appointment.return_scheduling_date|date:'d/m/Y' }}, 15 dias antes, para você ligar e marcar.</span>
+                    </p>
+                    {% else %}
+                    <p class="text-base text-[#5c5c5a]">Não se aplica: a data do retorno já passou.</p>
+                    {% endif %}
+                </div>
                 {% else %}
-                <p class="text-base text-[#5c5c5a]">Nenhum retorno marcado nesta consulta.</p>
+                <p class="text-base text-[#5c5c5a]">Nenhum retorno marcado nesta consulta. Preencha a data do retorno para receber um aviso 15 dias antes, a tempo de conseguir vaga.</p>
                 {% endif %}
             </div>
         </div>

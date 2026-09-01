@@ -20,7 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from nutricao.models import Diet, Meal
-from saude.models import Appointment, Exam, Medication
+from saude.models import RETURN_SCHEDULING_LEAD_DAYS, Appointment, Exam, Medication
 
 from .models import Reminder
 
@@ -59,6 +59,7 @@ def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
     batch += _medication_reminders(user, today, horizon)
     batch += _exam_reminders(user, today, horizon)
     batch += _appointment_reminders(user, today, horizon)
+    batch += _return_scheduling_reminders(user, today, horizon)
     batch += _meal_reminders(user, today, horizon)
     Reminder.objects.bulk_create(batch)
     return len(batch)
@@ -118,6 +119,47 @@ def _appointment_reminders(user, today, horizon):
             description=appointment.reason,
             remind_at=_aware(appointment.next_return_date, DEFAULT_TIME),
             content_type=content_type, object_id=appointment.pk,
+        ))
+    return reminders
+
+
+def _return_scheduling_reminders(user, today, horizon):
+    """
+    "Call and book the return", ``RETURN_SCHEDULING_LEAD_DAYS`` days before the asked date.
+
+    The reminder for the return itself lands on the day, too late to still find a slot in a
+    specialist's diary. This one lands early, and goes away on its own once a later visit to
+    the same doctor exists: the return was booked (or already happened) and asking again
+    would be noise. Hence only the most recent visit per doctor is considered.
+
+    Like every derived reminder, the notice day has to fall inside the sync window. With
+    ``send_due_reminders`` running daily (D-030) it always does; with no sync at all for
+    several days in a row a notice can be missed — deliberately, since recreating overdue
+    notices on every visit would pile up duplicates (see DECISIONS.md D-042).
+    """
+    content_type = ContentType.objects.get_for_model(Appointment)
+    latest_by_doctor = {}
+    for visit in Appointment.objects.filter(user=user).select_related('doctor'):
+        current = latest_by_doctor.get(visit.doctor_id)
+        if current is None or (visit.date, visit.pk) > (current.date, current.pk):
+            latest_by_doctor[visit.doctor_id] = visit
+
+    reminders = []
+    for visit in latest_by_doctor.values():
+        if not visit.next_return_date:
+            continue
+        remind_day = visit.next_return_date - timedelta(days=RETURN_SCHEDULING_LEAD_DAYS)
+        if not today <= remind_day <= horizon:
+            continue
+        reminders.append(Reminder(
+            user=user, category=Reminder.Category.RETURN,
+            title=f'Agendar retorno · {visit.doctor}',
+            description=(
+                f'O retorno foi pedido para {visit.next_return_date:%d/%m/%Y}. '
+                'Ligue para marcar enquanto há vaga.'
+            ),
+            remind_at=_aware(remind_day, DEFAULT_TIME),
+            content_type=content_type, object_id=visit.pk,
         ))
     return reminders
 

@@ -15,11 +15,11 @@ python -m venv .venv
 .\.venv\Scripts\python manage.py runserver
 ```
 
-Run `.\.venv\Scripts\python manage.py check` for Django configuration validation. After model changes, run `manage.py makemigrations` and inspect the generated migration before applying it. Use `manage.py send_due_reminders` to exercise reminder synchronization and console email delivery.
+Run `.\.venv\Scripts\python manage.py check` for Django configuration validation. After model changes, run `manage.py makemigrations` and inspect the generated migration before applying it. Use `manage.py send_due_reminders` to exercise reminder synchronization and console email delivery. Use `manage.py seed_medico --email <email> --source <dossier.json> [--attachments-dir <dir>]` to load a personal health dossier; the command carries no data of its own and is idempotent. The example payload is `medico-seed.example.json`; real dossiers live in `medico-data/` and `medico-seed.json`, both gitignored as sensitive health data (DECISIONS.md D-041).
 
 ## Coding Style & Naming Conventions
 
-Follow PEP 8 with four-space indentation, single quotes, and descriptive English identifiers (`WorkoutSession`, `quantity_g`). Keep all interface text, form labels, and `verbose_name` values in pt-BR. Use Django conventions: `PascalCase` classes, `snake_case` functions and fields, and one class-based view per CRUD operation. Reuse `OwnedModel`, `Owner*View`, `ChildCreateView`, and `StyledFormMixin`; do not duplicate ownership filtering or input styling. No formatter or linter is currently configured.
+Follow PEP 8 with four-space indentation, single quotes, and descriptive English identifiers (`WorkoutSession`, `quantity_g`). Keep all interface text, form labels, and `verbose_name` values in pt-BR. Use Django conventions: `PascalCase` classes, `snake_case` functions and fields, and one class-based view per CRUD operation. Reuse `OwnedModel`, `Owner*View`, `ChildCreateView`, and `StyledFormMixin`; do not duplicate ownership filtering or input styling. Reuse the shared partials (`partials/_field.html`, `_empty_state.html`, `_pagination.html`, `_logo.html`) instead of hand-written markup. Never use `on_delete=PROTECT` between two models owned by the same user (DECISIONS.md D-021); a shared catalogue such as `billing.Plan` is the only legitimate case. No formatter or linter is currently configured.
 
 ## Testing Guidelines
 
@@ -31,4 +31,8 @@ History uses Conventional Commit prefixes, mainly `feat:` and `chore:`, followed
 
 ## Security & Configuration
 
-Never commit `.env`, `db.sqlite3`, uploaded `media/`, or secrets. Configuration comes directly from environment variables such as `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, and `MERCADOPAGO_ACCESS_TOKEN`. Serve sensitive attachments only through authenticated, owner-checking views.
+Never commit `.env`, `db.sqlite3`, uploaded `media/`, collected `staticfiles/`, real health dossiers (`medico-data/`, `medico-seed.json`), or secrets. Configuration comes directly from environment variables such as `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, and `MERCADOPAGO_ACCESS_TOKEN`. Serve sensitive attachments only through authenticated, owner-checking views.
+
+## Known Gaps
+
+The S1–S6 roadmap is delivered, but these are deliberate or pending gaps, not bugs to fix in passing: full account deletion and data export (LGPD) are not implemented; the Mercado Pago gateway has never run against a real seller account; there is no reference food catalogue (TACO), no automatic workout reminder, and no delivery channel other than email. See the "O que ainda não existe" section of `CLAUDE.md`.

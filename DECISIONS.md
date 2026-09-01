@@ -457,3 +457,27 @@ de duplicar.
 **Motivo:** o dossiê de uma pessoa não tem por que estar no histórico do git de todo mundo
 que clonar o repo. Manter o comando separado dos dados também o deixa reutilizável para
 qualquer usuário futuro que queira importar um histórico.
+
+### D-042 · Retorno gera dois lembretes: um para **marcar** (D-15) e o do dia
+**Contexto:** `Appointment.next_return_date` já virava lembrete, mas só na data do retorno.
+No dia não adianta: consultório de especialista costuma estar com a agenda cheia semanas
+antes, e o aviso chegava quando não havia mais o que fazer.
+**Decisão:** a mesma data passa a gerar duas linhas em `lembretes`:
+`_appointment_reminders` (o retorno em si, no dia, como já era) e o novo
+`_return_scheduling_reminders`, `RETURN_SCHEDULING_LEAD_DAYS = 15` dias antes, com o título
+"Agendar retorno · <médico>". Nenhum campo novo: a constante vive em `saude/models.py` — a
+consulta precisa dela para mostrar a data na tela, e `saude` não pode importar `lembretes`
+(a dependência corre no sentido contrário).
+**Motivo secundário — como o sistema sabe que já agendou:** não sabe, e não vale um campo
+"já marquei" que a pessoa teria de manter na mão. O sinal é o próprio uso: só a **última
+consulta de cada médico** gera a cobrança de agendamento (`Appointment.return_is_booked`).
+Registrou a consulta nova com aquele médico, o aviso da anterior some sozinho.
+**Motivo da janela estrita:** o aviso só é criado quando o dia D-15 cai dentro da janela do
+sync (`LOOKAHEAD_DAYS`), como todo lembrete derivado. Recriar avisos com data no passado
+duplicaria linha a cada visita, porque o apaga-e-recria do D-029 só limpa a janela de hoje
+para a frente. Com o `send_due_reminders` diário (D-030) nada se perde; sem nenhuma
+sincronização por vários dias seguidos, um aviso pode passar batido — troca aceita em favor
+de não encher a central de cobranças repetidas.
+**Consequência de plano:** como todo lembrete derivado, este é bloqueado no Free pelo gate do
+D-036 (`auto_reminders_enabled`). No Free a data do retorno continua registrada e visível na
+consulta e no hub de saúde, mas nenhum dos dois lembretes é gerado.

@@ -23,8 +23,16 @@ Conflito de **escopo** → o PRD vence. Conflito de **convenção de código** �
 .\.venv\Scripts\python.exe manage.py createsuperuser
 .\.venv\Scripts\python.exe manage.py check          # validação de config — o mais perto de "lint" que existe
 .\.venv\Scripts\python.exe manage.py send_due_reminders  # sincroniza e envia lembretes vencidos
-.\.venv\Scripts\python.exe manage.py seed_medico --email <e-mail> --source <dossiê.json>  # importa um histórico de saúde (ver D-041)
+.\.venv\Scripts\python.exe manage.py seed_medico --email <e-mail> --source <dossiê.json> [--attachments-dir <pasta>]
 ```
+
+`seed_medico` (em `core/management/commands/`) é **genérico e não contém dado nenhum**: tudo
+vem do JSON de `--source`. É idempotente (`update_or_create` casando por campo natural), roda
+numa transação e importa perfil, médicos, tratamentos, medicamentos, exames (com anexo, se
+`--attachments-dir` apontar pros PDFs), consultas, alimentos, dietas e pesagens. A forma do
+JSON está em `medico-seed.example.json` (versionado, sem dado). Dossiê real vive em
+`medico-data/` e em `medico-seed.json` — **ambos no `.gitignore`** por serem dado sensível de
+saúde (D-041). Nunca commite nem cole conteúdo desses arquivos.
 
 Sem suíte de testes (diretiva D10). **Docker só existe para o deploy** (`Dockerfile`,
 `entrypoint.sh`) — o desenvolvimento não usa: nada de Docker no fluxo local. Verificação de
@@ -42,6 +50,11 @@ Python 3.12+ · Django 6.0. Dependências extras (`gunicorn`, `psycopg`, `whiten
 do CDN** (`cdn.tailwindcss.com` em `templates/base.html`), config inline no `<script>` daquele
 head — **não há npm, nem build de CSS, nem `tailwind.config.js` em arquivo**. `static/` só tem
 o favicon. Lucide também via CDN. Fonte Inter via Google Fonts.
+
+`STORAGES['staticfiles']` é o `CompressedManifestStaticFilesStorage` do WhiteNoise: em
+produção, `{% static %}` apontando pra arquivo que não existe em `staticfiles/` **quebra o
+render**, não degrada em silêncio. Arquivo estático novo entra em `static/` e o `Dockerfile`
+recolhe no build — não referencie caminho que só existe na sua máquina.
 
 ### Produção (EasyPanel) — ver `DECISIONS.md` D-040
 
@@ -65,6 +78,7 @@ no shell antes do `runserver`:
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | `config/settings.py` | vazio | csv de origens `https://…` — obrigatório pro POST de login/admin em produção |
 | `DATABASE_URL` | `config/settings.py` | ausente (→ SQLite) | presente → Postgres via `dj-database-url`. É o único switch dev↔prod de banco. |
 | `EMAIL_HOST` (+ `_USER`/`_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`) | `config/settings.py` | ausente (→ console) | presente → SMTP real; sem isso, e-mail de lembrete só loga |
+| `DJANGO_DEFAULT_FROM_EMAIL` | `config/settings.py` | `Vitalis <nao-responda@vitalis.app>` | remetente dos lembretes e do reset de senha |
 | `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | ver seção Billing |
 
 ## Idioma — a regra que mais se erra
@@ -107,7 +121,9 @@ exclusiva dos próprios registros. A garantia mora em dois lugares, ambos em `co
 
 Toda CBV de domínio usa o primeiro; toda CBV que escreve usa os dois. Não refaça o filtro na
 mão dentro da view — herde das bases prontas em `core/views.py`:
-`OwnerListView`/`OwnerDetailView`/`OwnerCreateView`/`OwnerUpdateView`/`OwnerDeleteView`. App
+`OwnerListView`/`OwnerDetailView`/`OwnerCreateView`/`OwnerUpdateView`/`OwnerDeleteView`.
+`OwnerListView` já vem com `paginate_by = 20` — a listagem nova inclui
+`partials/_pagination.html` em vez de inventar navegação de páginas. App
 novo (`treino`, `nutricao`...) segue o padrão de `saude/views.py`: uma classe por operação,
 `success_message` na de criar/editar, `extra_context` com `page_kicker`/`page_title` nas que
 usam `templates/saude/object_form.html` (ou o equivalente do app).
@@ -127,7 +143,8 @@ dono, inclusive a futura exclusão de conta (LGPD, Sprint 6), com um 500 cru. Ca
 D-021 (`DECISIONS.md`). `PROTECT` só faz sentido para catálogo **compartilhado** entre
 usuários, que esta base ainda não tem. `OwnerDeleteView` aceita `delete_warning` para avisar
 na tela de confirmação quando a exclusão arrasta histórico junto (ex.: excluir exercício
-apaga as séries registradas dele).
+apaga as séries registradas dele); quando um `PROTECT` legítimo barra a exclusão ela captura
+`ProtectedError` e devolve `protected_message` como mensagem, nunca um 500.
 
 ### Anexos (laudo, receita, foto de progresso...)
 
@@ -157,6 +174,11 @@ O `Profile` é criado por `post_save` em `accounts/signals.py`, registrado no `r
 `AccountsConfig`. O resto do sistema pode assumir que `user.profile` existe; não escreva
 `get_or_create` de perfil espalhado pelas views.
 
+Há um **segundo** `post_save` em `User`, este em `billing/signals.py` (`ready()` do
+`BillingConfig`): toda conta nova abre uma `Subscription` no plano Free, `status=active`. Se
+o plano `free` ainda não estiver semeado o signal sai calado — é o caso da própria migração
+inicial rodando. Vale a mesma regra: não recrie assinatura na mão em view de cadastro.
+
 ## Templates
 
 `base.html` é a casca pública (nav, mensagens, rodapé, script do Lucide e do menu mobile).
@@ -164,7 +186,9 @@ O `Profile` é criado por `post_save` em `accounts/signals.py`, registrado no `r
 `accounts/base_auth.html` é o layout split das telas de autenticação.
 
 `partials/_field.html` renderiza um campo com o estilo Soluna. Formulário novo itera os campos
-e inclui esse partial; não escreva markup de input à mão.
+e inclui esse partial; não escreva markup de input à mão. Os outros partials prontos são
+`_empty_state.html` (lista vazia), `_pagination.html` (paginação das `OwnerListView`) e
+`_logo.html` — inclua, não duplique.
 
 As classes de widget vivem em `accounts/forms.py` (`TEXT_INPUT_CLASS`, `SELECT_CLASS`) e são
 aplicadas pelo `StyledFormMixin`. Formulário novo herda dele.
@@ -208,6 +232,13 @@ derivados da janela de 7 dias e recria do zero a partir do estado atual das apps
 **Manual** — `content_type` nulo, criado pela pessoa em `/lembretes/novo/` — nunca é tocado
 pelo sync.
 
+Uma `Appointment` com `next_return_date` rende **dois** lembretes derivados (D-042): o do
+retorno no dia (`_appointment_reminders`) e o de *marcar* a consulta 15 dias antes
+(`_return_scheduling_reminders`, constante `RETURN_SCHEDULING_LEAD_DAYS` em `saude/models.py`
+— fica lá porque `saude` não importa `lembretes`). O segundo só olha a última consulta de
+cada médico: registrar uma consulta mais nova com o mesmo médico é o sinal de "já agendei" e
+cala o aviso, sem campo de controle manual.
+
 Categoria nova de lembrete automático (ex.: um dia vier agendamento de treino) segue o padrão
 de `lembretes/services.py`: uma função `_algo_reminders(user, today, horizon)` que devolve
 uma lista de `Reminder(...)` não salvos, somada em `sync_reminders`, com `content_type` da
@@ -246,5 +277,22 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 
 Anexo de exame é dado sensível. `MEDIA_URL` só é servido pelo Django com `DEBUG=True`; em
 produção o laudo tem de sair por view autenticada que confere o dono, nunca por URL direta.
-Exclusão e exportação completas da conta são entrega da Sprint 6.
+Dossiê médico real fora do git (`medico-data/`, `medico-seed.json` — D-041).
+
+## O que ainda não existe
+
+O roadmap S1–S6 do PRD está entregue, o que não quer dizer que tudo o que se possa esperar
+do produto esteja no código. Antes de "corrigir" alguma destas, saiba que é lacuna conhecida:
+
+- **Exclusão e exportação completas da conta (LGPD).** Não implementadas. `accounts/urls.py`
+  tem perfil, acesso e senha — não tem `delete_account` nem export. Ao construir: a exclusão
+  cai em `user.delete()` com CASCADE por toda a base, e é exatamente o cenário que a regra de
+  `PROTECT` do D-021 protege — verifique que nenhum `PROTECT` novo entre models do mesmo dono
+  entrou no caminho.
+- **Pagamento real.** O `MercadoPagoGateway` nunca rodou contra o Mercado Pago; ver seção
+  Billing.
+- **Catálogo de alimentos de referência (TACO).** `Food` é 100% cadastro do usuário (D-025).
+- **Lembrete automático de treino.** Decisão explícita de não ter (D-027).
+- **Envio por WhatsApp/push.** `Profile.notification_channel` aceita mais valores, mas só
+  e-mail é enviado (D-028).
 

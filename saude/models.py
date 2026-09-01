@@ -5,7 +5,7 @@ Every model here holds personal health data, so every one of them inherits from
 ``OwnedModel`` and is reached only through the isolation mixins in ``core.mixins``.
 """
 
-from datetime import date
+from datetime import date, timedelta
 
 from django.db import models
 from django.urls import reverse
@@ -152,8 +152,20 @@ class Exam(OwnedModel):
         return bool(self.scheduled_date and not self.done_date and self.scheduled_date >= date.today())
 
 
+# Quantos dias antes do retorno o sistema cobra o agendamento. Vive aqui, e não em
+# ``lembretes``, porque a consulta precisa da constante para mostrar a data na tela e
+# ``saude`` não pode importar ``lembretes`` (a dependência corre no sentido contrário).
+RETURN_SCHEDULING_LEAD_DAYS = 15
+
+
 class Appointment(OwnedModel):
-    """A visit. ``next_return_date`` is what feeds the return reminder."""
+    """
+    A visit. ``next_return_date`` is what feeds the two return reminders.
+
+    The date the doctor asked the person to come back generates two different nudges:
+    one to *book* the slot, ``RETURN_SCHEDULING_LEAD_DAYS`` days ahead, and one for the
+    return itself, on the day. Both live in ``lembretes.services``.
+    """
 
     doctor = models.ForeignKey(
         Doctor,
@@ -176,7 +188,10 @@ class Appointment(OwnedModel):
         'retorno em',
         null=True,
         blank=True,
-        help_text='Quando o médico pediu para voltar. Vira lembrete.',
+        help_text=(
+            'Quando o médico pediu para voltar. Vira dois lembretes: um 15 dias antes, '
+            'para você marcar a consulta, e outro no dia.'
+        ),
     )
 
     class Meta:
@@ -194,6 +209,27 @@ class Appointment(OwnedModel):
     @property
     def return_is_pending(self):
         return bool(self.next_return_date and self.next_return_date >= date.today())
+
+    @property
+    def return_scheduling_date(self):
+        """The day the "book your return" reminder fires. ``None`` without a return date."""
+        if not self.next_return_date:
+            return None
+        return self.next_return_date - timedelta(days=RETURN_SCHEDULING_LEAD_DAYS)
+
+    @property
+    def return_is_booked(self):
+        """
+        Whether a later visit to the same doctor already exists.
+
+        If it does, the return was booked (or already happened) and nagging the person to
+        book it again would be noise — only the most recent visit per doctor is nagged.
+        """
+        return (
+            Appointment.objects.filter(user_id=self.user_id, doctor_id=self.doctor_id, date__gt=self.date)
+            .exclude(pk=self.pk)
+            .exists()
+        )
 
 
 class Medication(OwnedModel):
