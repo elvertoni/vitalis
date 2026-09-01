@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Vitalis{% endblock %}</title>
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -23,7 +24,7 @@
             {% include 'partials/_logo.html' %}
             <div class="flex flex-col">
                 <span class="text-base font-medium tracking-widest uppercase leading-none">Vitalis</span>
-                <span class="text-[10px] tracking-widest text-[#5c5c5a] uppercase mt-1">Saúde · Treino · Nutrição</span>
+                <span class="text-xs tracking-[0.12em] text-[#5c5c5a] uppercase mt-1">Saúde · Treino · Nutrição</span>
             </div>
         </a>
         <div class="hidden lg:flex items-center gap-6">
@@ -32,18 +33,18 @@
         <div class="hidden lg:flex items-center gap-4">
             {% block nav_actions %}
                 {% if user.is_authenticated %}
-                    <a href="{% url 'core:dashboard' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Painel</a>
+                    <a href="{% url 'core:dashboard' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4">Painel</a>
                 {% else %}
-                    <a href="{% url 'accounts:login' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal">Entrar</a>
-                    <a href="{% url 'accounts:signup' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Começar</a>
+                    <a href="{% url 'accounts:login' %}" class="text-sm text-[#1a1a1a] hover:text-[#5d674f] transition-colors font-normal rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4">Entrar</a>
+                    <a href="{% url 'accounts:signup' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Começar</a>
                 {% endif %}
             {% endblock %}
         </div>
-        <button class="lg:hidden z-50 p-2" id="mobile-menu-btn" aria-label="Abrir navegação">
+        <button class="lg:hidden z-50 p-3 -mr-3 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2" id="mobile-menu-btn" aria-label="Abrir navegação" aria-expanded="false" aria-controls="mobile-menu">
             <i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>
         </button>
     </div>
-    <div id="mobile-menu" class="fixed inset-0 bg-[#f5f4f0] z-40 flex flex-col justify-center items-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="mobile-menu" aria-hidden="true" class="fixed inset-0 bg-[#f5f4f0] z-40 flex flex-col justify-center items-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300">
         {% block mobile_links %}
             {% if user.is_authenticated %}
                 <a href="{% url 'core:dashboard' %}" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Painel</a>
@@ -58,11 +59,14 @@
 {% endblock %}
 
 {% if messages %}
-<div class="fixed top-28 right-6 z-[60] flex flex-col gap-3 w-[min(24rem,90vw)]" id="messages">
+<div class="fixed top-28 right-6 z-[60] flex flex-col gap-3 w-[min(24rem,90vw)]" id="messages" aria-live="polite" aria-atomic="true">
     {% for message in messages %}
-    <div class="bg-white border border-[#dcdacd] rounded-[1.5rem] shadow-sm px-6 py-4 flex items-start gap-3">
+    <div class="bg-white border border-[#dcdacd] rounded-[1.5rem] shadow-sm px-6 py-4 flex items-start gap-3" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">
         <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check{% endif %}" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5 text-[#5d674f]"></i>
-        <span class="text-base text-[#1a1a1a]">{{ message }}</span>
+        <span class="text-base text-[#1a1a1a] flex-grow">{{ message }}</span>
+        <button type="button" class="message-dismiss p-2 -m-2 rounded-full text-[#5c5c5a] hover:text-[#1a1a1a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]" aria-label="Fechar mensagem">
+            <i data-lucide="x" class="w-4 h-4 stroke-[1.5]"></i>
+        </button>
     </div>
     {% endfor %}
 </div>
@@ -97,11 +101,17 @@
             mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
             mobileMenu.classList.add('opacity-100', 'pointer-events-auto');
             menuBtn.innerHTML = '<i data-lucide="x" class="w-6 h-6 stroke-[1.5]"></i>';
+            menuBtn.setAttribute('aria-expanded', 'true');
+            menuBtn.setAttribute('aria-label', 'Fechar navegação');
+            mobileMenu.setAttribute('aria-hidden', 'false');
             document.body.classList.add('overflow-hidden');
         } else {
             mobileMenu.classList.add('opacity-0', 'pointer-events-none');
             mobileMenu.classList.remove('opacity-100', 'pointer-events-auto');
             menuBtn.innerHTML = '<i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>';
+            menuBtn.setAttribute('aria-expanded', 'false');
+            menuBtn.setAttribute('aria-label', 'Abrir navegação');
+            mobileMenu.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('overflow-hidden');
         }
         lucide.createIcons();
@@ -110,6 +120,12 @@
     if (menuBtn) {
         menuBtn.addEventListener('click', toggleMenu);
         mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && isMenuOpen) {
+                toggleMenu();
+                menuBtn.focus();
+            }
+        });
     }
 
     const navbar = document.getElementById('navbar');
@@ -125,13 +141,9 @@
         });
     }
 
-    const messagesBox = document.getElementById('messages');
-    if (messagesBox) {
-        setTimeout(() => {
-            messagesBox.classList.add('opacity-0');
-            messagesBox.style.transition = 'opacity 500ms';
-        }, 4000);
-    }
+    document.querySelectorAll('.message-dismiss').forEach(button => {
+        button.addEventListener('click', () => button.closest('[role]').remove());
+    });
 </script>
 {% block scripts %}{% endblock %}
 </body>

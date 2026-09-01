@@ -51,11 +51,11 @@
                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-4">
                     {% for set in entry.sets.all %}
                     <div class="bg-[#f5f4f0] rounded-2xl p-4 text-center relative group">
-                        <span class="text-[10px] tracking-widest uppercase text-[#5c5c5a] block mb-1">Série {{ set.set_number }}</span>
+                        <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a] block mb-1">Série {{ set.set_number }}</span>
                         <span class="text-lg font-medium text-[#1a1a1a] block">{{ set.reps }}x{{ set.weight }}kg</span>
-                        <form method="post" action="{% url 'treino:set_log_delete' set.pk %}" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Excluir esta série?')">
+                        <form method="post" action="{% url 'treino:set_log_delete' set.pk %}" class="absolute top-1 right-1 opacity-60 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onsubmit="return confirm('Excluir esta série?')">
                             {% csrf_token %}
-                            <button type="submit" aria-label="Excluir série" class="text-[#a0a09e] hover:text-[#1a1a1a]"><i data-lucide="x" class="w-3.5 h-3.5 stroke-[1.5]"></i></button>
+                            <button type="submit" aria-label="Excluir série" class="w-10 h-10 rounded-full flex items-center justify-center text-[#686865] hover:text-[#1a1a1a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="x" class="w-4 h-4 stroke-[1.5]"></i></button>
                         </form>
                     </div>
                     {% endfor %}

@@ -29,26 +29,29 @@
         </div>
         {% endif %}
 
-        {# ── Atalhos rápidos ──────────────────────────────────────────────── #}
-        <div class="flex flex-wrap gap-3 mb-12">
-            <a href="{% url 'saude:exam_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
-                <i data-lucide="flask-conical" class="w-4 h-4 stroke-[1.5]"></i> Novo exame
-            </a>
-            <a href="{% url 'saude:appointment_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
-                <i data-lucide="calendar" class="w-4 h-4 stroke-[1.5]"></i> Nova consulta
-            </a>
-            <a href="{% url 'saude:medication_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
-                <i data-lucide="pill" class="w-4 h-4 stroke-[1.5]"></i> Novo medicamento
-            </a>
-            <a href="{% url 'treino:session_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
-                <i data-lucide="dumbbell" class="w-4 h-4 stroke-[1.5]"></i> Registrar treino
-            </a>
-            <a href="{% url 'nutricao:dailylog_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
-                <i data-lucide="notebook-pen" class="w-4 h-4 stroke-[1.5]"></i> Registrar refeição
-            </a>
-            <a href="{% url 'nutricao:weightlog_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
-                <i data-lucide="scale" class="w-4 h-4 stroke-[1.5]"></i> Registrar peso
-            </a>
+        {# ── Registros rápidos: dois fluxos diários em destaque, restante sob demanda ─ #}
+        <div class="mb-12" aria-labelledby="quick-actions-title">
+            <h2 id="quick-actions-title" class="text-sm font-medium text-[#5c5c5a] mb-4">O que você quer registrar agora?</h2>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{% url 'treino:session_create' %}" class="inline-flex items-center gap-2 bg-[#5d674f] text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-[#4a523f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                    <i data-lucide="dumbbell" class="w-4 h-4 stroke-[1.5]"></i> Registrar treino
+                </a>
+                <a href="{% url 'nutricao:dailylog_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-6 py-3 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                    <i data-lucide="notebook-pen" class="w-4 h-4 stroke-[1.5]"></i> Registrar refeição
+                </a>
+                <details class="relative group">
+                    <summary class="list-none cursor-pointer inline-flex items-center gap-2 px-4 py-3 rounded-full text-sm font-medium text-[#5c5c5a] hover:text-[#1a1a1a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">
+                        Mais registros
+                        <i data-lucide="chevron-down" class="w-4 h-4 stroke-[1.5] transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="mt-3 md:absolute md:left-0 md:top-full md:z-30 w-full md:w-64 bg-white border border-[#dcdacd] rounded-2xl p-2 shadow-lg flex flex-col gap-1">
+                        <a href="{% url 'saude:exam_create' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="flask-conical" class="w-4 h-4 stroke-[1.5]"></i>Novo exame</a>
+                        <a href="{% url 'saude:appointment_create' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="calendar" class="w-4 h-4 stroke-[1.5]"></i>Nova consulta</a>
+                        <a href="{% url 'saude:medication_create' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="pill" class="w-4 h-4 stroke-[1.5]"></i>Novo medicamento</a>
+                        <a href="{% url 'nutricao:weightlog_create' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="scale" class="w-4 h-4 stroke-[1.5]"></i>Registrar peso</a>
+                    </div>
+                </details>
+            </div>
         </div>
 
         {# ── As três áreas ────────────────────────────────────────────────── #}
@@ -58,7 +61,7 @@
                     <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
                         <i data-lucide="heart-pulse" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
                     </div>
-                    <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Saúde</span>
+                    <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Saúde</span>
                 </div>
                 <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Próximos compromissos</h2>
                 <div class="flex flex-col gap-3 mb-6 flex-grow">
@@ -92,7 +95,7 @@
                     <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
                         <i data-lucide="dumbbell" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
                     </div>
-                    <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Treino</span>
+                    <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Treino</span>
                 </div>
                 <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Treino da semana</h2>
                 <div class="mb-6 flex-grow">
@@ -110,7 +113,7 @@
                     <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
                         <i data-lucide="salad" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
                     </div>
-                    <span class="text-[10px] tracking-widest uppercase text-[#a0a09e]">Nutrição</span>
+                    <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Nutrição</span>
                 </div>
                 <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Dieta do dia</h2>
                 <div class="mb-6 flex-grow">

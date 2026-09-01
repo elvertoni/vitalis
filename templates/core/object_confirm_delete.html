@@ -22,11 +22,11 @@
         <form method="post">
             {% csrf_token %}
             <div class="flex items-center gap-4">
-                <button type="submit" class="inline-flex bg-[#1a1a1a] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#333] transition-colors">
+                <button type="submit" class="inline-flex bg-[#1a1a1a] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
                     <span class="text-base font-normal tracking-wide">Excluir</span>
                     <i data-lucide="trash-2" class="w-5 h-5 stroke-[1.5]"></i>
                 </button>
-                <a href="{% if object.get_absolute_url %}{{ object.get_absolute_url }}{% else %}javascript:history.back(){% endif %}" class="text-base text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Cancelar</a>
+                <a href="{% if object.get_absolute_url %}{{ object.get_absolute_url }}{% else %}{% url 'core:dashboard' %}{% endif %}" class="text-base text-[#5c5c5a] hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Cancelar</a>
             </div>
         </form>
     </div>

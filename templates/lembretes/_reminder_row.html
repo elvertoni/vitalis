@@ -1,24 +1,24 @@
 {# One reminder row. Expects: reminder, due (bool — controls the accent color). #}
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-5 {% if not forloop.last %}border-b border-[#dcdacd]{% endif %}">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-5 {% if not forloop.last %}border-b {% if due %}border-white/20{% else %}border-[#dcdacd]{% endif %}{% endif %}">
     <div class="flex items-start gap-4">
-        <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center shrink-0 {% if due %}bg-[#1a1a1a]{% else %}bg-[#f5f4f0]{% endif %}">
+        <div class="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 {% if due %}border-white/30 bg-white/10{% else %}border-[#dcdacd] bg-[#f5f4f0]{% endif %}">
             <i data-lucide="{% if reminder.category == 'remedio' %}pill{% elif reminder.category == 'exame' %}flask-conical{% elif reminder.category == 'retorno' %}calendar-clock{% elif reminder.category == 'treino' %}dumbbell{% elif reminder.category == 'nutricao' %}notebook-pen{% else %}bell{% endif %}"
                class="w-5 h-5 stroke-[1.5] {% if due %}text-white{% else %}text-[#5d674f]{% endif %}"></i>
         </div>
         <div>
-            <span class="text-base font-medium text-[#1a1a1a] block">{{ reminder.title }}</span>
-            <span class="text-sm text-[#5c5c5a]">{{ reminder.get_category_display }} · {{ reminder.remind_at|date:'d/m/Y H:i' }}{% if reminder.is_recurring %} · recorrente{% endif %}</span>
-            {% if reminder.description %}<span class="text-sm text-[#a0a09e] block mt-1">{{ reminder.description }}</span>{% endif %}
+            <span class="text-base font-medium {% if due %}text-white{% else %}text-[#1a1a1a]{% endif %} block">{{ reminder.title }}</span>
+            <span class="text-sm {% if due %}text-white/75{% else %}text-[#5c5c5a]{% endif %}">{{ reminder.get_category_display }} · {{ reminder.remind_at|date:'d/m/Y H:i' }}{% if reminder.is_recurring %} · recorrente{% endif %}</span>
+            {% if reminder.description %}<span class="text-sm {% if due %}text-white/65{% else %}text-[#686865]{% endif %} block mt-1">{{ reminder.description }}</span>{% endif %}
         </div>
     </div>
     <div class="flex items-center gap-3 pl-14 md:pl-0">
         <form method="post" action="{% url 'lembretes:complete' reminder.pk %}">
             {% csrf_token %}
-            <button type="submit" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Concluir</button>
+            <button type="submit" class="text-sm font-medium {% if due %}text-white hover:text-[#e8eae4]{% else %}text-[#5d674f] hover:text-[#4a523f]{% endif %} rounded focus-visible:outline-none focus-visible:ring-2 {% if due %}focus-visible:ring-white{% else %}focus-visible:ring-[#5d674f]{% endif %} focus-visible:ring-offset-2 {% if due %}focus-visible:ring-offset-[#1a1a1a]{% endif %} transition-colors">Concluir</button>
         </form>
         <form method="post" action="{% url 'lembretes:cancel' reminder.pk %}">
             {% csrf_token %}
-            <button type="submit" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Cancelar</button>
+            <button type="submit" class="text-sm {% if due %}text-white/70 hover:text-white{% else %}text-[#5c5c5a] hover:text-[#1a1a1a]{% endif %} rounded focus-visible:outline-none focus-visible:ring-2 {% if due %}focus-visible:ring-white{% else %}focus-visible:ring-[#5d674f]{% endif %} focus-visible:ring-offset-2 {% if due %}focus-visible:ring-offset-[#1a1a1a]{% endif %} transition-colors">Cancelar</button>
         </form>
     </div>
 </div>

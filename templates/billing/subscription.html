@@ -54,7 +54,7 @@
             {% for plan in plans %}
             <div class="rounded-[2rem] p-8 flex flex-col {% if plan.slug == 'premium' %}bg-[#1a1a1a] text-white shadow-2xl relative overflow-hidden{% else %}bg-[#f5f4f0] border border-[#dcdacd]{% endif %}">
                 {% if plan.slug == 'premium' %}
-                <div class="absolute top-0 right-0 bg-[#5d674f] text-[10px] tracking-widest uppercase font-medium px-4 py-1 rounded-bl-xl">Mais completo</div>
+                <div class="absolute top-0 right-0 bg-[#5d674f] text-xs tracking-[0.12em] uppercase font-medium px-4 py-2 rounded-bl-xl">Mais completo</div>
                 {% endif %}
                 <h3 class="text-xl font-medium mb-2 {% if plan.slug == 'premium' %}text-white/90{% else %}text-[#1a1a1a]{% endif %}">{{ plan.name }}</h3>
                 <div class="flex items-baseline gap-1 mb-6">
@@ -70,7 +70,7 @@
                     <li class="flex items-start gap-3 text-base {% if plan.slug == 'premium' %}text-white/80{% else %}text-[#5c5c5a]{% endif %}"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> Histórico de saúde completo</li>
                     <li class="flex items-start gap-3 text-base text-[#5c5c5a]"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> Treino ilimitado</li>
                     <li class="flex items-start gap-3 text-base text-[#5c5c5a]"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#5d674f] shrink-0"></i> 1 dieta ativa</li>
-                    <li class="flex items-start gap-3 text-base text-[#a0a09e]"><i data-lucide="x" class="w-5 h-5 stroke-[1.5] shrink-0"></i> Sem lembretes automáticos</li>
+                    <li class="flex items-start gap-3 text-base text-[#686865]"><i data-lucide="x" class="w-5 h-5 stroke-[1.5] shrink-0"></i> Sem lembretes automáticos</li>
                     {% else %}
                     <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Tudo do Free, sem limites</li>
                     <li class="flex items-start gap-3 text-base text-white/80"><i data-lucide="check" class="w-5 h-5 stroke-[1.5] text-[#e8eae4] shrink-0"></i> Lembretes automáticos</li>

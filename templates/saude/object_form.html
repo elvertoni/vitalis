@@ -12,7 +12,7 @@
             {% csrf_token %}
 
             {% if form.non_field_errors %}
-            <div class="bg-[#f2ece5] rounded-[1.5rem] px-6 py-4 mb-8 flex items-start gap-3">
+            <div class="bg-[#f2ece5] rounded-[1.5rem] px-6 py-4 mb-8 flex items-start gap-3" role="alert">
                 <i data-lucide="alert-circle" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5 text-[#5d674f]"></i>
                 <div class="text-base text-[#1a1a1a]">
                     {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
@@ -23,11 +23,11 @@
             {% for field in form %}{% include 'partials/_field.html' %}{% endfor %}
 
             <div class="flex items-center gap-4 mt-4">
-                <button type="submit" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                <button type="submit" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors group">
                     <span class="text-base font-normal tracking-wide">Salvar</span>
                     <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
                 </button>
-                <a href="{% if object %}{{ object.get_absolute_url }}{% else %}javascript:history.back(){% endif %}" class="text-base text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Cancelar</a>
+                <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'saude:index' %}{% endif %}" class="text-base text-[#5c5c5a] hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Cancelar</a>
             </div>
         </form>
     </div>

@@ -37,7 +37,7 @@
                     {% for target in day.exercise_targets.all|slice:':4' %}
                     <span class="text-sm text-[#1a1a1a]">{{ target.exercise.name }} · {{ target.target_sets }}x{{ target.target_reps }}</span>
                     {% empty %}
-                    <span class="text-sm text-[#a0a09e]">Nenhum exercício ainda</span>
+                    <span class="text-sm text-[#686865]">Nenhum exercício ainda</span>
                     {% endfor %}
                 </div>
             </a>

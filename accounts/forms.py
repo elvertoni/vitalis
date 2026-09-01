@@ -16,12 +16,16 @@ from .models import Profile, User
 
 TEXT_INPUT_CLASS = (
     'w-full bg-transparent border-b border-[#dcdacd] py-2 pb-3 text-base text-[#1a1a1a] '
-    'placeholder:text-[#a0a09e] focus:outline-none focus:border-[#5d674f] transition-colors'
+    'placeholder:text-[#686865] focus:border-[#5d674f] focus-visible:outline-none '
+    'focus-visible:ring-2 focus-visible:ring-[#5d674f]/30 focus-visible:ring-offset-2 '
+    'focus-visible:ring-offset-[#f5f4f0] transition-colors'
 )
 
 SELECT_CLASS = (
     'w-full bg-transparent border-b border-[#dcdacd] py-2 pb-3 text-base text-[#1a1a1a] '
-    'focus:outline-none focus:border-[#5d674f] transition-colors'
+    'focus:border-[#5d674f] focus-visible:outline-none focus-visible:ring-2 '
+    'focus-visible:ring-[#5d674f]/30 focus-visible:ring-offset-2 '
+    'focus-visible:ring-offset-[#f5f4f0] transition-colors'
 )
 
 
@@ -35,7 +39,11 @@ class StyledFormMixin:
             if isinstance(widget, (forms.Select, forms.SelectMultiple)):
                 widget.attrs.setdefault('class', SELECT_CLASS)
             elif isinstance(widget, forms.CheckboxInput):
-                widget.attrs.setdefault('class', 'w-4 h-4 accent-[#5d674f]')
+                widget.attrs.setdefault(
+                    'class',
+                    'w-5 h-5 accent-[#5d674f] focus-visible:outline-none '
+                    'focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2',
+                )
             else:
                 widget.attrs.setdefault('class', TEXT_INPUT_CLASS)
 
@@ -51,11 +59,15 @@ class SignupForm(StyledFormMixin, BaseUserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['full_name'].widget.attrs['placeholder'] = 'Como você quer ser chamado'
+        self.fields['full_name'].widget.attrs['autocomplete'] = 'name'
         self.fields['email'].widget.attrs['placeholder'] = 'voce@email.com'
+        self.fields['email'].widget.attrs['autocomplete'] = 'email'
         self.fields['password1'].label = 'Senha'
         self.fields['password2'].label = 'Confirme a senha'
         self.fields['password1'].widget.attrs['placeholder'] = 'Mínimo de 8 caracteres'
+        self.fields['password1'].widget.attrs['autocomplete'] = 'new-password'
         self.fields['password2'].widget.attrs['placeholder'] = 'Repita a senha'
+        self.fields['password2'].widget.attrs['autocomplete'] = 'new-password'
 
 
 class EmailAuthenticationForm(StyledFormMixin, AuthenticationForm):
@@ -65,10 +77,16 @@ class EmailAuthenticationForm(StyledFormMixin, AuthenticationForm):
         super().__init__(*args, **kwargs)
         self.fields['username'].label = 'E-mail'
         self.fields['username'].widget = forms.EmailInput(
-            attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'voce@email.com', 'autofocus': True}
+            attrs={
+                'class': TEXT_INPUT_CLASS,
+                'placeholder': 'voce@email.com',
+                'autocomplete': 'email',
+                'autofocus': True,
+            }
         )
         self.fields['password'].label = 'Senha'
         self.fields['password'].widget.attrs['placeholder'] = 'Sua senha'
+        self.fields['password'].widget.attrs['autocomplete'] = 'current-password'
 
 
 class StyledPasswordResetForm(StyledFormMixin, PasswordResetForm):
@@ -78,6 +96,7 @@ class StyledPasswordResetForm(StyledFormMixin, PasswordResetForm):
         super().__init__(*args, **kwargs)
         self.fields['email'].label = 'E-mail'
         self.fields['email'].widget.attrs['placeholder'] = 'voce@email.com'
+        self.fields['email'].widget.attrs['autocomplete'] = 'email'
 
 
 class StyledSetPasswordForm(StyledFormMixin, SetPasswordForm):
@@ -87,6 +106,8 @@ class StyledSetPasswordForm(StyledFormMixin, SetPasswordForm):
         super().__init__(*args, **kwargs)
         self.fields['new_password1'].label = 'Nova senha'
         self.fields['new_password2'].label = 'Confirme a nova senha'
+        self.fields['new_password1'].widget.attrs['autocomplete'] = 'new-password'
+        self.fields['new_password2'].widget.attrs['autocomplete'] = 'new-password'
 
 
 class ProfileForm(StyledFormMixin, forms.ModelForm):
@@ -100,9 +121,11 @@ class ProfileForm(StyledFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['birth_date'].input_formats = ['%Y-%m-%d']
+        self.fields['birth_date'].widget.attrs['autocomplete'] = 'bday'
         self.fields['height_cm'].widget.attrs['placeholder'] = 'Ex.: 178'
         self.fields['target_weight_kg'].widget.attrs['placeholder'] = 'Ex.: 78.5'
         self.fields['phone'].widget.attrs['placeholder'] = '(00) 00000-0000'
+        self.fields['phone'].widget.attrs['autocomplete'] = 'tel'
 
 
 class UserForm(StyledFormMixin, forms.ModelForm):
@@ -112,3 +135,8 @@ class UserForm(StyledFormMixin, forms.ModelForm):
         model = User
         fields = ['full_name', 'email']
         labels = {'full_name': 'Nome completo', 'email': 'E-mail'}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['full_name'].widget.attrs['autocomplete'] = 'name'
+        self.fields['email'].widget.attrs['autocomplete'] = 'email'

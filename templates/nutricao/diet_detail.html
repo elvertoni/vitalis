@@ -95,7 +95,7 @@
                     {% for item in meal.items.all|slice:':4' %}
                     <span class="text-sm text-[#1a1a1a]">{{ item.food.name }} · {{ item.quantity_g }}g</span>
                     {% empty %}
-                    <span class="text-sm text-[#a0a09e]">Nenhum item ainda</span>
+                    <span class="text-sm text-[#686865]">Nenhum item ainda</span>
                     {% endfor %}
                 </div>
             </a>

@@ -19,7 +19,7 @@
 
         <form method="get" class="flex items-center gap-4 mb-12">
             <input type="date" name="data" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()"
-                   class="bg-white border border-[#dcdacd] rounded-full px-6 py-2 text-base text-[#1a1a1a] focus:outline-none focus:border-[#5d674f] transition-colors">
+                   class="bg-white border border-[#dcdacd] rounded-full px-6 py-2 text-base text-[#1a1a1a] focus:border-[#5d674f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]/30 focus-visible:ring-offset-2 transition-colors">
             {% if selected_date != today %}
             <a href="{% url 'nutricao:dailylog_list' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Voltar para hoje</a>
             {% endif %}
