@@ -104,10 +104,14 @@ def connect():
     The gateway regenerates the code on every call and each one lives well under a minute,
     so the panel refetches instead of caching: a stale QR is a dead end for whoever is
     holding a phone in front of the screen.
+
+    Only ``pairingCode`` (the eight characters someone can type) is returned as such. The
+    sibling ``code`` field is the QR payload itself — hundreds of characters nobody types,
+    and showing it as a "pairing code" is just noise on the screen.
     """
     data = _call('GET', f'/instance/connect/{settings.EVOLUTION_INSTANCE}')
     payload = data.get('qrcode') or data
-    return payload.get('base64'), payload.get('pairingCode') or payload.get('code')
+    return payload.get('base64'), payload.get('pairingCode')
 
 
 def connected_number():
