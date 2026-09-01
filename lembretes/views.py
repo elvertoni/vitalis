@@ -23,6 +23,17 @@ from .models import Reminder
 from .services import sync_reminders
 
 
+def can_manage_whatsapp(user):
+    """Apenas superusuários ou usuários com permissão explícita podem gerenciar a sessão global do WhatsApp."""
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    if user.pk and user.has_perm('lembretes.manage_whatsapp'):
+        return True
+    return False
+
+
 class ReminderIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'lembretes/index.html'
 
@@ -42,7 +53,7 @@ class ReminderIndexView(LoginRequiredMixin, TemplateView):
             user.profile.notification_channel == Profile.NotificationChannel.WHATSAPP
             and not whatsapp.is_configured()
         ) or user.profile.notification_channel == Profile.NotificationChannel.PUSH
-        context['can_manage_whatsapp'] = user.is_staff
+        context['can_manage_whatsapp'] = can_manage_whatsapp(user)
         context['auto_reminders_enabled'] = auto_reminders_enabled(user)
         return context
 
@@ -81,12 +92,12 @@ class ReminderCancelView(LoginRequiredMixin, View):
 
 
 class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """404 para quem não é staff — mesma escolha do isolamento por dono: não revelar a rota."""
+    """404 para quem não possui privilégio de gerência do WhatsApp — mesma escolha do isolamento por dono: não revelar a rota."""
 
     raise_exception = False
 
     def test_func(self):
-        return self.request.user.is_staff
+        return can_manage_whatsapp(self.request.user)
 
     def handle_no_permission(self):
         from django.http import Http404

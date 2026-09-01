@@ -23,6 +23,7 @@ medico-seed.json
 .impeccable-server.err
 .impeccable-server.out
 .playwright-mcp/
+/graphify-out/
 codex-session-*.md
 
 # Tooling screenshots dropped in repo root

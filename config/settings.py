@@ -7,12 +7,14 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-&g$)))b&z$mozun!m_v#ga$0ghymvzl$y38nw4s94x6i#q(c=f',
-)
+DEBUG = os.environ.get('DJANGO_DEBUG', '0') == '1'
 
-DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-&g$)))b&z$mozun!m_v#ga$0ghymvzl$y38nw4s94x6i#q(c=f'
+    else:
+        raise RuntimeError('DJANGO_SECRET_KEY é obrigatória quando DEBUG=False.')
 
 ALLOWED_HOSTS = [h for h in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h]
 
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'core.middleware.SecurityHeadersMiddleware',
     # Serve o estático em produção sem nginx na frente (ver DECISIONS.md D-040).
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -129,9 +132,12 @@ EVOLUTION_API_URL = os.environ.get('EVOLUTION_API_URL', '').rstrip('/')
 EVOLUTION_API_KEY = os.environ.get('EVOLUTION_API_KEY', '')
 EVOLUTION_INSTANCE = os.environ.get('EVOLUTION_INSTANCE', '')
 
+# Chave secreta de assinatura HMAC do webhook do Mercado Pago (opcional em dev, recomendada em prod)
+MERCADOPAGO_WEBHOOK_SECRET = os.environ.get('MERCADOPAGO_WEBHOOK_SECRET', '')
+
 # Lembretes da v1 saem por e-mail. Em desenvolvimento vão para o console; em produção,
 # defina EMAIL_HOST (+ EMAIL_HOST_USER/PASSWORD, EMAIL_PORT, EMAIL_USE_TLS) para enviar
-# de verdade — sem isso o e-mail de lembrete só é logado.
+# de verdade. Sem EMAIL_HOST em produção, usa DummyBackend para não vazar tokens nos logs.
 DEFAULT_FROM_EMAIL = os.environ.get('DJANGO_DEFAULT_FROM_EMAIL', 'Vitalis <nao-responda@vitalis.app>')
 if os.environ.get('EMAIL_HOST'):
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -140,8 +146,10 @@ if os.environ.get('EMAIL_HOST'):
     EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
     EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', '1') == '1'
-else:
+elif DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 if not DEBUG:
     # O EasyPanel/Traefik termina o TLS e repassa via HTTP com X-Forwarded-Proto; sem isto

@@ -25,13 +25,15 @@ Follow PEP 8 with four-space indentation, single quotes, and descriptive English
 
 The repository intentionally has no automated test suite. Validate changes with `manage.py check`, migrations, and focused browser smoke tests. Exercise create/read/update/delete flows, authentication, validation errors, and cross-user access; another user's object must return 404 and relational form choices must remain owner-scoped.
 
+Production on the VPS is the source of truth for user accounts, subscriptions, deployed configuration, and published behavior. For any validation involving those areas, verify production first through the authenticated EasyPanel MCP connector (`work` project, `vitalis` service); use `db.sqlite3` and the local server only for complementary development checks. Do not try SSH first. If the EasyPanel connector is unavailable, state that limitation explicitly and never infer production state from local data.
+
 ## Commit & Pull Request Guidelines
 
 History uses Conventional Commit prefixes, mainly `feat:` and `chore:`, followed by concise Portuguese summaries (for example, `feat: Vitalis S5 — lembretes + dashboard consolidado`). Keep each commit focused and include migrations with their model changes. Pull requests should explain behavior and architectural impact, list manual checks, link the relevant requirement or issue, and include before/after screenshots for UI changes.
 
 ## Security & Configuration
 
-Never commit `.env`, `db.sqlite3`, uploaded `media/`, collected `staticfiles/`, real health dossiers (`medico-data/`, `medico-seed.json`), or secrets. Configuration comes directly from environment variables such as `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, and `MERCADOPAGO_ACCESS_TOKEN`. Serve sensitive attachments only through authenticated, owner-checking views.
+Never commit `.env`, `db.sqlite3`, uploaded `media/`, collected `staticfiles/`, real health dossiers (`medico-data/`, `medico-seed.json`), or secrets. Configuration follows fail-closed principles: `DJANGO_DEBUG` defaults to `0`, requiring explicit `DJANGO_SECRET_KEY` in production (raising `RuntimeError` if missing). If `EMAIL_HOST` is unset in production, `dummy.EmailBackend` is used to prevent leaking password reset tokens and clinical data to server logs. Rate limiting is enforced on auth views (`/contas/entrar/`, `/contas/recuperar-senha/`) via `core.ratelimit`. Global WhatsApp management requires `is_superuser` or `lembretes.manage_whatsapp`. Webhooks validate `x-signature` HMAC and enforce idempotency via `ProcessedWebhookEvent`. Subscriptions track active duration via `expires_at` and fallback gracefully to `Free` when expired. CSP is enforced globally via `core.middleware.SecurityHeadersMiddleware`. Serve sensitive attachments only through authenticated, owner-checking views.
 
 ## Known Gaps
 

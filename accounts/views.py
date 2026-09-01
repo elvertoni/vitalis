@@ -15,6 +15,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView, UpdateView
 
+from core.ratelimit import get_client_ip, is_rate_limited
 from .forms import (
     EmailAuthenticationForm,
     ProfileForm,
@@ -48,6 +49,16 @@ class VitalisLoginView(LoginView):
     authentication_form = EmailAuthenticationForm
     template_name = 'accounts/login.html'
     redirect_authenticated_user = True
+
+    def post(self, request, *args, **kwargs):
+        ip = get_client_ip(request)
+        if is_rate_limited(f'login:{ip}', max_requests=5, window_seconds=60):
+            messages.error(
+                request,
+                'Muitas tentativas de acesso em sequência. Aguarde um minuto antes de tentar novamente.',
+            )
+            return self.render_to_response(self.get_context_data(form=self.get_form()))
+        return super().post(request, *args, **kwargs)
 
 
 class VitalisLogoutView(LogoutView):
@@ -105,6 +116,16 @@ class VitalisPasswordResetView(PasswordResetView):
     email_template_name = 'accounts/password_reset_email.txt'
     subject_template_name = 'accounts/password_reset_subject.txt'
     success_url = reverse_lazy('accounts:password_reset_done')
+
+    def post(self, request, *args, **kwargs):
+        ip = get_client_ip(request)
+        if is_rate_limited(f'password_reset:{ip}', max_requests=3, window_seconds=300):
+            messages.error(
+                request,
+                'Muitas solicitações de recuperação de senha. Aguarde alguns minutos antes de tentar novamente.',
+            )
+            return self.render_to_response(self.get_context_data(form=self.get_form()))
+        return super().post(request, *args, **kwargs)
 
 
 class VitalisPasswordResetDoneView(PasswordResetDoneView):

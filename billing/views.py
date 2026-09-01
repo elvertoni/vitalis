@@ -5,6 +5,8 @@ everywhere else, just expressed directly since there is exactly one object per u
 not a list.
 """
 
+import hashlib
+import hmac
 import logging
 
 from django.conf import settings
@@ -18,7 +20,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
-from .models import Plan, Subscription, current_subscription
+from .models import Plan, ProcessedWebhookEvent, Subscription, current_subscription
 from .services import GatewayError, GatewayNotConfigured, get_gateway
 
 logger = logging.getLogger(__name__)
@@ -134,10 +136,35 @@ class DevActivateSubscriptionView(LoginRequiredMixin, View):
         if subscription is None:
             messages.error(request, 'Nenhuma assinatura pendente para ativar.')
             return redirect('billing:subscription')
-        subscription.status = Subscription.Status.ACTIVE
-        subscription.save(update_fields=['status', 'updated_at'])
+        subscription.activate()
+        subscription.save(update_fields=['status', 'started_at', 'expires_at', 'updated_at'])
         messages.success(request, f'[Ambiente de teste] Assinatura do plano {subscription.plan.name} ativada sem cobrança real.')
         return redirect('billing:subscription')
+
+
+def verify_mp_signature(request, payment_id):
+    """
+    Validates Mercado Pago's HMAC-SHA256 signature from the x-signature header.
+    If MERCADOPAGO_WEBHOOK_SECRET is not configured, allows requests (development fallback).
+    """
+    secret = getattr(settings, 'MERCADOPAGO_WEBHOOK_SECRET', '')
+    if not secret:
+        return True
+
+    x_signature = request.headers.get('x-signature')
+    x_request_id = request.headers.get('x-request-id', '')
+    if not x_signature:
+        return False
+
+    parts = dict(part.split('=', 1) for part in x_signature.split(',') if '=' in part)
+    ts = parts.get('ts')
+    v1 = parts.get('v1')
+    if not ts or not v1:
+        return False
+
+    manifest = f"id:{payment_id};request-id:{x_request_id};ts:{ts};"
+    expected = hmac.new(secret.encode('utf-8'), manifest.encode('utf-8'), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, v1)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -145,10 +172,8 @@ class MercadoPagoWebhookView(View):
     """
     Receives Mercado Pago's payment notifications (IPN/webhooks).
 
-    Always answers 200 quickly — Mercado Pago retries aggressively on anything else, and a
-    slow or failing handler here should never look, from their side, like something worth
-    hammering. Errors are logged, not raised. Untested against a real notification (no
-    seller account configured), but the shape follows Mercado Pago's documented payload.
+    Answers 200 quickly for valid notifications; validates HMAC signatures when
+    configured and stores processed events for idempotency and replay protection.
     """
 
     def post(self, request):
@@ -156,6 +181,10 @@ class MercadoPagoWebhookView(View):
         payment_id = request.GET.get('data.id') or request.GET.get('id')
         if topic != 'payment' or not payment_id:
             return HttpResponse(status=200)
+
+        if not verify_mp_signature(request, payment_id):
+            logger.warning('Assinatura inválida no webhook do Mercado Pago (payment_id: %s)', payment_id)
+            return HttpResponse('Assinatura inválida', status=401)
 
         try:
             payment = get_gateway().get_payment(payment_id)
@@ -170,12 +199,21 @@ class MercadoPagoWebhookView(View):
             logger.warning('Webhook do Mercado Pago referenciou assinatura inexistente: %s', subscription_id)
             return HttpResponse(status=200)
 
+        event_key = f"{topic}:{payment_id}:{status}"
+        if ProcessedWebhookEvent.objects.filter(event_id=event_key).exists():
+            logger.info('Webhook já processado anteriormente: %s', event_key)
+            return HttpResponse(status=200)
+
         if status == 'approved':
-            subscription.status = Subscription.Status.ACTIVE
+            subscription.activate()
             subscription.gateway_customer_id = payment.get('payer', {}).get('id', '') or subscription.gateway_customer_id
+            subscription.save(update_fields=['status', 'started_at', 'expires_at', 'gateway_customer_id', 'updated_at'])
         elif status in {'rejected', 'cancelled'}:
             subscription.status = Subscription.Status.CANCELLED
+            subscription.save(update_fields=['status', 'updated_at'])
         elif status == 'in_process':
             subscription.status = Subscription.Status.PAST_DUE
-        subscription.save(update_fields=['status', 'gateway_customer_id', 'updated_at'])
+            subscription.save(update_fields=['status', 'updated_at'])
+
+        ProcessedWebhookEvent.objects.create(event_id=event_key, topic=topic, status=status or '')
         return HttpResponse(status=200)

@@ -72,16 +72,17 @@ no shell antes do `runserver`:
 
 | Variável | Lida em | Default | Efeito |
 |---|---|---|---|
-| `DJANGO_DEBUG` | `config/settings.py` | `1` | `0` liga `SECURE_SSL_REDIRECT`, HSTS, cookies seguros, `SECURE_PROXY_SSL_HEADER`. Também esconde `/assinatura/ativar-teste/`. |
-| `DJANGO_SECRET_KEY` | `config/settings.py` | chave insegura embutida | trocar em produção |
+| `DJANGO_DEBUG` | `config/settings.py` | `0` | `1` ativa modo debug local. `0` (padrão) liga `SECURE_SSL_REDIRECT`, HSTS, cookies seguros e bloqueia inicialização sem `DJANGO_SECRET_KEY`. |
+| `DJANGO_SECRET_KEY` | `config/settings.py` | obrigatória em prod | Chave criptográfica do Django. Obrigatória com `DEBUG=0` (levanta `RuntimeError` se omitida). |
 | `DJANGO_ALLOWED_HOSTS` | `config/settings.py` | `localhost,127.0.0.1` | lista separada por vírgula |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | `config/settings.py` | vazio | csv de origens `https://…` — obrigatório pro POST de login/admin em produção |
 | `DATABASE_URL` | `config/settings.py` | ausente (→ SQLite) | presente → Postgres via `dj-database-url`. É o único switch dev↔prod de banco. |
-| `EMAIL_HOST` (+ `_USER`/`_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`) | `config/settings.py` | ausente (→ console) | presente → SMTP real; sem isso, e-mail de lembrete só loga |
+| `EMAIL_HOST` (+ `_USER`/`_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`) | `config/settings.py` | ausente (→ console em dev, dummy em prod) | presente → SMTP real; em dev sem SMTP usa `console`; em prod sem SMTP usa `dummy` para não vazar tokens em logs |
 | `DJANGO_SITE_URL` | `config/settings.py` | `http://127.0.0.1:8000` | base absoluta dos links dentro do lembrete enviado |
 | `EVOLUTION_API_URL` / `_KEY` / `_INSTANCE` | `config/settings.py` | vazio (→ só e-mail) | as três juntas ligam o canal WhatsApp (D-045) |
 | `DJANGO_DEFAULT_FROM_EMAIL` | `config/settings.py` | `Vitalis <nao-responda@vitalis.app>` | remetente dos lembretes e do reset de senha |
-| `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | ver seção Billing |
+| `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | token de autenticação da API Mercado Pago |
+| `MERCADOPAGO_WEBHOOK_SECRET` | `config/settings.py` | ausente | validação de assinatura HMAC (`x-signature`) no webhook |
 
 ## Idioma — a regra que mais se erra
 
@@ -267,7 +268,7 @@ própria `vitalis` — D-045) quando a pessoa escolheu esse canal no perfil, o g
 configurado e há telefone. Qualquer falha do gateway cai para e-mail com `logger.warning`:
 lembrete que chega pelo canal errado vale mais que lembrete que não chega.
 
-O pareamento da sessão fica em `/lembretes/whatsapp/`, **só para `is_staff`** e devolvendo 404
+O pareamento da sessão fica em `/lembretes/whatsapp/`, **só para superusuários ou quem tem `lembretes.manage_whatsapp`** e devolvendo 404
 para os demais (D-046): a instância é o remetente do sistema, não o WhatsApp de cada conta —
 derrubar aquela sessão tira o canal de todo mundo. Em produção o `EVOLUTION_API_URL` aponta
 para `http://work_evolution-api:8080` (rede interna do EasyPanel); pela URL pública o
@@ -301,6 +302,10 @@ por usuário+plano**: trocar de plano exige fechar (`status = cancelled`) a assi
 atual antes de abrir outra, sempre (D-035). Use `billing.models.current_subscription(user)` /
 `current_plan(user)`, nunca consulte `Subscription` direto pra descobrir "o plano de alguém".
 
+Ao ativar (`Subscription.activate()`), `expires_at` é calculado com base na periodicidade
+(`monthly` = +30 dias, `yearly` = +365 dias). Se `expires_at` tiver passado, `current_subscription`
+marca a linha como `past_due` e `current_plan` faz fallback seguro para o plano `Free`.
+
 `Subscription.plan` é `on_delete=PROTECT` — e está certo assim. A regra de D-021 ("nunca
 `PROTECT` entre models do mesmo dono") não se aplica aqui: `Plan` não é do dono de ninguém.
 Antes de copiar `PROTECT` em qualquer FK nova, pergunte "os dois lados são do mesmo usuário?"
@@ -311,11 +316,20 @@ importado pelas apps de domínio — nunca o contrário, `billing/models.py` nã
 `nutricao`/`lembretes`. Nova regra de limite: adicione a chave em `Plan.limits` (JSON, editável
 no admin sem migração) e uma função em `gating.py` que a lê via `limit_for(user, chave, default)`.
 
+O webhook do Mercado Pago valida a assinatura HMAC (`x-signature`) via `MERCADOPAGO_WEBHOOK_SECRET`
+e grava o histórico em `ProcessedWebhookEvent` para garantir idempotência contra replay.
+
 **`MERCADOPAGO_ACCESS_TOKEN` não está configurado neste ambiente** — não há conta de
 vendedor real. O checkout (`billing/services.py`, `MercadoPagoGateway`) tem a forma correta
 da API real (Checkout Pro, `urllib` puro, sem SDK nova) mas nunca rodou contra o Mercado Pago
 de verdade. Em dev, `/assinatura/ativar-teste/` (só com `DEBUG=True`, rotulado `[Teste]` na
 UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcionando.
+
+## Segurança e Rate Limiting
+
+- **Rate Limiting:** `core/ratelimit.py` protege `/contas/entrar/` (5 req/min) e `/contas/recuperar-senha/` (3 req/5min) contra ataques de força bruta.
+- **Content-Security-Policy (CSP):** Injetado por `core.middleware.SecurityHeadersMiddleware` em todas as respostas HTTP.
+- **Fail-Closed:** Em produção sem `DJANGO_SECRET_KEY`, o app recusa inicializar. Sem `EMAIL_HOST` em produção, e-mails usam `dummy.EmailBackend` para evitar vazamento de tokens em stdout/logs.
 
 ## LGPD
 
