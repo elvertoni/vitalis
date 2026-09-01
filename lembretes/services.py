@@ -11,7 +11,8 @@ never drifts when a source record changes (an appointment's return date gets pus
 the old reminder just isn't recreated), and is safe to call as often as needed — from the
 central's own page view, and from the ``send_due_reminders`` command right before it sends.
 Manual reminders (``content_type`` is null) and reminders already sent/done/cancelled are
-never touched.
+never touched — and, just as importantly, never recreated either: see
+``_drop_already_handled``, without which every run would remail the day's past reminders.
 """
 
 from datetime import datetime, time, timedelta
@@ -61,8 +62,38 @@ def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
     batch += _appointment_reminders(user, today, horizon)
     batch += _return_scheduling_reminders(user, today, horizon)
     batch += _meal_reminders(user, today, horizon)
+    batch = _drop_already_handled(user, batch, window_start, window_end)
     Reminder.objects.bulk_create(batch)
     return len(batch)
+
+
+def _drop_already_handled(user, batch, window_start, window_end):
+    """
+    Keeps the wipe-and-recreate from resurrecting reminders that are already done with.
+
+    The wipe above only deletes *pending* rows, which is what makes the rebuild safe. But a
+    row that left that state stays in the table, and regenerating it would create a second,
+    pending copy of something already handled: this morning's 07:00 dose, sent an hour ago,
+    would be recreated overdue and mailed again on the next run — every run, all day. The
+    same applies to a reminder the person ticked off or cancelled by hand.
+
+    Identity is the source record plus the exact instant, which is what the generators
+    derive deterministically from the domain data (see DECISIONS.md D-043).
+    """
+    handled = set(
+        Reminder.objects.filter(
+            user=user, content_type__isnull=False,
+            remind_at__gte=window_start, remind_at__lte=window_end,
+        )
+        .exclude(status=Reminder.Status.PENDING)
+        .values_list('content_type_id', 'object_id', 'remind_at')
+    )
+    if not handled:
+        return batch
+    return [
+        reminder for reminder in batch
+        if (reminder.content_type_id, reminder.object_id, reminder.remind_at) not in handled
+    ]
 
 
 def clear_derived_reminders(user):

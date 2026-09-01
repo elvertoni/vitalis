@@ -481,3 +481,25 @@ de não encher a central de cobranças repetidas.
 **Consequência de plano:** como todo lembrete derivado, este é bloqueado no Free pelo gate do
 D-036 (`auto_reminders_enabled`). No Free a data do retorno continua registrada e visível na
 consulta e no hub de saúde, mas nenhum dos dois lembretes é gerado.
+
+### D-043 · O apaga-e-recria não pode ressuscitar lembrete já resolvido
+**Contexto:** com o SMTP real ligado e o agendador (`SERVICE_MODE=cron`) rodando a cada 15
+minutos, os mesmos quatro lembretes da manhã chegaram duas vezes por e-mail em produção, com
+seis minutos de diferença. O defeito é do D-029, não do agendador: o wipe do `sync_reminders`
+apaga só os derivados **pendentes** da janela, mas a linha que saiu desse estado (enviada,
+concluída, cancelada) permanece na tabela — e o gerador, que é determinístico, recria a dose
+das 07:00 de hoje do zero. A cópia nova nasce pendente e vencida, o `send_due_reminders`
+manda de novo, e o ciclo se repete a cada execução até a meia-noite. O mesmo valia para um
+lembrete que a pessoa concluísse na mão: voltava no sync seguinte.
+**Decisão:** `_drop_already_handled` filtra o lote antes do `bulk_create`, descartando todo
+derivado cuja chave já exista na janela em estado diferente de pendente. A chave é
+`(content_type_id, object_id, remind_at)` — a origem mais o instante exato, que é o que os
+geradores derivam de forma determinística dos dados de domínio.
+**Motivo de não ter mudado o wipe:** apagar também as linhas enviadas resolveria a duplicação
+e destruiria o histórico de envio junto — é o registro de que aquele aviso chegou. Manter o
+wipe restrito ao pendente e filtrar na recriação preserva as duas coisas.
+**Motivo de a chave incluir o horário:** o mesmo remédio gera uma linha por dose por dia.
+Deduplicar só por origem calaria as doses seguintes.
+**Nota de operação:** o `entrypoint.sh` deixou de rodar `migrate` no modo cron. Quem aplica
+migration é o serviço web, sozinho; dois containers subindo o schema ao mesmo tempo num
+deploy é corrida sem ganho nenhum.

@@ -229,6 +229,10 @@ aponta pra `Medication`, `Exam`, `Appointment` ou `Meal` — é gerado por
 edite um `Reminder` derivado na mão nem tente fazer `get_or_create` incremental nele** — o
 padrão é apaga-e-recria (D-029): toda chamada de `sync_reminders` apaga os pendentes
 derivados da janela de 7 dias e recria do zero a partir do estado atual das apps de origem.
+O wipe alcança só o que está **pendente**, então a recriação passa por `_drop_already_handled`
+antes do `bulk_create`: derivado cuja chave `(content_type, object_id, remind_at)` já existe
+na janela como enviado/concluído/cancelado não volta. Sem esse filtro, o lembrete da manhã
+que já saiu por e-mail é recriado vencido e reenviado a cada rodada do agendador (D-043).
 **Manual** — `content_type` nulo, criado pela pessoa em `/lembretes/novo/` — nunca é tocado
 pelo sync.
 
@@ -245,6 +249,13 @@ uma lista de `Reminder(...)` não salvos, somada em `sync_reminders`, com `conte
 model de origem e `object_id` do registro. Rode `python manage.py send_due_reminders` pra
 disparar manualmente em dev — ele sincroniza todo mundo e envia (console, `EMAIL_BACKEND`
 atual) o que já venceu.
+
+Em produção quem chama esse comando é o serviço **`vitalis-cron`** do EasyPanel: mesma imagem
+do app, `SERVICE_MODE=cron` no ambiente, e o `entrypoint.sh` entra num laço de
+`send_due_reminders` a cada 15 minutos em vez de subir o gunicorn. Nesse modo ele **não** roda
+`migrate` — quem aplica schema é o serviço web. Mexeu em `sync_reminders` ou no envio? Rode
+o comando duas vezes seguidas e confira que a segunda envia zero: é o teste que pega
+regressão de reenvio.
 
 ## Billing: `Plan` é catálogo, `Subscription` é do dono
 
