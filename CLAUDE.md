@@ -23,21 +23,34 @@ Conflito de **escopo** → o PRD vence. Conflito de **convenção de código** �
 .\.venv\Scripts\python.exe manage.py createsuperuser
 .\.venv\Scripts\python.exe manage.py check          # validação de config — o mais perto de "lint" que existe
 .\.venv\Scripts\python.exe manage.py send_due_reminders  # sincroniza e envia lembretes vencidos
+.\.venv\Scripts\python.exe manage.py seed_medico --email <e-mail> --source <dossiê.json>  # importa um histórico de saúde (ver D-041)
 ```
 
-Sem Docker, sem suíte de testes — ambos proibidos pela diretiva D10. Verificação de mudança:
-`manage.py check`, inspecionar a migration gerada antes de aplicar, e smoke test no navegador
-(criar/editar/apagar, erro de validação, acesso cruzado entre usuários devolvendo 404).
+Sem suíte de testes (diretiva D10). **Docker só existe para o deploy** (`Dockerfile`,
+`entrypoint.sh`) — o desenvolvimento não usa: nada de Docker no fluxo local. Verificação de
+mudança: `manage.py check`, inspecionar a migration gerada antes de aplicar, e smoke test no
+navegador (criar/editar/apagar, erro de validação, acesso cruzado entre usuários devolvendo
+404).
 
-Banco: SQLite em `db.sqlite3`. E-mail sai no console em desenvolvimento; o link de recuperação
-de senha aparece no terminal do `runserver`.
+Banco em dev: SQLite em `db.sqlite3`. E-mail sai no console em desenvolvimento; o link de
+recuperação de senha aparece no terminal do `runserver`.
 
 ### Stack e assets
 
-Python 3.12+ · Django 6.0 (única dependência, ver `requirements.txt`) · SQLite. **Tailwind vem
+Python 3.12+ · Django 6.0. Dependências extras (`gunicorn`, `psycopg`, `whitenoise`,
+`dj-database-url`) são **só de produção** — o dev roda com Django + SQLite. **Tailwind vem
 do CDN** (`cdn.tailwindcss.com` em `templates/base.html`), config inline no `<script>` daquele
 head — **não há npm, nem build de CSS, nem `tailwind.config.js` em arquivo**. `static/` só tem
 o favicon. Lucide também via CDN. Fonte Inter via Google Fonts.
+
+### Produção (EasyPanel) — ver `DECISIONS.md` D-040
+
+`Dockerfile` builda com `python:3.12-slim`, roda `collectstatic` no build, e o
+`entrypoint.sh` aplica `migrate` e sobe `gunicorn config.wsgi`. WhiteNoise serve o estático
+(sem nginx na frente). Postgres entra via `DATABASE_URL` — **é o único switch**: sem essa
+env, `config/settings.py` cai no SQLite de sempre. Anexos de exame vivem num volume montado
+em `/app/media` (dado sensível, LGPD — não pode sumir num redeploy). App publicado em
+`work/vitalis` no EasyPanel; domínio `vitalis.tonicoimbra.com`.
 
 ### Configuração — só `os.environ`, sem loader de `.env`
 
@@ -46,9 +59,12 @@ no shell antes do `runserver`:
 
 | Variável | Lida em | Default | Efeito |
 |---|---|---|---|
-| `DJANGO_DEBUG` | `config/settings.py` | `1` | `0` liga `SECURE_SSL_REDIRECT`, HSTS, cookies seguros. Também esconde `/assinatura/ativar-teste/`. |
+| `DJANGO_DEBUG` | `config/settings.py` | `1` | `0` liga `SECURE_SSL_REDIRECT`, HSTS, cookies seguros, `SECURE_PROXY_SSL_HEADER`. Também esconde `/assinatura/ativar-teste/`. |
 | `DJANGO_SECRET_KEY` | `config/settings.py` | chave insegura embutida | trocar em produção |
 | `DJANGO_ALLOWED_HOSTS` | `config/settings.py` | `localhost,127.0.0.1` | lista separada por vírgula |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `config/settings.py` | vazio | csv de origens `https://…` — obrigatório pro POST de login/admin em produção |
+| `DATABASE_URL` | `config/settings.py` | ausente (→ SQLite) | presente → Postgres via `dj-database-url`. É o único switch dev↔prod de banco. |
+| `EMAIL_HOST` (+ `_USER`/`_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`) | `config/settings.py` | ausente (→ console) | presente → SMTP real; sem isso, e-mail de lembrete só loga |
 | `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | ver seção Billing |
 
 ## Idioma — a regra que mais se erra

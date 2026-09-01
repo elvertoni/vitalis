@@ -14,6 +14,10 @@ db.sqlite3
 .env
 .env.*
 
+# Dados médicos reais — ficam fora do git (LGPD, ver DECISIONS.md D-041)
+medico-seed.json
+/medico-data/
+
 # Tooling junk
 .impeccable/
 .impeccable-server.err

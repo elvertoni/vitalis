@@ -1,0 +1,111 @@
+{
+  "_comment": "Estrutura lida por `python manage.py seed_medico`. Sem dados reais — o arquivo com dados fica fora do git (ver DECISIONS.md D-041). Datas em AAAA-MM-DD, horários em HH:MM, decimais como string.",
+
+  "profile": {
+    "birth_date": "1980-01-01",
+    "sex": "M",
+    "height_cm": 180,
+    "target_weight_kg": "80.00",
+    "notification_channel": "email",
+    "phone": ""
+  },
+
+  "doctors": [
+    {
+      "name": "Dr. Fulano de Tal",
+      "specialty": "Clínica Geral",
+      "notes": "CRM 00000-UF",
+      "clinic_name": "",
+      "clinic_address": "",
+      "phone": "",
+      "email": ""
+    }
+  ],
+
+  "treatments": [
+    {
+      "name": "Nome do tratamento (CID se houver)",
+      "doctor": "Dr. Fulano de Tal",
+      "start_date": "2026-01-01",
+      "end_date": null,
+      "status": "ongoing",
+      "description": "",
+      "notes": ""
+    }
+  ],
+
+  "medications": [
+    {
+      "name": "Nome comercial",
+      "dosage": "50 mg (1 cp)",
+      "frequency": "1x ao dia",
+      "start_date": "2026-01-01",
+      "end_date": null,
+      "schedule_times": ["08:00"],
+      "is_active": true,
+      "treatment": "Nome do tratamento (CID se houver)"
+    }
+  ],
+
+  "exams": [
+    {
+      "name": "Hemograma",
+      "doctor": "Dr. Fulano de Tal",
+      "treatment": "Nome do tratamento (CID se houver)",
+      "requested_date": "2026-01-01",
+      "scheduled_date": null,
+      "done_date": "2026-01-05",
+      "result_summary": "Transcrição dos valores do laudo, não interpretação.",
+      "status": "done",
+      "attachment_file": "subpasta/arquivo.pdf"
+    }
+  ],
+
+  "appointments": [
+    {
+      "doctor": "Dr. Fulano de Tal",
+      "treatment": "Nome do tratamento (CID se houver)",
+      "date": "2026-01-05",
+      "reason": "",
+      "notes": "",
+      "next_return_date": "2026-02-05"
+    }
+  ],
+
+  "foods": [
+    {
+      "name": "Arroz branco cozido",
+      "portion_base_g": 100,
+      "calories": "128",
+      "protein_g": "2.5",
+      "carbs_g": "28.0",
+      "fat_g": "0.2"
+    }
+  ],
+
+  "diets": [
+    {
+      "name": "Plano alimentar",
+      "goal": "weight_loss",
+      "daily_calorie_target": 1800,
+      "protein_target_g": 140,
+      "carbs_target_g": null,
+      "fat_target_g": null,
+      "is_active": true,
+      "meals": [
+        {
+          "name": "Café da manhã",
+          "time": "07:00",
+          "order": 1,
+          "items": [
+            { "food": "Arroz branco cozido", "quantity_g": "100" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "weight_logs": [
+    { "date": "2026-01-01", "weight_kg": "90.00", "notes": "" }
+  ]
+}

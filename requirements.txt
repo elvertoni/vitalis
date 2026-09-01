@@ -1,1 +1,7 @@
 Django>=6.0,<6.1
+
+# Produção (deploy EasyPanel — ver DECISIONS.md D-040). O dev roda só com Django + SQLite.
+gunicorn>=23,<24
+psycopg[binary]>=3.2,<4
+whitenoise>=6.8,<7
+dj-database-url>=2.3,<3

@@ -25,8 +25,16 @@ python -m venv .venv
 
 `http://127.0.0.1:8000/`
 
-Sem Docker, sem suíte de testes automatizados — decisão explícita do projeto (ver
-`PROMPT-EXEC-vitalis.xml`, diretiva D10).
+Sem suíte de testes automatizados — decisão explícita do projeto (ver
+`PROMPT-EXEC-vitalis.xml`, diretiva D10). Docker existe **só para o deploy** (`Dockerfile` +
+`entrypoint.sh`); o desenvolvimento roda direto com Django + SQLite.
+
+## Deploy
+
+Publicado no EasyPanel (`work/vitalis`) em `https://vitalis.tonicoimbra.com`. Build por
+`Dockerfile` (gunicorn + WhiteNoise), Postgres dedicado via `DATABASE_URL`, anexos num
+volume em `/app/media`. Detalhes e o porquê do override do D10 em `DECISIONS.md` (D-040).
+Sem `DATABASE_URL` o projeto continua em SQLite — nada no fluxo local muda.
 
 ## Estado
 

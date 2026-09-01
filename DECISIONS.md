@@ -420,3 +420,40 @@ página que pede confiança com exames e medicação é pior que a ausência. Cl
 texto antigo ("Nada esquecido", "chega antes da hora", "evolução inteira") foram trocadas por
 afirmações defensáveis ("Lembrete com antecedência", "com dias de antecedência", "evolução
 registrada").
+
+---
+
+## Deploy em produção (EasyPanel)
+
+### D-040 · Produção usa Docker + Postgres; o D10 valeu só para a fase de construção
+**Contexto:** o `PROMPT-EXEC-vitalis.xml` proíbe Docker e Postgres — D10 (`MUST_NOT`, linha
+79), guardrail da linha 181, DoD da linha 175 ("apenas SQLite"). O dono do produto pediu
+deploy na VPS dele (EasyPanel, `161.97.69.249`), que builda por Dockerfile e não serve
+SQLite com segurança em container.
+**Decisão:** adicionar `Dockerfile`, `entrypoint.sh` (gunicorn), WhiteNoise para o estático e
+suporte a Postgres via `DATABASE_URL` (`dj-database-url`). **O desenvolvimento continua
+idêntico:** sem `DATABASE_URL`, `config/settings.py` cai no SQLite de sempre; ninguém precisa
+de Docker para rodar local. O switch é uma única variável de ambiente. Anexos de exame moram
+num volume persistente montado em `/app/media` (dado sensível, LGPD — não pode sumir num
+redeploy).
+**Motivo:** o D10 era uma diretiva da fase de MVP, para não afogar a construção em
+infraestrutura. Publicar o produto é outra fase e o dono decidiu explicitamente — o que o
+`ambiguity_protocol` manda registrar aqui. A regra continua valendo para o dia a dia de
+código: ninguém adiciona Postgres/Docker ao fluxo local.
+
+### D-041 · Dados médicos reais entram por `seed_medico` + JSON fora do git
+**Contexto:** o dono pediu a ingestão do dossiê de saúde dele (`RESUMO-SAUDE.md` + PDFs) na
+conta `elvertoni@gmail.com`. Esses dados — diagnósticos, medicação, resultados de exame — são
+dado sensível de saúde e não podem virar literal de código num repositório, nem mesmo
+privado.
+**Decisão:** o comando `core/management/commands/seed_medico.py` é **genérico e vazio de
+dados** — lê tudo de um `--source` JSON. O JSON com dados reais (`medico-seed.json` /
+`medico-data/`) está no `.gitignore` e no `.dockerignore`; só o `medico-seed.example.json`
+(estrutura, sem dados) é versionado. Em produção o JSON é entregue ao container por
+`exec_in_container` (base64), o comando roda, e o arquivo é apagado do disco em seguida. Os
+PDFs de laudo sobem pela UI real (form validado por `validate_attachment`), nunca por commit.
+O comando é idempotente (`update_or_create` por campo natural): rodar de novo corrige em vez
+de duplicar.
+**Motivo:** o dossiê de uma pessoa não tem por que estar no histórico do git de todo mundo
+que clonar o repo. Manter o comando separado dos dados também o deixa reutilizável para
+qualquer usuário futuro que queira importar um histórico.

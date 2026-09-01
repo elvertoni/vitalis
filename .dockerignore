@@ -1,0 +1,26 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.py[cod]
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+.env
+.env.*
+
+# Dados médicos e dumps — nunca vão para a imagem (ver DECISIONS.md D-041)
+medico-seed.json
+medico-data/
+
+# Artefatos de tooling
+.impeccable/
+.impeccable-server.*
+.playwright-mcp/
+codex-session-*.md
+*.png
+*.md.original
+
+# Docs que não precisam no runtime
+AGENTS.md
