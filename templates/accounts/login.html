@@ -17,7 +17,13 @@
     </div>
     {% endif %}
 
-    {% for field in form %}{% include 'partials/_field.html' %}{% endfor %}
+    {% for field in form %}
+        {% if field.field.widget.input_type == 'password' %}
+            {% include 'partials/_password_field.html' %}
+        {% else %}
+            {% include 'partials/_field.html' %}
+        {% endif %}
+    {% endfor %}
 
     <button type="submit" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
         <span class="text-base font-normal tracking-wide">Entrar</span>
@@ -31,4 +37,27 @@
         </a>
     </div>
 </form>
+
+<script>
+    // Olhinho de revelar senha. O botão só existe com JS ligado — ver partials/_password_field.html.
+    document.querySelectorAll('.js-password-toggle').forEach(button => {
+        const input = document.getElementById(button.dataset.target);
+        if (!input) return;
+        button.classList.remove('hidden');
+        button.classList.add('inline-flex');
+        button.addEventListener('click', () => {
+            const revealed = input.type === 'text';
+            input.type = revealed ? 'password' : 'text';
+            const label = revealed ? 'Mostrar senha' : 'Ocultar senha';
+            button.setAttribute('aria-pressed', revealed ? 'false' : 'true');
+            button.setAttribute('aria-label', label);
+            button.title = label;
+            button.innerHTML = '<i data-lucide="' + (revealed ? 'eye' : 'eye-off') + '" class="w-5 h-5 stroke-[1.5]"></i>';
+            lucide.createIcons();
+            const end = input.value.length;
+            input.focus();
+            input.setSelectionRange(end, end);
+        });
+    });
+</script>
 {% endblock %}

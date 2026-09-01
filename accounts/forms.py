@@ -85,6 +85,8 @@ class EmailAuthenticationForm(StyledFormMixin, AuthenticationForm):
             }
         )
         self.fields['password'].label = 'Senha'
+        # pr-12 abre espaço para o botão de revelar a senha (partials/_password_field.html).
+        self.fields['password'].widget.attrs['class'] = TEXT_INPUT_CLASS + ' pr-12'
         self.fields['password'].widget.attrs['placeholder'] = 'Sua senha'
         self.fields['password'].widget.attrs['autocomplete'] = 'current-password'
 
