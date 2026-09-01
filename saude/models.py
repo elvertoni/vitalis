@@ -143,6 +143,11 @@ class Exam(OwnedModel):
         return reverse('saude:exam_detail', args=[self.pk])
 
     @property
+    def needs_scheduling(self):
+        """Requested by a doctor, never booked and never done — nobody marked a date yet."""
+        return self.scheduled_date is None and self.done_date is None
+
+    @property
     def relevant_date(self):
         """The date that matters for sorting a timeline: done, else scheduled, else requested."""
         return self.done_date or self.scheduled_date or self.requested_date
@@ -152,10 +157,14 @@ class Exam(OwnedModel):
         return bool(self.scheduled_date and not self.done_date and self.scheduled_date >= date.today())
 
 
-# Quantos dias antes do retorno o sistema cobra o agendamento. Vive aqui, e não em
-# ``lembretes``, porque a consulta precisa da constante para mostrar a data na tela e
-# ``saude`` não pode importar ``lembretes`` (a dependência corre no sentido contrário).
-RETURN_SCHEDULING_LEAD_DAYS = 15
+# Ritmo das cobranças de agendamento. Vivem aqui, e não em ``lembretes``, porque as telas de
+# saúde precisam das constantes e ``saude`` não pode importar ``lembretes`` (a dependência
+# corre no sentido contrário). Ver DECISIONS.md D-042 e D-044.
+RETURN_SCHEDULING_LEAD_DAYS = 15      # retorno pedido pelo médico: avisa 15 dias antes
+EXAM_SCHEDULING_LEAD_DAYS = 3         # exame solicitado: espera 3 dias antes de cobrar
+EXAM_SCHEDULING_REPEAT_DAYS = 7       # e repete semanalmente enquanto não tiver data
+EXAM_SCHEDULING_MAX_NOTICES = 8       # por 8 semanas; depois disso a solicitação envelheceu
+TREATMENT_CHECKUP_INTERVAL_DAYS = 30  # tratamento em andamento sem nada marcado: mensal
 
 
 class Appointment(OwnedModel):

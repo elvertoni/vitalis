@@ -2,7 +2,7 @@
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-5 {% if not forloop.last %}border-b {% if due %}border-white/20{% else %}border-[#dcdacd]{% endif %}{% endif %}">
     <div class="flex items-start gap-4">
         <div class="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 {% if due %}border-white/30 bg-white/10{% else %}border-[#dcdacd] bg-[#f5f4f0]{% endif %}">
-            <i data-lucide="{% if reminder.category == 'remedio' %}pill{% elif reminder.category == 'exame' %}flask-conical{% elif reminder.category == 'retorno' %}calendar-clock{% elif reminder.category == 'treino' %}dumbbell{% elif reminder.category == 'nutricao' %}notebook-pen{% else %}bell{% endif %}"
+            <i data-lucide="{% if reminder.category == 'remedio' %}pill{% elif reminder.category == 'exame' %}flask-conical{% elif reminder.category == 'retorno' %}calendar-clock{% elif reminder.category == 'agendar' %}calendar-plus{% elif reminder.category == 'treino' %}dumbbell{% elif reminder.category == 'nutricao' %}notebook-pen{% else %}bell{% endif %}"
                class="w-5 h-5 stroke-[1.5] {% if due %}text-white{% else %}text-[#5d674f]{% endif %}"></i>
         </div>
         <div>

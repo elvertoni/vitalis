@@ -21,7 +21,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from nutricao.models import Diet, Meal
-from saude.models import RETURN_SCHEDULING_LEAD_DAYS, Appointment, Exam, Medication
+from saude.models import (
+    EXAM_SCHEDULING_LEAD_DAYS,
+    EXAM_SCHEDULING_MAX_NOTICES,
+    EXAM_SCHEDULING_REPEAT_DAYS,
+    RETURN_SCHEDULING_LEAD_DAYS,
+    TREATMENT_CHECKUP_INTERVAL_DAYS,
+    Appointment,
+    Exam,
+    Medication,
+    Treatment,
+)
 
 from .models import Reminder
 
@@ -61,6 +71,8 @@ def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
     batch += _exam_reminders(user, today, horizon)
     batch += _appointment_reminders(user, today, horizon)
     batch += _return_scheduling_reminders(user, today, horizon)
+    batch += _exam_scheduling_reminders(user, today, horizon)
+    batch += _treatment_checkup_reminders(user, today, horizon)
     batch += _meal_reminders(user, today, horizon)
     batch = _drop_already_handled(user, batch, window_start, window_end)
     Reminder.objects.bulk_create(batch)
@@ -183,14 +195,88 @@ def _return_scheduling_reminders(user, today, horizon):
         if not today <= remind_day <= horizon:
             continue
         reminders.append(Reminder(
-            user=user, category=Reminder.Category.RETURN,
-            title=f'Agendar retorno · {visit.doctor}',
+            user=user, category=Reminder.Category.SCHEDULING,
+            title=f'Não se esqueça de agendar seu retorno com {visit.doctor}',
             description=(
-                f'O retorno foi pedido para {visit.next_return_date:%d/%m/%Y}. '
+                f'O médico pediu o retorno para {visit.next_return_date:%d/%m/%Y}. '
                 'Ligue para marcar enquanto há vaga.'
             ),
             remind_at=_aware(remind_day, DEFAULT_TIME),
             content_type=content_type, object_id=visit.pk,
+        ))
+    return reminders
+
+
+def _exam_scheduling_reminders(user, today, horizon):
+    """
+    "Book the exam the doctor ordered", for every request still without a date.
+
+    ``_exam_reminders`` only covers an exam that already has a day marked — the request that
+    nobody ever booked was invisible, which is exactly the one worth chasing. Starts
+    ``EXAM_SCHEDULING_LEAD_DAYS`` after the request (people do book it themselves in the
+    first days) and repeats weekly while the exam has no date, up to
+    ``EXAM_SCHEDULING_MAX_NOTICES`` times: a request nobody acted on for two months is stale,
+    not urgent, and nagging forever trains the person to ignore the whole channel.
+    """
+    content_type = ContentType.objects.get_for_model(Exam)
+    reminders = []
+    for exam in Exam.objects.filter(
+        user=user, scheduled_date__isnull=True, done_date__isnull=True,
+    ).select_related('doctor'):
+        day = exam.requested_date + timedelta(days=EXAM_SCHEDULING_LEAD_DAYS)
+        for _ in range(EXAM_SCHEDULING_MAX_NOTICES):
+            if day > horizon:
+                break
+            if day >= today:
+                asked_by = f'Solicitado por {exam.doctor}' if exam.doctor else 'Solicitado'
+                reminders.append(Reminder(
+                    user=user, category=Reminder.Category.SCHEDULING,
+                    title=f'Não se esqueça de agendar seu exame: {exam.name}',
+                    description=f'{asked_by} em {exam.requested_date:%d/%m/%Y}, e ainda sem data marcada.',
+                    remind_at=_aware(day, DEFAULT_TIME),
+                    content_type=content_type, object_id=exam.pk,
+                ))
+            day += timedelta(days=EXAM_SCHEDULING_REPEAT_DAYS)
+    return reminders
+
+
+def _treatment_checkup_reminders(user, today, horizon):
+    """
+    "Book your next appointment", for a treatment that is running with nothing scheduled.
+
+    Only fires when the treatment is open, has no upcoming visit and no pending return date —
+    those two already have their own notice, and a third one saying the same thing is noise.
+    Anchored on the last visit of that treatment (or its start date) and repeated every
+    ``TREATMENT_CHECKUP_INTERVAL_DAYS``, so the cadence is predictable instead of drifting
+    with whenever the sync happened to run.
+    """
+    content_type = ContentType.objects.get_for_model(Treatment)
+    reminders = []
+    for treatment in Treatment.objects.filter(
+        user=user, status=Treatment.Status.ONGOING,
+    ).select_related('doctor'):
+        visits = list(treatment.appointments.all())
+        if any(visit.date >= today for visit in visits):
+            continue  # já tem consulta marcada
+        if any(visit.next_return_date and visit.next_return_date >= today for visit in visits):
+            continue  # o retorno já foi pedido: quem cobra é _return_scheduling_reminders
+        last_visit = max((visit.date for visit in visits), default=None)
+        anchor = last_visit or treatment.start_date
+        elapsed = (today - anchor).days
+        periods = max(1, -(-elapsed // TREATMENT_CHECKUP_INTERVAL_DAYS))  # teto da divisão
+        day = anchor + timedelta(days=TREATMENT_CHECKUP_INTERVAL_DAYS * periods)
+        if not today <= day <= horizon:
+            continue
+        since = (
+            f'A última consulta foi em {last_visit:%d/%m/%Y}.' if last_visit
+            else f'Nenhuma consulta registrada desde o início, em {treatment.start_date:%d/%m/%Y}.'
+        )
+        reminders.append(Reminder(
+            user=user, category=Reminder.Category.SCHEDULING,
+            title=f'Não se esqueça de agendar sua próxima consulta · {treatment.name}',
+            description=since,
+            remind_at=_aware(day, DEFAULT_TIME),
+            content_type=content_type, object_id=treatment.pk,
         ))
     return reminders
 

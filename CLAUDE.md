@@ -78,6 +78,7 @@ no shell antes do `runserver`:
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | `config/settings.py` | vazio | csv de origens `https://…` — obrigatório pro POST de login/admin em produção |
 | `DATABASE_URL` | `config/settings.py` | ausente (→ SQLite) | presente → Postgres via `dj-database-url`. É o único switch dev↔prod de banco. |
 | `EMAIL_HOST` (+ `_USER`/`_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`) | `config/settings.py` | ausente (→ console) | presente → SMTP real; sem isso, e-mail de lembrete só loga |
+| `DJANGO_SITE_URL` | `config/settings.py` | `http://127.0.0.1:8000` | base absoluta dos links dentro do lembrete enviado |
 | `DJANGO_DEFAULT_FROM_EMAIL` | `config/settings.py` | `Vitalis <nao-responda@vitalis.app>` | remetente dos lembretes e do reset de senha |
 | `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | ver seção Billing |
 
@@ -242,6 +243,21 @@ retorno no dia (`_appointment_reminders`) e o de *marcar* a consulta 15 dias ant
 — fica lá porque `saude` não importa `lembretes`). O segundo só olha a última consulta de
 cada médico: registrar uma consulta mais nova com o mesmo médico é o sinal de "já agendei" e
 cala o aviso, sem campo de controle manual.
+
+### Gerar é uma coisa, notificar é outra
+
+`sync_reminders` gera tudo; **quem sai por mensagem é só a categoria `agendar`**
+(`Reminder.Category.SCHEDULING`), listada em `lembretes/notifications.py`
+(`NOTIFY_CATEGORIES`). Dose de remédio e refeição da dieta continuam na central e no painel e
+nunca viram e-mail — onze avisos de rotina por dia afogam o único que exige ação, que é ligar
+para marcar alguma coisa (D-044). Três geradores alimentam a categoria: retorno pedido pelo
+médico, exame solicitado sem data marcada e tratamento aberto sem nada agendado.
+
+`notifications.py` é também o **único lugar que conhece o canal**: `send_reminder` monta o
+texto e entrega. O comando `send_due_reminders` decide *quando*, nunca *o quê* nem *como* —
+é lá que o WhatsApp (Evolution API, D-028) entra quando for a hora. Os links dentro da
+mensagem usam `settings.SITE_URL` (env `DJANGO_SITE_URL`), porque quem envia está fora do
+ciclo HTTP e não tem `request` para montar URL absoluta.
 
 Categoria nova de lembrete automático (ex.: um dia vier agendamento de treino) segue o padrão
 de `lembretes/services.py`: uma função `_algo_reminders(user, today, horizon)` que devolve

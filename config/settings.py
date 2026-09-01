@@ -119,6 +119,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Base absoluta dos links dentro dos lembretes enviados. Sem request para montar a URL
+# (quem envia é um comando de fora do ciclo HTTP), então vem do ambiente.
+SITE_URL = os.environ.get('DJANGO_SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
+
 # Lembretes da v1 saem por e-mail. Em desenvolvimento vão para o console; em produção,
 # defina EMAIL_HOST (+ EMAIL_HOST_USER/PASSWORD, EMAIL_PORT, EMAIL_USE_TLS) para enviar
 # de verdade — sem isso o e-mail de lembrete só é logado.

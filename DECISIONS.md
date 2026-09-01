@@ -503,3 +503,28 @@ Deduplicar só por origem calaria as doses seguintes.
 **Nota de operação:** o `entrypoint.sh` deixou de rodar `migrate` no modo cron. Quem aplica
 migration é o serviço web, sozinho; dois containers subindo o schema ao mesmo tempo num
 deploy é corrida sem ganho nenhum.
+
+### D-044 · Só o que ainda não tem data marcada vira e-mail
+**Contexto:** com o envio real ligado, a caixa do dono recebia ~11 mensagens por dia — uma por
+dose de remédio e uma por refeição da dieta ativa. Ele pediu que o e-mail passasse a ser
+"não se esqueça de agendar sua próxima consulta / o exame de sangue / o retorno".
+**Decisão:** nasce a categoria `Reminder.Category.SCHEDULING` ('agendar'), e
+`lembretes.notifications.NOTIFY_CATEGORIES` — hoje só ela — define o que sai do sistema. Dose
+de remédio e refeição continuam sendo geradas e continuam na central e no painel; apenas não
+viram mensagem. Três geradores alimentam a categoria: retorno pedido pelo médico (D-042),
+**exame solicitado que ninguém marcou** e **tratamento em andamento sem nada agendado**.
+**Motivo:** remédio e refeição são rotina que a pessoa já vive; o valor do aviso é baixo e o
+custo é alto — onze e-mails por dia treinam qualquer um a ignorar o remetente, e aí o aviso
+que importa (algo sem data marcada, que exige ligar para um consultório) se perde no meio.
+Notificação só se paga quando pede uma ação que não aconteceria sozinha.
+**O buraco que isso fechou:** `_exam_reminders` só cobria exame **com** data marcada. O pedido
+de exame que nunca foi agendado — o caso mais fácil de esquecer — não gerava nada. Agora
+`_exam_scheduling_reminders` cobra 3 dias depois da solicitação e repete semanalmente por até
+8 semanas enquanto o exame seguir sem data; depois disso a solicitação é velha, não urgente.
+**Ritmo do "próxima consulta":** `_treatment_checkup_reminders` só dispara com o tratamento
+aberto, sem consulta futura e sem retorno pendente — os dois já têm aviso próprio. A cadência
+é ancorada na última consulta daquele tratamento (a cada 30 dias), não em "quando o sync
+rodou", para o dia do aviso ser previsível.
+**Canal:** `notifications.send_reminder` é o único ponto que conhece o meio de entrega. O
+WhatsApp via Evolution API (que `Profile.notification_channel` promete desde a Sprint 5,
+D-028) entra ali, sem o comando despachante saber da diferença.

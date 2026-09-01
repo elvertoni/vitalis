@@ -22,6 +22,8 @@ class Reminder(OwnedModel):
         MEDICATION = 'remedio', 'Remédio'
         EXAM = 'exame', 'Exame'
         RETURN = 'retorno', 'Retorno médico'
+        # Marcar algo que ainda não tem data: o único grupo que sai por e-mail (D-044).
+        SCHEDULING = 'agendar', 'Agendamento'
         TRAINING = 'treino', 'Treino'
         NUTRITION = 'nutricao', 'Nutrição'
         OTHER = 'outro', 'Outro'
