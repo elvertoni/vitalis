@@ -528,3 +528,24 @@ rodou", para o dia do aviso ser previsível.
 **Canal:** `notifications.send_reminder` é o único ponto que conhece o meio de entrega. O
 WhatsApp via Evolution API (que `Profile.notification_channel` promete desde a Sprint 5,
 D-028) entra ali, sem o comando despachante saber da diferença.
+
+### D-045 · WhatsApp pela Evolution API, em instância própria do Vitalis
+**Contexto:** `Profile.notification_channel` oferece WhatsApp desde a Sprint 5, mas nada
+despachava (D-028) — a central chegou a exibir "Lembretes por WhatsApp" para um perfil que só
+recebia e-mail. O dono já opera uma Evolution API na mesma VPS (`evoapi.tonicoimbra.com`),
+usada pelo agenda-med e por outros projetos.
+**Decisão:** usar esse gateway, mas numa **instância separada chamada `vitalis`**, com a
+apikey própria que a Evolution devolve na criação — não a chave global do painel, que abre
+todas as instâncias. O cliente é `lembretes/whatsapp.py`: `urllib` puro, um endpoint
+(`/message/sendText/{instance}`), sem SDK nova, no mesmo estilo de `billing/services.py`.
+**Motivo da instância separada:** a instância `CLINICA` atende pacientes de um consultório.
+Aviso pessoal de saúde saindo da mesma sessão de WhatsApp mistura dois contextos que não têm
+nada a ver, e um número que cai leva o outro junto. Sessões separadas falham separadamente.
+**Motivo do fallback:** `notifications.send_reminder` tenta o WhatsApp só quando a pessoa o
+escolheu, o gateway está configurado e há telefone no perfil; qualquer falha de rede ou
+recusa do gateway cai para e-mail, com `logger.warning`. Um aviso que chega pelo canal
+errado vale muito mais que um aviso que não chega — e a instância do WhatsApp é a peça mais
+frágil de toda a cadeia, porque depende de uma sessão que pode ser desconectada do celular.
+**Telefone:** `whatsapp.normalize_phone` aceita o que a pessoa digitou (`(41) 99115-8701`) e
+devolve `5541991158701`; número sem DDD é recusado, e o envio cai para e-mail em vez de
+entregar no vazio.

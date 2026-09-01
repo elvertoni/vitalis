@@ -8,16 +8,24 @@ actually matters (something with no date booked yet) drowns. So only
 ``Reminder.Category.SCHEDULING`` leaves the building; everything else stays visible in the
 central and on the dashboard. See ``DECISIONS.md`` D-044.
 
-**How it is worded and delivered**: the channel is isolated in ``send_reminder`` so a second
-one (WhatsApp through the Evolution API, which ``Profile.notification_channel`` has promised
-since Sprint 5 — D-028) plugs in here, without the dispatcher command knowing about it.
+**How it is worded and delivered**: the channel is isolated in ``send_reminder``. WhatsApp
+goes through the Evolution API (``lembretes.whatsapp``) when the person picked it and the
+gateway is configured; e-mail is the floor everything falls back to. The dispatcher command
+knows none of this — it only decides *when* (D-045).
 """
+
+import logging
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
 
+from accounts.models import Profile
+
+from . import whatsapp
 from .models import Reminder
+
+logger = logging.getLogger(__name__)
 
 # O único grupo que vira mensagem. Os outros continuam na tela, não na caixa de entrada.
 NOTIFY_CATEGORIES = frozenset({Reminder.Category.SCHEDULING})
@@ -48,14 +56,7 @@ def build_message(reminder):
     return subject, '\n'.join(lines)
 
 
-def send_reminder(reminder):
-    """
-    Delivers one reminder through the person's channel. E-mail is the only one implemented.
-
-    ``Profile.notification_channel`` also accepts 'whatsapp' and 'push'; both fall back to
-    e-mail here rather than failing silently, so nobody stops receiving a notice because of
-    a setting the system cannot honour yet.
-    """
+def _send_email(reminder):
     subject, body = build_message(reminder)
     send_mail(
         subject=subject,
@@ -64,3 +65,30 @@ def send_reminder(reminder):
         recipient_list=[reminder.user.email],
         fail_silently=False,
     )
+    return 'email'
+
+
+def _send_whatsapp(reminder):
+    """Same copy as the e-mail, minus the subject line that a chat message has no use for."""
+    _, body = build_message(reminder)
+    whatsapp.send_text(reminder.user.profile.phone, body)
+    return 'whatsapp'
+
+
+def send_reminder(reminder):
+    """
+    Delivers one reminder and returns the channel that actually took it.
+
+    WhatsApp only when the person asked for it, the gateway is configured and there is a
+    phone on the profile. Anything short of that — and any failure talking to the gateway —
+    falls back to e-mail: a notice that arrives on the wrong channel is worth much more than
+    one that does not arrive. 'push' has no implementation and falls back the same way.
+    """
+    profile = reminder.user.profile
+    wants_whatsapp = profile.notification_channel == Profile.NotificationChannel.WHATSAPP
+    if wants_whatsapp and whatsapp.is_configured() and profile.phone:
+        try:
+            return _send_whatsapp(reminder)
+        except whatsapp.WhatsAppError:
+            logger.warning('WhatsApp falhou para o lembrete %s; caindo para e-mail.', reminder.pk, exc_info=True)
+    return _send_email(reminder)

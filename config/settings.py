@@ -123,6 +123,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # (quem envia é um comando de fora do ciclo HTTP), então vem do ambiente.
 SITE_URL = os.environ.get('DJANGO_SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
 
+# WhatsApp pela Evolution API que já roda na mesma VPS (instância própria do Vitalis, D-045).
+# Sem estas três, o canal se declara não configurado e o lembrete continua saindo por e-mail.
+EVOLUTION_API_URL = os.environ.get('EVOLUTION_API_URL', '').rstrip('/')
+EVOLUTION_API_KEY = os.environ.get('EVOLUTION_API_KEY', '')
+EVOLUTION_INSTANCE = os.environ.get('EVOLUTION_INSTANCE', '')
+
 # Lembretes da v1 saem por e-mail. Em desenvolvimento vão para o console; em produção,
 # defina EMAIL_HOST (+ EMAIL_HOST_USER/PASSWORD, EMAIL_PORT, EMAIL_USE_TLS) para enviar
 # de verdade — sem isso o e-mail de lembrete só é logado.

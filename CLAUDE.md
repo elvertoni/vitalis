@@ -79,6 +79,7 @@ no shell antes do `runserver`:
 | `DATABASE_URL` | `config/settings.py` | ausente (→ SQLite) | presente → Postgres via `dj-database-url`. É o único switch dev↔prod de banco. |
 | `EMAIL_HOST` (+ `_USER`/`_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`) | `config/settings.py` | ausente (→ console) | presente → SMTP real; sem isso, e-mail de lembrete só loga |
 | `DJANGO_SITE_URL` | `config/settings.py` | `http://127.0.0.1:8000` | base absoluta dos links dentro do lembrete enviado |
+| `EVOLUTION_API_URL` / `_KEY` / `_INSTANCE` | `config/settings.py` | vazio (→ só e-mail) | as três juntas ligam o canal WhatsApp (D-045) |
 | `DJANGO_DEFAULT_FROM_EMAIL` | `config/settings.py` | `Vitalis <nao-responda@vitalis.app>` | remetente dos lembretes e do reset de senha |
 | `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | ver seção Billing |
 
@@ -254,8 +255,11 @@ para marcar alguma coisa (D-044). Três geradores alimentam a categoria: retorno
 médico, exame solicitado sem data marcada e tratamento aberto sem nada agendado.
 
 `notifications.py` é também o **único lugar que conhece o canal**: `send_reminder` monta o
-texto e entrega. O comando `send_due_reminders` decide *quando*, nunca *o quê* nem *como* —
-é lá que o WhatsApp (Evolution API, D-028) entra quando for a hora. Os links dentro da
+texto e entrega. O comando `send_due_reminders` decide *quando*, nunca *o quê* nem *como*.
+Canais: e-mail sempre, e **WhatsApp** por `lembretes/whatsapp.py` (Evolution API, instância
+própria `vitalis` — D-045) quando a pessoa escolheu esse canal no perfil, o gateway está
+configurado e há telefone. Qualquer falha do gateway cai para e-mail com `logger.warning`:
+lembrete que chega pelo canal errado vale mais que lembrete que não chega. Os links dentro da
 mensagem usam `settings.SITE_URL` (env `DJANGO_SITE_URL`), porque quem envia está fora do
 ciclo HTTP e não tem `request` para montar URL absoluta.
 
