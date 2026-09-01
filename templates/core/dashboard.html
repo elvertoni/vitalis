@@ -29,12 +29,14 @@
         </div>
         {% endif %}
 
-        {# ── Registros rápidos: dois fluxos diários em destaque, restante sob demanda ─ #}
-        <div class="mb-12" aria-labelledby="quick-actions-title">
-            <h2 id="quick-actions-title" class="text-sm font-medium text-[#5c5c5a] mb-4">O que você quer registrar agora?</h2>
+        {# ── Ação principal: registrar o dia. Peso visual máximo do painel. ─ #}
+        <section class="bg-white rounded-[2rem] border border-[#dcdacd] p-8 md:p-10 mb-12" aria-labelledby="quick-actions-title">
+            <span class="text-xs font-medium tracking-[0.12em] uppercase text-[#5c5c5a] block mb-3">Comece por aqui</span>
+            <h2 id="quick-actions-title" class="text-2xl md:text-3xl tracking-tight font-medium text-[#1a1a1a] mb-6">O que você quer registrar agora?</h2>
             <div class="flex flex-wrap items-center gap-3">
-                <a href="{% url 'treino:session_create' %}" class="inline-flex items-center gap-2 bg-[#5d674f] text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-[#4a523f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
-                    <i data-lucide="dumbbell" class="w-4 h-4 stroke-[1.5]"></i> Registrar treino
+                <a href="{% url 'treino:session_create' %}" class="group inline-flex items-center gap-3 bg-[#5d674f] text-white px-8 py-4 rounded-full text-base font-medium hover:bg-[#4a523f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                    <i data-lucide="dumbbell" class="w-5 h-5 stroke-[1.5]"></i> Registrar treino
+                    <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 motion-reduce:transform-none transition-transform"></i>
                 </a>
                 <a href="{% url 'nutricao:dailylog_create' %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-6 py-3 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
                     <i data-lucide="notebook-pen" class="w-4 h-4 stroke-[1.5]"></i> Registrar refeição
@@ -52,18 +54,19 @@
                     </div>
                 </details>
             </div>
-        </div>
+        </section>
 
-        {# ── As três áreas ────────────────────────────────────────────────── #}
-        <div class="grid md:grid-cols-3 gap-8 mb-8">
-            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col">
+        {# ── Panorama: contexto das três áreas — leitura, não chamada para ação ─ #}
+        <h2 class="text-xs font-medium tracking-[0.12em] uppercase text-[#5c5c5a] mb-4">Panorama</h2>
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] flex flex-col">
                 <div class="flex items-center justify-between mb-6">
                     <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
                         <i data-lucide="heart-pulse" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
                     </div>
                     <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Saúde</span>
                 </div>
-                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Próximos compromissos</h2>
+                <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-4">Próximos compromissos</h2>
                 <div class="flex flex-col gap-3 mb-6 flex-grow">
                     {% for medication in today_medications %}
                     <a href="{{ medication.get_absolute_url }}" class="flex items-center justify-between text-sm hover:opacity-70 transition-opacity">
@@ -90,14 +93,14 @@
                 <a href="{% url 'saude:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver saúde</a>
             </div>
 
-            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col">
+            <div class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] flex flex-col">
                 <div class="flex items-center justify-between mb-6">
                     <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
                         <i data-lucide="dumbbell" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
                     </div>
                     <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Treino</span>
                 </div>
-                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Treino da semana</h2>
+                <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-4">Treino da semana</h2>
                 <div class="mb-6 flex-grow">
                     <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ sessions_this_week }}</span>
                     <span class="text-sm text-[#5c5c5a]">sessão{{ sessions_this_week|pluralize }} registrada{{ sessions_this_week|pluralize }} esta semana</span>
@@ -108,14 +111,14 @@
                 <a href="{% url 'treino:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver treino</a>
             </div>
 
-            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col">
+            <div class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] flex flex-col">
                 <div class="flex items-center justify-between mb-6">
                     <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center bg-[#f5f4f0]">
                         <i data-lucide="salad" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
                     </div>
                     <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Nutrição</span>
                 </div>
-                <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">Dieta do dia</h2>
+                <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-4">Dieta do dia</h2>
                 <div class="mb-6 flex-grow">
                     <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ today_totals.calories|floatformat:0 }}</span>
                     <span class="text-sm text-[#5c5c5a]">kcal consumidas hoje{% if active_diet.daily_calorie_target %} de {{ active_diet.daily_calorie_target }}{% endif %}</span>
@@ -135,7 +138,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <i data-lucide="bell" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i>
-                        <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Lembretes das próximas 48h</h2>
+                        <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a]">Lembretes das próximas 48h</h2>
                     </div>
                     <a href="{% url 'lembretes:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver central</a>
                 </div>
@@ -159,26 +162,26 @@
                 {% endif %}
             </div>
 
-            <div class="lg:col-span-5 bg-[#1a1a1a] text-white rounded-[2rem] p-8">
+            <div class="lg:col-span-5 bg-white border border-[#dcdacd] rounded-[2rem] p-8 flex flex-col">
                 <div class="flex items-center gap-3 mb-6">
-                    <i data-lucide="user" class="w-5 h-5 stroke-[1.5] text-[#e8eae4]"></i>
-                    <h2 class="text-2xl tracking-tight font-medium">Seu perfil</h2>
+                    <i data-lucide="user" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                    <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a]">Seu perfil</h2>
                 </div>
-                <dl class="space-y-4 mb-8">
+                <dl class="space-y-4 mb-6 flex-grow">
                     <div class="flex items-center justify-between">
-                        <dt class="text-base text-white/60">Idade</dt>
-                        <dd class="text-base font-medium">{% if profile.age %}{{ profile.age }} anos{% else %}—{% endif %}</dd>
+                        <dt class="text-base text-[#5c5c5a]">Idade</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{% if profile.age %}{{ profile.age }} anos{% else %}—{% endif %}</dd>
                     </div>
                     <div class="flex items-center justify-between">
-                        <dt class="text-base text-white/60">Altura</dt>
-                        <dd class="text-base font-medium">{% if profile.height_cm %}{{ profile.height_cm }} cm{% else %}—{% endif %}</dd>
+                        <dt class="text-base text-[#5c5c5a]">Altura</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{% if profile.height_cm %}{{ profile.height_cm }} cm{% else %}—{% endif %}</dd>
                     </div>
                     <div class="flex items-center justify-between">
-                        <dt class="text-base text-white/60">Lembretes por</dt>
-                        <dd class="text-base font-medium">{{ profile.get_notification_channel_display }}</dd>
+                        <dt class="text-base text-[#5c5c5a]">Lembretes por</dt>
+                        <dd class="text-base font-medium text-[#1a1a1a]">{{ profile.get_notification_channel_display }}</dd>
                     </div>
                 </dl>
-                <a href="{% url 'accounts:profile' %}" class="w-full bg-white text-[#1a1a1a] py-3 rounded-full font-medium text-center block hover:bg-[#f5f4f0] transition-colors">Ver perfil</a>
+                <a href="{% url 'accounts:profile' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver perfil</a>
             </div>
         </div>
 

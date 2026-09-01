@@ -383,3 +383,40 @@ como `[Teste]` e a mensagem de sucesso deixa claro que não houve cobrança real
 demonstrável neste ambiente — mas fingir que um clique qualquer "paga de verdade" seria
 enganoso. `DEBUG=False` desliga a view inteira (retorna 405 mesmo com o POST certo), então
 não sobrevive a um deploy de produção por acidente.
+
+---
+
+## Pós-S6 — Pass de acessibilidade e hierarquia (crítica do impeccable)
+
+### D-038 · A ação primária do dashboard é "Registrar treino"
+**Contexto:** o painel abria com seis atalhos de peso visual igual (P1 #3 da crítica do
+impeccable em `.impeccable/critique/`). Era preciso eleger *uma* próxima ação dominante. Os
+dois fluxos diários candidatos são "Registrar treino" (`treino:session_create`) e "Registrar
+refeição" (`nutricao:dailylog_create`).
+**Decisão:** "Registrar treino" recebe o tratamento de botão primário do design system (olive,
+`arrow-right` que desliza no hover); "Registrar refeição" fica como botão outline secundário
+ao lado; os demais registros (exame, consulta, medicamento, peso) continuam sob o disclosure
+"Mais registros". Os três cards de área (Saúde/Treino/Nutrição), o bloco de lembretes e o de
+perfil foram rebaixados a peso visual secundário (heading menor, menos padding, link de texto
+em vez de botão, sem cor de preenchimento).
+**Motivo:** mantém a ordem que já existia no template e não mexe na lógica de contexto da
+view. Se o dono do produto preferir nutrição como âncora diária (ou alternância por
+horário/uso), basta trocar as duas classes de botão — a estrutura já suporta.
+
+### D-039 · Landing sem canal de suporte declarado
+**Contexto:** a crítica do impeccable (P1 #4) pede informação de suporte visível na landing
+para um produto de dados de saúde. Não existe e-mail de suporte, página de ajuda nem
+formulário de contato no sistema; `EMAIL_BACKEND` é console em dev e
+`MERCADOPAGO_ACCESS_TOKEN` não está configurado. Também não há exportação nem exclusão de
+conta (nada em `accounts/`), então portabilidade de dados não pode ser prometida.
+**Decisão:** não adicionar afordância de suporte à landing nem ao rodapé, e não citar
+exportação/portabilidade, até o dono do produto definir um canal real e a S6/S7 entregar
+exclusão+exportação (LGPD). O rodapé e a nova seção "Privacidade faz parte do produto"
+afirmam só o que é verificável hoje: isolamento por dono (`OwnerQuerySetMixin`), anexos por
+rota autenticada (`ExamAttachmentView`), 404 em vez de 403 para registro de terceiro, e o
+disclaimer médico.
+**Motivo:** um canal de suporte falso ou uma promessa de portabilidade inexistente numa
+página que pede confiança com exames e medicação é pior que a ausência. Claims absolutas do
+texto antigo ("Nada esquecido", "chega antes da hora", "evolução inteira") foram trocadas por
+afirmações defensáveis ("Lembrete com antecedência", "com dias de antecedência", "evolução
+registrada").
