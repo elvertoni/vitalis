@@ -706,3 +706,27 @@ saem por nada até a pessoa pedir. Substitui a regra fixa de D-044, mantendo o m
 marcado, `send_reminder` devolve `None` e o comando **não** marca como enviado — o lembrete
 segue pendente para a próxima rodada. Mandar por e-mail o que a pessoa tirou do e-mail
 desfaria a escolha que a tela existe para fazer.
+
+### D-055 · Backup é serviço próprio, com verificação e cópia externa
+**Contexto:** a auditoria de 02/09/2026 encontrou o sistema **sem backup nenhum** — nem do
+Postgres, nem do volume `/app/media` onde ficam os laudos de exame. Era o único achado cuja
+falha é irreversível: histórico clínico e PDF de laudo não se reconstroem de lugar nenhum, e
+o dossiê real está fora do git justamente por ser sensível (D-041).
+**Decisão:** `scripts/backup.sh` roda no serviço `vitalis-backup` do EasyPanel, mesma imagem
+do app com `SERVICE_MODE=backup` — o mesmo padrão já usado pelo `vitalis-cron` (D-040). Faz
+`pg_dump` do banco e `tar` dos anexos, guarda em `/backups` (**tem de ser volume**: backup no
+sistema de arquivos do contêiner morre junto com o contêiner que deveria proteger), e apaga o
+que passa de `BACKUP_KEEP_DAYS`.
+**Duas escolhas que separam backup de teatro de backup:**
+- **Verificação imediata.** `gzip -t` em cada arquivo logo após gerar; se estiver corrompido,
+  o arquivo é removido e o script sai com erro. Dump que não abre não é backup, e descobrir
+  isso na hora da restauração é tarde.
+- **Cópia externa opcional, mas anunciada.** Com `RCLONE_REMOTE` definida, o script sincroniza
+  para fora. Sem ela, ele **avisa em toda execução** que a cópia existe só naquele servidor.
+  Guardar ao lado do original protege contra engano humano e corrupção de tabela, nunca contra
+  perder o host — e um aviso repetido é melhor que uma falsa sensação de segurança.
+**A falta da credencial nunca bloqueia o backup local:** a ausência de `RCLONE_REMOTE` é aviso,
+não erro. O pior resultado possível seria não ter cópia alguma porque o envio externo não
+estava configurado.
+**Ainda falta:** teste de restauração periódico. Backup nunca restaurado é hipótese, não
+garantia.

@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential libpq5 \
+        build-essential libpq5 postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -19,7 +19,7 @@ COPY . .
 # comando rodar — não vai para a imagem final como config real.
 RUN DJANGO_SECRET_KEY=build-only DJANGO_DEBUG=0 python manage.py collectstatic --noinput
 
-RUN chmod +x entrypoint.sh
+RUN chmod +x entrypoint.sh scripts/backup.sh
 
 EXPOSE 8000
 
