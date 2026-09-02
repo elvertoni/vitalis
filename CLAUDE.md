@@ -17,6 +17,7 @@ Conflito de **escopo** → o PRD vence. Conflito de **convenção de código** �
 ## Comandos
 
 ```powershell
+$env:DJANGO_DEBUG = '1'   # antes de qualquer comando — ver nota abaixo
 .\.venv\Scripts\python.exe manage.py runserver
 .\.venv\Scripts\python.exe manage.py makemigrations
 .\.venv\Scripts\python.exe manage.py migrate
@@ -25,6 +26,12 @@ Conflito de **escopo** → o PRD vence. Conflito de **convenção de código** �
 .\.venv\Scripts\python.exe manage.py send_due_reminders  # sincroniza e envia lembretes vencidos
 .\.venv\Scripts\python.exe manage.py seed_medico --email <e-mail> --source <dossiê.json> [--attachments-dir <pasta>]
 ```
+
+**Sem `DJANGO_DEBUG=1` no shell, todo comando morre antes de subir**: o default é `0`, e com
+`DEBUG=False` o `config/settings.py` levanta
+`RuntimeError: DJANGO_SECRET_KEY é obrigatória quando DEBUG=False.` — o fail-closed é
+proposital, não bug. Vale para `check`, `migrate`, `runserver` e qualquer outro. A variável
+não persiste entre chamadas do Bash tool; no PowerShell ela vive na sessão.
 
 `seed_medico` (em `core/management/commands/`) é **genérico e não contém dado nenhum**: tudo
 vem do JSON de `--source`. É idempotente (`update_or_create` casando por campo natural), roda
@@ -38,7 +45,13 @@ Sem suíte de testes (diretiva D10). **Docker só existe para o deploy** (`Docke
 `entrypoint.sh`) — o desenvolvimento não usa: nada de Docker no fluxo local. Verificação de
 mudança: `manage.py check`, inspecionar a migration gerada antes de aplicar, e smoke test no
 navegador (criar/editar/apagar, erro de validação, acesso cruzado entre usuários devolvendo
-404).
+404). **`check` e test client passam com a tela quebrada** — mudança de template ou de layout
+só está verificada depois de abrir no navegador (MCP Playwright) e olhar.
+
+Estado de **produção** (contas, assinaturas, envs, comportamento publicado) se confere pelo
+conector MCP do EasyPanel (projeto `work`, serviço `vitalis`), não por SSH e nunca por
+inferência a partir do `db.sqlite3` local. Se o conector não responder, diga isso em vez de
+supor.
 
 Banco em dev: SQLite em `db.sqlite3`. E-mail sai no console em desenvolvimento; o link de
 recuperação de senha aparece no terminal do `runserver`.
@@ -256,7 +269,23 @@ Três regras que valem ao mexer nela:
 `treino/progression.py` é puro cálculo, sem view: `top_of_range` lê a faixa (`'8-12'` → 12,
 `'45s'` → `None`, porque prescrição em tempo não progride por repetição) e `suggestion_for` só
 sugere subir carga quando **todas** as séries bateram o topo — +5 kg em perna, +2,5 kg no
-resto. É sugestão exibida no campo, nunca escrita automática.
+resto (`step_for`). É sugestão exibida no campo, nunca escrita automática. O mesmo módulo
+guarda o resto do raciocínio de sequência: `morning_streak` (semanas seguidas sem manhã ruim
+— critério de reintrodução, `REINTRODUCTION_WEEKS`; sessão sem resposta não conta nem quebra),
+`pending_morning_session` (a última sessão com série registrada e manhã não respondida — a
+tela pergunta **uma vez**, sobre a mais recente) e `next_day_after` (alterna A/B a partir da
+última sessão; sugestão, a tela deixa escolher qualquer divisão).
+
+`treino/protocol.py` também é cálculo puro: lê a descrição em texto livre da ficha como seções
+tituladas (`parse_sections` → `[{'title', 'subtitle', 'body'}]`), reconhecendo linha em
+CAIXA ALTA como cabeçalho e rejuntando linhas quebradas na margem de wrap. Serve para o
+protocolo escrito à mão render tipografado sem migrar o texto para colunas novas nem pedir
+campo extra a quem escreve. Texto sem estrutura volta como parágrafos — nada quebra.
+
+Duas rotas do `treino` devolvem **JSON, não HTML**, apesar de herdarem `TemplateView`:
+`exercicios/<pk>/evolucao.json` (`ExerciseProgressDataView`, alimenta o gráfico de evolução
+de carga) e a equivalente de peso em `nutricao` (`WeightProgressDataView`). Ao mexer nelas,
+o consumidor é o `<script>` da tela, não um template.
 
 ### Peso e macro: a fonte é o histórico, o formulário é só a porta
 
@@ -278,7 +307,11 @@ a fonte é um cadastro que o próprio usuário edita.
 `lembretes.Reminder` tem duas origens. **Derivado** — `content_type`/`object_id` preenchidos,
 aponta pra `Medication`, `Exam`, `Appointment` ou `Meal` — é gerado por
 `lembretes.services.sync_reminders(user)`, chamada tanto na visita à central
-(`ReminderIndexView`) quanto no `dashboard` quanto no comando `send_due_reminders`. **Nunca
+(`ReminderIndexView`) quanto no `dashboard` quanto no comando `send_due_reminders`. No
+dashboard a chamada tem **debounce de 10 minutos por usuário via cache**
+(`reminders_synced:<pk>`, `core/views.py`, D-057) — se um lembrete novo não aparecer no
+painel logo depois de criar o registro de origem, é isso, não bug; a central sincroniza
+sempre. **Nunca
 edite um `Reminder` derivado na mão nem tente fazer `get_or_create` incremental nele** — o
 padrão é apaga-e-recria (D-029): toda chamada de `sync_reminders` apaga os pendentes
 derivados da janela de 7 dias e recria do zero a partir do estado atual das apps de origem.
@@ -296,21 +329,36 @@ retorno no dia (`_appointment_reminders`) e o de *marcar* a consulta 15 dias ant
 cada médico: registrar uma consulta mais nova com o mesmo médico é o sinal de "já agendei" e
 cala o aviso, sem campo de controle manual.
 
-### Gerar é uma coisa, notificar é outra
+### Gerar é uma coisa, notificar é outra — e o canal é por categoria (D-054)
 
-`sync_reminders` gera tudo; **quem sai por mensagem é só a categoria `agendar`**
-(`Reminder.Category.SCHEDULING`), listada em `lembretes/notifications.py`
-(`NOTIFY_CATEGORIES`). Dose de remédio e refeição da dieta continuam na central e no painel e
-nunca viram e-mail — onze avisos de rotina por dia afogam o único que exige ação, que é ligar
-para marcar alguma coisa (D-044). Três geradores alimentam a categoria: retorno pedido pelo
-médico, exame solicitado sem data marcada e tratamento aberto sem nada agendado.
+`sync_reminders` gera tudo; **quem sai por mensagem é decidido por pessoa e por categoria**,
+em `lembretes.ChannelPreference` (uma linha por `(user, category)`, com `by_email` e
+`by_whatsapp`), resolvido por `notifications.channels_for(user, category)`. `should_notify`
+consulta a pessoa, não uma constante — **não existe mais `NOTIFY_CATEGORIES`**. A tela é
+`/lembretes/preferencias/` (`NotificationPreferenceView`), e as categorias oferecidas estão
+em `CONFIGURABLE_CATEGORIES`.
+
+Duas regras que não podem ser quebradas ao mexer aí:
+
+- **Ausência de linha não é "desligado"** — significa "nunca decidiu", e cai em
+  `DEFAULT_CHANNELS` (hoje: e-mail para `agendar` e `retorno`, nada para o resto). É isso que
+  impede que salvar preferências hoje silencie para sempre uma categoria criada amanhã.
+- **Falha de gateway não vaza para e-mail.** Se o WhatsApp cair e a categoria não tiver e-mail
+  marcado, `send_reminder` devolve `None` e o comando **não** marca como enviado — o lembrete
+  segue pendente para a próxima rodada. Mandar por e-mail o que a pessoa tirou do e-mail
+  desfaz a escolha que a tela existe para fazer. (O fallback cego para e-mail era o
+  comportamento antigo; foi removido.)
+
+O motivo de D-044 continua valendo — remédio, refeição e treino são rotina que a pessoa já
+vive e não saem por mensagem até ela pedir; o que mudou é que agora ela *pode* pedir.
+
+`Profile.notification_channel` ainda existe como coluna (e sai na exportação LGPD), mas
+**não decide mais nada** no envio. Quem manda é `ChannelPreference`.
 
 `notifications.py` é também o **único lugar que conhece o canal**: `send_reminder` monta o
 texto e entrega. O comando `send_due_reminders` decide *quando*, nunca *o quê* nem *como*.
-Canais: e-mail sempre, e **WhatsApp** por `lembretes/whatsapp.py` (Evolution API, instância
-própria `vitalis` — D-045) quando a pessoa escolheu esse canal no perfil, o gateway está
-configurado e há telefone. Qualquer falha do gateway cai para e-mail com `logger.warning`:
-lembrete que chega pelo canal errado vale mais que lembrete que não chega.
+WhatsApp sai por `lembretes/whatsapp.py` (Evolution API, instância própria `vitalis` — D-045)
+quando a categoria tem `by_whatsapp`, o gateway está configurado e há telefone.
 
 O pareamento da sessão fica em `/lembretes/whatsapp/`, **só para superusuários ou quem tem `lembretes.manage_whatsapp`** e devolvendo 404
 para os demais (D-046): a instância é o remetente do sistema, não o WhatsApp de cada conta —
@@ -371,26 +419,67 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 
 ## Segurança e Rate Limiting
 
-- **Rate Limiting:** `core/ratelimit.py` protege `/contas/entrar/` (5 req/min) e `/contas/recuperar-senha/` (3 req/5min) contra ataques de força bruta.
-- **Content-Security-Policy (CSP):** Injetado por `core.middleware.SecurityHeadersMiddleware` em todas as respostas HTTP.
+- **Rate Limiting:** `core/ratelimit.py` (janela deslizante no cache, chave por IP) protege
+  `/conta/entrar/` (5 req/min), `/conta/senha/` (3 req/5min) e
+  `/conta/cadastro/` (5 req/h, contra cadastro em massa — D-057). Rota de auth nova entra
+  no mesmo padrão: `is_rate_limited(f'<escopo>:{ip}', …)` no `post`/`dispatch` da view.
+  Como o cache em dev é o local-mem por processo, o contador zera a cada `runserver`.
+- **Content-Security-Policy (CSP):** Injetado por `core.middleware.SecurityHeadersMiddleware`
+  em todas as respostas HTTP. A allowlist de `script-src` é fixa no middleware
+  (`cdn.tailwindcss.com`, `unpkg.com`, `fonts.googleapis.com`): **CDN novo sem entrada ali é
+  bloqueado pelo navegador sem erro no servidor** — a tela simplesmente perde o script.
+- **Anexos:** `core.validators.validate_attachment` confere extensão, tamanho (10 MB) **e os
+  magic bytes** (`%PDF-`, `\xff\xd8\xff`, `\x89PNG`) — renomear `.exe` para `.pdf` não passa
+  (D-057). A `ExamAttachmentView` devolve o arquivo preservando a extensão real.
+- **Índices compostos:** `saude` tem `['user', 'next_return_date']` e `['user', 'scheduled_date']`
+  (D-057), porque toda consulta de lembrete filtra por dono + data.
 - **Fail-Closed:** Em produção sem `DJANGO_SECRET_KEY`, o app recusa inicializar. Sem `EMAIL_HOST` em produção, e-mails usam `dummy.EmailBackend` para evitar vazamento de tokens em stdout/logs.
 
 ## LGPD e Portabilidade
 
-- **Portabilidade de Dados (Art. 18):** Implementada a rota autenticada `/contas/exportar-dados/` (`ExportUserDataView`) que gera download direto em `.zip` contendo `prontuario_vitalis.json` com o histórico clínico/antropométrico completo e os laudos anexados em PDF na pasta `laudos/` (D-059).
+- **Portabilidade de Dados (Art. 18):** Implementada a rota autenticada `/conta/exportar-dados/` (`ExportUserDataView`) que gera download direto em `.zip` contendo `prontuario_vitalis.json` com o histórico clínico/antropométrico completo e os laudos anexados em PDF na pasta `laudos/` (D-059).
 - **Dados Sensíveis:** Anexos de exame são dados de saúde sensíveis. `MEDIA_URL` só é servido pelo Django com `DEBUG=True`; em produção o laudo tem de sair por view autenticada (`ExamAttachmentView`) que confere a titularidade do dono. Dossiês reais vivem fora do git (`medico-data/`, `medico-seed.json`, `/toni/` — D-041, D-058).
 
 ## Módulos Clínicos Recentes
 
-- **Biomarcadores Laboratoriais (`/saude/biomarcadores/`):** Painel gráfico com réguas de referência proporcionais, rastro comparativo com exames anteriores e delta percentual, régua de IMC e alertas clínicos prioritários (D-058).
-# [dado clinico removido do historico - D-061]
+- **Biomarcadores laboratoriais (`/saude/biomarcadores/`):** painel gráfico com réguas de
+  referência proporcionais, rastro comparativo com o exame anterior, régua de IMC e alertas
+  clínicos (D-058, reescrito em D-061). **Tudo vem de linha do dono**: `saude.LabPanel` +
+  `saude.LabResult` (o painel pendura no `Exam` que carrega o laudo e o médico solicitante) e
+  `saude.ClinicalNote` para os textos de "pontos de atenção" e "alinhar com o médico". As
+  posições da régua são `@property` do `LabResult`, não conta na view — `ref_low`/`ref_high`
+  são coluna porque a faixa normal pertence ao laboratório que emitiu o laudo. Sem painel
+  cadastrado a tela cai no `_empty_state`.
+- **Nutrição e comparador de cardápios (`/nutricao/`):** alternância entre a dieta ativa e a
+  anterior, com a linha do tempo das refeições (D-059, reescrito em D-061). Os dois lados são
+  `Diet` do próprio usuário, somados pelas refeições reais em `nutricao/plans.py`
+  (`plan_comparison`); `Meal.description` e `Meal.change_note` carregam o "como é montada" e o
+  "o que mudou". Com menos de duas dietas o bloco não aparece. `bmi_snapshot`, no mesmo módulo,
+  calcula o IMC (altura do perfil × última pesagem) que a tela de biomarcadores mostra.
+- **Ciclo de medicação em fases (`saude.Medication.cycle_status`):** calcula a fase do dia
+  (fase diária "dia N de M" e depois "hoje toma"/"hoje pula") a partir de dois campos da
+  linha — `cycle_daily_days` e `cycle_alternates_after` (D-059, generalizado em D-061). Até
+  # [dado clinico removido do historico - D-061]
+  agora o esquema é dado, editável no formulário. Remédio contínuo devolve `None` e a tela
+  não mostra selo.
 - **Acessibilidade Impeccable (D-060):** Regra global `@media (prefers-reduced-motion: reduce)` em `base.html`, injeção automática de `aria-required`, `aria-invalid` e `aria-describedby` em todos os formulários via `StyledFormMixin`, e touch targets mínimos de 44px em botões de ação e exclusão.
+
+> **Nunca volte a escrever valor clínico no código.** Foi assim que os dois painéis nasceram,
+> e é o motivo do retrabalho de D-061: dado de saúde real versionado no git (contra D-041) e
+> tela idêntica para qualquer usuário logado. Valor de exame, cardápio, peso e texto de laudo
+> entram por model do dono e chegam ao banco pelo `seed_medico` (chaves `lab_panels` e
+> `clinical_notes`), com o JSON fora do git.
+>
+> **Número que entra em CSS sai por `|stringformat:'.1f'`, nunca por `floatformat`.** Em pt-BR
+> o `floatformat` devolve vírgula, e `style="left: 75,7%"` é declaração inválida: o navegador
+> descarta calado e o elemento encosta na origem. Foi o estado das réguas desde D-058 — sem
+> erro no servidor, sem aviso no console, só a tela errada.
 
 ## O que ainda não existe
 
 O roadmap S1–S6 do PRD e as extensões clínicas estão entregues. As lacunas conhecidas remanescentes são:
 
-- **Exclusão completa da conta (LGPD).** A exportação está entregue (`/contas/exportar-dados/`), mas a exclusão irreversível da conta (`delete_account`) ainda não foi implementada. Ao construir: a exclusão cai em `user.delete()` com CASCADE por toda a base (D-021).
+- **Exclusão completa da conta (LGPD).** A exportação está entregue (`/conta/exportar-dados/`), mas a exclusão irreversível da conta (`delete_account`) ainda não foi implementada. Ao construir: a exclusão cai em `user.delete()` com CASCADE por toda a base (D-021).
 - **Pagamento real.** O `MercadoPagoGateway` nunca rodou contra o Mercado Pago de vendedor real; opera com checkout simulado.
 - **Catálogo de alimentos de referência (TACO).** `Food` é cadastro do usuário (D-025).
 - **Lembrete automático de treino.** Decisão explícita de não ter (D-027).

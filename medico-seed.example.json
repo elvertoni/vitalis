@@ -42,6 +42,8 @@
       "start_date": "2026-01-01",
       "end_date": null,
       "schedule_times": ["08:00"],
+      "cycle_daily_days": null,
+      "cycle_alternates_after": false,
       "is_active": true,
       "treatment": "Nome do tratamento (CID se houver)"
     }
@@ -58,6 +60,52 @@
       "result_summary": "Transcrição dos valores do laudo, não interpretação.",
       "status": "done",
       "attachment_file": "subpasta/arquivo.pdf"
+    }
+  ],
+
+  "lab_panels": [
+    {
+      "title": "Hemograma completo",
+      "exam": "Hemograma",
+      "sample_kind": "edta",
+      "sample_label": "Tubo EDTA",
+      "method": "Sangue total com EDTA · citometria de fluxo",
+      "order": 1,
+      "results": [
+        {
+          "name": "Hemoglobina",
+          "unit": "g/dL",
+          "value": "15.0",
+          "previous_value": "14.2",
+          "previous_label": "jan/25",
+          "scale_min": "12.0",
+          "scale_max": "19.0",
+          "ref_low": "13.0",
+          "ref_high": "18.0",
+          "status": "ok",
+          "note": "",
+          "decimals": 1,
+          "order": 1
+        }
+      ]
+    }
+  ],
+
+  "clinical_notes": [
+    {
+      "kind": "alert",
+      "severity": "warning",
+      "title": "O que observar",
+      "body": "Texto curto sobre o que acompanhar até o próximo exame.",
+      "order": 1
+    },
+    {
+      "kind": "alignment",
+      "severity": "info",
+      "title": "O que perguntar na consulta",
+      "body": "Texto do ponto a levantar com o médico.",
+      "icon": "stethoscope",
+      "order": 1
     }
   ],
 
@@ -96,6 +144,8 @@
         {
           "name": "Café da manhã",
           "time": "07:00",
+          "description": "Como a refeição é montada, em uma linha.",
+          "change_note": "O que mudou em relação ao plano anterior.",
           "order": 1,
           "items": [
             { "food": "Arroz branco cozido", "quantity_g": "100" }

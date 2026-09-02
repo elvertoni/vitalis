@@ -9,6 +9,7 @@ from datetime import date, timedelta
 
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 from core.models import OwnedModel
 from core.validators import attachment_upload_path, validate_attachment
@@ -281,6 +282,17 @@ class Medication(OwnedModel):
         help_text='Horários do dia, separados por vírgula. Ex.: 08:00, 20:00.',
     )
     is_active = models.BooleanField('em uso', default=True)
+    cycle_daily_days = models.PositiveSmallIntegerField(
+        'dias da fase diária',
+        null=True,
+        blank=True,
+        help_text='Só para esquema em fases. Ex.: 30 dias todo dia e depois dias alternados.',
+    )
+    cycle_alternates_after = models.BooleanField(
+        'alterna dias depois',
+        default=False,
+        help_text='Terminada a fase diária, passa a tomar em dias alternados.',
+    )
 
     class Meta:
         verbose_name = 'medicamento'
@@ -307,9 +319,266 @@ class Medication(OwnedModel):
     @property
     def cycle_status(self):
         """
-        Returns the phase of a two-phase course, or None.
+        Which phase of a two-phase course the medicine is in today.
+
+        The schedule is described by the row, never by the drug's name in code:
+        ``cycle_daily_days`` is how long the every-day phase lasts and
+        ``cycle_alternates_after`` says whether every-other-day follows it. A continuous
+        medicine returns ``None`` and the screen shows no badge at all.
         """
-        from django.utils import timezone
+        if not self.cycle_daily_days:
+            return None
+
         today = timezone.localdate()
-        # [dado clinico removido do historico - D-061]
-        return None
+        elapsed = (today - self.start_date).days
+        if elapsed < 0:
+            return {'text': f'Inicia em {self.start_date:%d/%m}', 'active': False, 'phase': 'pending'}
+        if elapsed < self.cycle_daily_days:
+            return {
+                'text': f'Fase diária · dia {elapsed + 1} de {self.cycle_daily_days}',
+                'active': True,
+                'phase': 'daily',
+            }
+        if not self.cycle_alternates_after:
+            return None
+        if (elapsed - self.cycle_daily_days) % 2 == 0:
+            return {'text': 'Dias alternados · hoje toma', 'active': True, 'phase': 'alternate_take'}
+        return {'text': 'Dias alternados · hoje pula', 'active': False, 'phase': 'alternate_skip'}
+
+
+class LabPanel(OwnedModel):
+    """
+    A block of the lab report — the haemogram, the lipid profile — as it is printed.
+
+    A panel exists so the reading of an ``Exam`` can be shown as gauges instead of a wall of
+    numbers. It hangs off the exam it came from, which is what carries the PDF and the
+    requesting doctor; a panel typed by hand before the report arrives simply has no exam.
+    """
+
+    class SampleKind(models.TextChoices):
+        EDTA = 'edta', 'Tubo EDTA'
+        FLUORIDE = 'fluoreto', 'Fluoreto'
+        SERUM = 'soro', 'Soro'
+        URINE = 'urina', 'Urina'
+        OTHER = 'outro', 'Outro'
+
+    exam = models.ForeignKey(
+        Exam,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='lab_panels',
+        verbose_name='exame',
+    )
+    title = models.CharField('título', max_length=140, help_text='Ex.: hemograma completo.')
+    sample_kind = models.CharField(
+        'material',
+        max_length=10,
+        choices=SampleKind.choices,
+        default=SampleKind.SERUM,
+    )
+    sample_label = models.CharField(
+        'etiqueta do material',
+        max_length=40,
+        blank=True,
+        help_text='O selo que aparece no cartão. Em branco, usa o nome do material.',
+    )
+    method = models.CharField(
+        'material e método',
+        max_length=180,
+        blank=True,
+        help_text='Como está no laudo. Ex.: sangue total com EDTA · citometria de fluxo.',
+    )
+    order = models.PositiveSmallIntegerField('ordem', default=1)
+
+    class Meta:
+        verbose_name = 'painel laboratorial'
+        verbose_name_plural = 'painéis laboratoriais'
+        ordering = ['order', 'title']
+        indexes = [models.Index(fields=['user', 'order'])]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def badge(self):
+        return self.sample_label or self.get_sample_kind_display()
+
+
+class LabResult(OwnedModel):
+    """
+    One measured biomarker, with the scale needed to draw it.
+
+    Four numbers describe the gauge: ``scale_min``/``scale_max`` are the ends of the drawn
+    ruler and ``ref_low``/``ref_high`` the normal band inside it. They are stored, not derived,
+    because the reference band belongs to the laboratory that issued the report — the same
+    analyte reads differently between labs, and a value is only out of range against the
+    range printed beside it.
+
+    ``previous_value`` is the reading this one is compared against. Frozen on purpose: it comes
+    from a report that will never change, which is the exception the macro rule in ``nutricao``
+    describes — freeze what an outside source issued, compute what the person still edits.
+    """
+
+    class Status(models.TextChoices):
+        OK = 'ok', 'Na meta'
+        WATCH = 'watch', 'Atenção'
+        OUT = 'out', 'Fora da meta'
+
+    panel = models.ForeignKey(
+        LabPanel,
+        on_delete=models.CASCADE,
+        related_name='results',
+        verbose_name='painel',
+    )
+    name = models.CharField('exame', max_length=140)
+    unit = models.CharField('unidade', max_length=20, blank=True)
+    value = models.DecimalField('resultado', max_digits=12, decimal_places=3)
+    previous_value = models.DecimalField(
+        'resultado anterior',
+        max_digits=12,
+        decimal_places=3,
+        null=True,
+        blank=True,
+    )
+    previous_label = models.CharField(
+        'quando foi o anterior',
+        max_length=40,
+        blank=True,
+        help_text='Ex.: dez/25.',
+    )
+    scale_min = models.DecimalField('início da régua', max_digits=12, decimal_places=3)
+    scale_max = models.DecimalField('fim da régua', max_digits=12, decimal_places=3)
+    ref_low = models.DecimalField('referência mínima', max_digits=12, decimal_places=3)
+    ref_high = models.DecimalField('referência máxima', max_digits=12, decimal_places=3)
+    status = models.CharField('situação', max_length=6, choices=Status.choices, default=Status.OK)
+    note = models.CharField('observação', max_length=200, blank=True)
+    decimals = models.PositiveSmallIntegerField('casas decimais', default=1)
+    order = models.PositiveSmallIntegerField('ordem', default=1)
+
+    class Meta:
+        verbose_name = 'resultado laboratorial'
+        verbose_name_plural = 'resultados laboratoriais'
+        ordering = ['panel', 'order', 'id']
+
+    def __str__(self):
+        return f'{self.name}: {self.display_value} {self.unit}'.strip()
+
+    # ── Régua ────────────────────────────────────────────────────────────────
+    # Posições em porcentagem da largura da régua, prontas para o ``style`` do template.
+    # Ficam aqui, e não na view, porque dependem só da linha: qualquer tela que mostrar o
+    # resultado desenha a mesma régua sem repetir a conta.
+
+    def _position(self, value):
+        """Where ``value`` sits on the drawn ruler, clamped so the dot never leaves the track."""
+        if value is None:
+            return None
+        span = float(self.scale_max) - float(self.scale_min)
+        if span == 0:
+            return 50.0
+        percent = ((float(value) - float(self.scale_min)) / span) * 100.0
+        return max(2.0, min(98.0, percent))
+
+    @property
+    def position(self):
+        return self._position(self.value)
+
+    @property
+    def ref_low_position(self):
+        return self._position(self.ref_low)
+
+    @property
+    def ref_high_position(self):
+        return self._position(self.ref_high)
+
+    @property
+    def ref_width(self):
+        return max(2.0, self.ref_high_position - self.ref_low_position)
+
+    @property
+    def previous_position(self):
+        return self._position(self.previous_value)
+
+    @property
+    def trail_left(self):
+        """Left edge of the dashed trail joining the previous reading to this one."""
+        if self.previous_value is None:
+            return None
+        return min(self.previous_position, self.position)
+
+    @property
+    def trail_width(self):
+        if self.previous_value is None:
+            return None
+        return max(1.0, abs(self.position - self.previous_position))
+
+    @property
+    def variation(self):
+        """Signed percentage against the previous reading, already formatted."""
+        if not self.previous_value:
+            return None
+        delta = ((float(self.value) - float(self.previous_value)) / float(self.previous_value)) * 100.0
+        return f'{delta:+.1f}%'
+
+    def _format(self, value):
+        if value is None:
+            return ''
+        return f'{float(value):.{self.decimals}f}'.replace('.', ',')
+
+    @property
+    def display_value(self):
+        return self._format(self.value)
+
+    @property
+    def display_previous(self):
+        return self._format(self.previous_value)
+
+    @property
+    def display_ref_low(self):
+        return self._format(self.ref_low)
+
+    @property
+    def display_ref_high(self):
+        return self._format(self.ref_high)
+
+
+class ClinicalNote(OwnedModel):
+    """
+    A written observation that belongs to the person, not to a single row of the report.
+
+    Two kinds share the model because they differ only in where they are shown: ``ALERT`` is
+    what to watch now, ``ALIGNMENT`` is what to raise at the next appointment. Both are text
+    someone wrote after reading the results, so neither can be derived from ``LabResult`` —
+    a value inside the reference band can still deserve a conversation.
+    """
+
+    class Kind(models.TextChoices):
+        ALERT = 'alert', 'Ponto de atenção'
+        ALIGNMENT = 'alignment', 'Alinhar com o médico'
+
+    class Severity(models.TextChoices):
+        CRITICAL = 'critical', 'Crítico'
+        WARNING = 'warning', 'Atenção'
+        POSITIVE = 'positive', 'Evolução boa'
+        INFO = 'info', 'Informativo'
+
+    kind = models.CharField('tipo', max_length=10, choices=Kind.choices, default=Kind.ALERT)
+    severity = models.CharField('gravidade', max_length=10, choices=Severity.choices, default=Severity.INFO)
+    title = models.CharField('título', max_length=140)
+    body = models.TextField('texto')
+    icon = models.CharField(
+        'ícone',
+        max_length=40,
+        blank=True,
+        help_text='Nome do ícone Lucide. Ex.: shield-alert.',
+    )
+    order = models.PositiveSmallIntegerField('ordem', default=1)
+
+    class Meta:
+        verbose_name = 'nota clínica'
+        verbose_name_plural = 'notas clínicas'
+        ordering = ['kind', 'order', 'id']
+        indexes = [models.Index(fields=['user', 'kind', 'order'])]
+
+    def __str__(self):
+        return self.title

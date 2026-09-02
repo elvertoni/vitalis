@@ -26,6 +26,7 @@ from core.views import (
 
 from .forms import DailyLogForm, DietForm, FoodForm, MealForm, MealItemForm, WeightLogForm
 from .models import DailyLog, Diet, Food, Meal, MealItem, WeightLog, daily_totals, estimate_daily_calories
+from .plans import plan_comparison
 
 
 class NutritionIndexView(LoginRequiredMixin, TemplateView):
@@ -46,8 +47,13 @@ class NutritionIndexView(LoginRequiredMixin, TemplateView):
         context['today_logs'] = DailyLog.objects.filter(user=user, date=today).select_related('food')
         context['latest_weight'] = WeightLog.objects.filter(user=user).order_by('-date').first()
 
-        # Comparativo clínico de cardápio (ajustado vs anterior)
-        context['planos_comparativo'] = {}  # [dado clinico removido do historico - D-061]
+        # Comparador de cardápios: a dieta ativa contra a anterior, ambas do próprio dono.
+        # Sem duas dietas cadastradas o bloco simplesmente não aparece (``plans``).
+        context['plan_comparison'] = plan_comparison(
+            user,
+            profile=getattr(user, 'profile', None),
+            weight_kg=context['latest_weight'].weight_kg if context['latest_weight'] else None,
+        )
         return context
 
 

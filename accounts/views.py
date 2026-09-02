@@ -165,7 +165,15 @@ class ExportUserDataView(LoginRequiredMixin, View):
         from pathlib import Path
         from django.http import FileResponse
         from django.utils import timezone
-        from saude.models import Doctor, Treatment, Exam, Appointment, Medication
+        from saude.models import (
+            Appointment,
+            ClinicalNote,
+            Doctor,
+            Exam,
+            LabPanel,
+            Medication,
+            Treatment,
+        )
         from treino.models import WorkoutRoutine, WorkoutSession
         from nutricao.models import Food, Diet, DailyLog, WeightLog
 
@@ -243,6 +251,40 @@ class ExportUserDataView(LoginRequiredMixin, View):
                     'has_attachment': bool(e.attachment),
                 }
                 for e in Exam.objects.filter(user=user)
+            ],
+            # Resultados de laboratório: o número medido e a faixa contra a qual ele foi
+            # lido. Sem a faixa, o valor exportado não diz se estava dentro ou fora.
+            'lab_panels': [
+                {
+                    'title': panel.title,
+                    'exam': panel.exam.name if panel.exam else None,
+                    'sample_kind': panel.sample_kind,
+                    'method': panel.method,
+                    'results': [
+                        {
+                            'name': r.name,
+                            'unit': r.unit,
+                            'value': float(r.value),
+                            'previous_value': float(r.previous_value) if r.previous_value else None,
+                            'previous_label': r.previous_label,
+                            'reference_low': float(r.ref_low),
+                            'reference_high': float(r.ref_high),
+                            'status': r.status,
+                            'note': r.note,
+                        }
+                        for r in panel.results.all()
+                    ],
+                }
+                for panel in LabPanel.objects.filter(user=user).prefetch_related('results')
+            ],
+            'clinical_notes': [
+                {
+                    'kind': n.kind,
+                    'severity': n.severity,
+                    'title': n.title,
+                    'body': n.body,
+                }
+                for n in ClinicalNote.objects.filter(user=user)
             ],
             'weight_logs': [
                 {'date': str(w.date), 'weight_kg': float(w.weight_kg), 'notes': w.notes}

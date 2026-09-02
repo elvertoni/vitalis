@@ -789,3 +789,57 @@ Acesso direto a partir do hub de saúde, da lista de exames e dos detalhes do la
 
 
 
+
+### D-061 · Biomarcadores e comparador saem do código e viram dado do dono
+**Contexto:** o painel de biomarcadores (D-058) e o comparador de cardápios (D-059) nasceram
+# [dado clinico removido do historico - D-061]
+`saude.views.BiomarkersView`, `planos_comparativo` em `nutricao.views.NutritionIndexView`, mais
+peso, altura, nome do médico e alertas clínicos digitados direto no template. Três problemas,
+em ordem de gravidade:
+1. **Dado de saúde real versionado no git** — exatamente o que D-041 tirou do repositório ao
+   mover o dossiê para `medico-data/` e `medico-seed.json`.
+2. **A tela não era multiusuário.** Qualquer conta logada via o hemograma e o cardápio da mesma
+   pessoa. O isolamento por dono, que é o requisito de segurança nº 1 do projeto, não tinha o
+   que filtrar: não havia linha, havia literal.
+3. **Nada era editável.** Chegando um exame novo, a única forma de atualizar era editar Python.
+
+**Decisão:** os dois painéis passam a ler as linhas do próprio usuário.
+
+- **`saude.LabPanel` / `saude.LabResult`** — o painel pendura no `Exam` de onde veio (que é
+  quem carrega o PDF e o médico solicitante) e cada resultado guarda o que a régua precisa:
+  `value`, `previous_value`, a faixa desenhada (`scale_min`/`scale_max`) e a faixa normal
+  (`ref_low`/`ref_high`). A referência é **coluna, não constante**: ela pertence ao laboratório
+  que emitiu o laudo, e o mesmo analito lê diferente entre laboratórios. As posições da régua
+  são `@property` no model — qualquer tela desenha a mesma barra sem repetir a conta na view.
+- **`saude.ClinicalNote`** — "pontos de atenção" e "o que alinhar com o médico" são texto que
+  alguém escreveu depois de ler o laudo; não se deriva de `LabResult`, porque valor dentro da
+  faixa também rende conversa. Um model, dois `kind`.
+- **`nutricao/plans.py`** — cálculo puro, no molde de `treino/progression.py`: `bmi_snapshot`
+  (IMC a partir da altura do perfil e da última pesagem, com faixa da OMS) e `plan_comparison`
+  (a dieta ativa contra a anterior, somando as refeições reais). `Meal` ganhou `description` e
+  `change_note` para carregar o "como é montada" e o "o que mudou" que o comparador mostra.
+- **`seed_medico`** aprendeu `lab_panels` e `clinical_notes`, e o dossiê real recebeu os valores
+  que estavam no código — **fora do git**, como todo o resto (D-041).
+
+**Sem dado, sem tela:** conta nova cai no `_empty_state` do painel, e o comparador some com
+menos de duas dietas. É a diferença entre um painel vazio e um painel que mente.
+
+**Proteína por quilo se lê sobre o peso alvo** quando o perfil tem um: em quem está acima do
+peso, dividir pela massa atual pede proteína para a gordura que a pessoa está perdendo. Sem
+peso alvo, usa a última pesagem.
+
+**Achado do caminho — vírgula decimal quebra CSS inline.** Com `{{ valor|floatformat }}` dentro
+de `style="left: …%"`, o pt-BR renderiza `left: 75,7%`, que é **declaração inválida**: o
+navegador descarta em silêncio e o ponto encosta na origem. Era o estado do painel desde
+D-058, sem erro nenhum no servidor. Número que entra em CSS sai por `|stringformat:'.1f'`.
+Vale para qualquer largura, posição ou porcentagem calculada em template.
+
+**A mesma poda alcançou o ciclo de medicação.** `Medication.cycle_status` decidia a fase
+# [dado clinico removido do historico - D-061]
+pessoa escrita no código, que nunca funcionaria para outra conta nem para o mesmo remédio em
+outro protocolo. Virou dado: `cycle_daily_days` e `cycle_alternates_after`, ambos no
+formulário e no `seed_medico`. Sem os campos preenchidos a propriedade devolve `None` e a
+tela não mostra selo, que é o comportamento certo para uso contínuo.
+
+**Continua pendente:** o histórico do git ainda contém os valores clínicos dos commits
+anteriores. Limpar exige reescrever história (`filter-repo`) e forçar push, decisão do dono.

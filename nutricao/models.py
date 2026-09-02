@@ -137,6 +137,18 @@ class Meal(OwnedModel):
     diet = models.ForeignKey(Diet, on_delete=models.CASCADE, related_name='meals', verbose_name='dieta')
     name = models.CharField('nome', max_length=80, help_text='Ex.: café da manhã, almoço, lanche.')
     time = models.TimeField('horário sugerido', null=True, blank=True)
+    description = models.CharField(
+        'descrição',
+        max_length=240,
+        blank=True,
+        help_text='Como a refeição é montada, em uma linha. Ex.: 25 g de tapioca · 3 ovos.',
+    )
+    change_note = models.CharField(
+        'o que mudou',
+        max_length=180,
+        blank=True,
+        help_text='O que essa refeição ganhou em relação ao plano anterior. Aparece no comparador.',
+    )
     order = models.PositiveSmallIntegerField('ordem', default=1)
 
     class Meta:

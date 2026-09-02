@@ -70,7 +70,143 @@
             {% endif %}
         </div>
 
-        {# [dado clinico removido do historico - D-061] #}
+        {# Comparador de cardápios: a dieta ativa contra a anterior, tudo lido das dietas do dono #}
+        {% if plan_comparison %}
+        <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] mt-8 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-[#dcdacd] gap-4">
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-[#5d674f] font-semibold block mb-1">Prescrição e estrutura alimentar</span>
+                    <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a]">Linha do tempo e comparativo de cardápio</h2>
+                </div>
+                {# Seletor de cardápio #}
+                <div class="inline-flex p-1 bg-[#f5f4f0] rounded-full border border-[#dcdacd] self-start sm:self-auto" role="group" aria-label="Escolher cardápio">
+                    <button type="button" id="btn-plano-atual" class="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all bg-[#5d674f] text-white shadow-sm min-h-[44px]">
+                        {{ plan_comparison.current.name }}
+                    </button>
+                    <button type="button" id="btn-plano-anterior" class="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all text-[#5c5c5a] hover:text-[#1a1a1a] min-h-[44px]">
+                        {{ plan_comparison.previous.name }}
+                    </button>
+                </div>
+            </div>
+
+            {# Placar de macronutrientes e déficit #}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+                    <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Calorias por dia</span>
+                    <span id="placar-kcal" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    {% if plan_comparison.maintenance_kcal %}
+                    <span class="text-xs text-[#5c5c5a] mt-1 block">Gasto estimado: {{ plan_comparison.maintenance_kcal }} kcal</span>
+                    {% endif %}
+                </div>
+                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+                    <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Proteína diária</span>
+                    <span id="placar-prot" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    <span id="placar-prot-nota" class="text-xs text-[#5c5c5a] mt-1 block"></span>
+                </div>
+                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+                    <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Proteína por kg</span>
+                    <span id="placar-gkg" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    <span class="text-xs text-[#5c5c5a] mt-1 block">
+                        Referência usual: 1,2 a 1,6 g/kg
+                        {% if plan_comparison.reference_weight_kg %}
+                            · sobre {{ plan_comparison.reference_weight_kg|floatformat:0 }} kg{% if plan_comparison.reference_is_target %} (peso alvo){% endif %}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+                    <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Déficit estimado</span>
+                    <span id="placar-deficit" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    <span id="placar-deficit-tag" class="text-xs mt-1 block"></span>
+                </div>
+            </div>
+
+            {# Linha do tempo das refeições — preenchida pelo script abaixo #}
+            <div class="space-y-4" id="timeline-refeicoes"></div>
+        </div>
+
+        {{ plan_comparison|json_script:"planos-data" }}
+        <script>
+            (function () {
+                const dados = JSON.parse(document.getElementById('planos-data').textContent);
+                const limiteSeguro = dados.safe_deficit_kcal;
+
+                const btnAtual = document.getElementById('btn-plano-atual');
+                const btnAnterior = document.getElementById('btn-plano-anterior');
+                const timeline = document.getElementById('timeline-refeicoes');
+                const placarKcal = document.getElementById('placar-kcal');
+                const placarProt = document.getElementById('placar-prot');
+                const placarProtNota = document.getElementById('placar-prot-nota');
+                const placarGkg = document.getElementById('placar-gkg');
+                const placarDeficit = document.getElementById('placar-deficit');
+                const placarDeficitTag = document.getElementById('placar-deficit-tag');
+
+                const ativo = 'px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all bg-[#5d674f] text-white shadow-sm min-h-[44px]';
+                const inativo = 'px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all text-[#5c5c5a] hover:text-[#1a1a1a] min-h-[44px]';
+                const unidade = (texto) => ' <small class="text-sm font-normal text-[#5c5c5a]">' + texto + '</small>';
+                const escapar = (texto) => {
+                    const no = document.createElement('span');
+                    no.textContent = texto == null ? '' : texto;
+                    return no.innerHTML;
+                };
+
+                function render(chave) {
+                    const plano = dados[chave];
+                    btnAtual.className = chave === 'current' ? ativo : inativo;
+                    btnAnterior.className = chave === 'previous' ? ativo : inativo;
+
+                    placarKcal.innerHTML = plano.calories.toLocaleString('pt-BR') + unidade('kcal');
+                    placarProt.innerHTML = plano.protein_g.toLocaleString('pt-BR') + unidade('g');
+                    placarGkg.innerHTML = plano.protein_per_kg
+                        ? plano.protein_per_kg.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + unidade('g/kg')
+                        : '—';
+                    placarProtNota.textContent = plano.protein_per_kg
+                        ? (plano.protein_per_kg >= 1.2 ? 'Dentro da referência' : 'Abaixo da referência usual')
+                        : 'Sem peso registrado para calcular';
+                    placarProtNota.className = plano.protein_per_kg && plano.protein_per_kg >= 1.2
+                        ? 'text-xs text-emerald-800 font-medium mt-1 block'
+                        : 'text-xs text-amber-800 font-medium mt-1 block';
+
+                    if (plano.deficit === null) {
+                        placarDeficit.textContent = '—';
+                        placarDeficitTag.textContent = 'Faltam altura, sexo ou nascimento no perfil';
+                        placarDeficitTag.className = 'text-xs text-[#5c5c5a] mt-1 block';
+                    } else {
+                        placarDeficit.innerHTML = plano.deficit.toLocaleString('pt-BR') + unidade('kcal');
+                        placarDeficitTag.textContent = plano.within_safe_deficit
+                            ? 'Dentro do limite de ' + limiteSeguro.toLocaleString('pt-BR') + ' kcal'
+                            : 'Acima de ' + limiteSeguro.toLocaleString('pt-BR') + ' kcal por dia';
+                        placarDeficitTag.className = plano.within_safe_deficit
+                            ? 'text-xs text-emerald-800 font-medium mt-1 block'
+                            : 'text-xs text-amber-800 font-medium mt-1 block';
+                    }
+
+                    timeline.innerHTML = plano.meals.map(refeicao => `
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-[#f5f4f0] border border-[#dcdacd] gap-4">
+                            <div class="flex items-start gap-4">
+                                <span class="px-3 py-1.5 rounded-full bg-white border border-[#dcdacd] text-xs font-mono font-semibold text-[#1a1a1a] shrink-0 mt-0.5">
+                                    ${escapar(refeicao.time || '--:--')}
+                                </span>
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-base font-medium text-[#1a1a1a]">${escapar(refeicao.name)}</span>
+                                        ${refeicao.change_note ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-emerald-100 text-emerald-900 border border-emerald-200">${escapar(refeicao.change_note)}</span>` : ''}
+                                    </div>
+                                    ${refeicao.description ? `<p class="text-sm text-[#5c5c5a] mt-1">${escapar(refeicao.description)}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 self-end sm:self-center shrink-0">
+                                <span class="text-sm font-semibold text-[#1a1a1a] font-mono">${refeicao.calories} kcal</span>
+                                <span class="text-sm font-semibold text-[#4a7c59] font-mono">${refeicao.protein_g}g prot</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                btnAtual.addEventListener('click', () => render('current'));
+                btnAnterior.addEventListener('click', () => render('previous'));
+                render('current');
+            })();
+        </script>
         {% endif %}
 
     </div>

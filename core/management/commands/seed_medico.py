@@ -25,7 +25,16 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from nutricao.models import Diet, Food, Meal, MealItem, WeightLog
-from saude.models import Appointment, Doctor, Exam, Medication, Treatment
+from saude.models import (
+    Appointment,
+    ClinicalNote,
+    Doctor,
+    Exam,
+    LabPanel,
+    LabResult,
+    Medication,
+    Treatment,
+)
 
 User = get_user_model()
 
@@ -81,7 +90,9 @@ class Command(BaseCommand):
             doctors = self._doctors(user, data.get('doctors', []))
             treatments = self._treatments(user, data.get('treatments', []), doctors)
             self._medications(user, data.get('medications', []), treatments)
-            self._exams(user, data.get('exams', []), doctors, treatments, attachments_dir)
+            exams = self._exams(user, data.get('exams', []), doctors, treatments, attachments_dir)
+            self._lab_panels(user, data.get('lab_panels', []), exams)
+            self._clinical_notes(user, data.get('clinical_notes', []))
             self._appointments(user, data.get('appointments', []), doctors, treatments)
             foods = self._foods(user, data.get('foods', []))
             self._diets(user, data.get('diets', []), foods)
@@ -162,6 +173,8 @@ class Command(BaseCommand):
                     'frequency': item.get('frequency', ''),
                     'end_date': _date(item.get('end_date')),
                     'schedule_times': item.get('schedule_times', []),
+                    'cycle_daily_days': item.get('cycle_daily_days'),
+                    'cycle_alternates_after': item.get('cycle_alternates_after', False),
                     'is_active': item.get('is_active', True),
                 },
             )
@@ -170,6 +183,7 @@ class Command(BaseCommand):
 
     def _exams(self, user, items, doctors, treatments, attachments_dir):
         count = attached = 0
+        result = {}
         for item in items:
             exam, _ = Exam.objects.update_or_create(
                 user=user,
@@ -185,6 +199,7 @@ class Command(BaseCommand):
                 },
             )
             count += 1
+            result[item['name']] = exam
             ref = item.get('attachment_file')
             if ref and attachments_dir and not exam.attachment:
                 path = attachments_dir / ref
@@ -204,6 +219,68 @@ class Command(BaseCommand):
         if attachments_dir:
             msg += f', {attached} anexo(s)'
         self.stdout.write(msg)
+        return result
+
+    def _lab_panels(self, user, items, exams):
+        """
+        Painéis e resultados do laudo.
+
+        Os resultados são recriados a cada rodada, como os itens de refeição: a chave
+        natural de um resultado é o painel mais o nome, e reimportar o mesmo laudo com uma
+        linha renomeada deixaria a antiga órfã na tela.
+        """
+        panels = results = 0
+        for item in items:
+            panel, _ = LabPanel.objects.update_or_create(
+                user=user,
+                title=item['title'],
+                defaults={
+                    'exam': exams.get(item.get('exam')),
+                    'sample_kind': item.get('sample_kind', LabPanel.SampleKind.SERUM),
+                    'sample_label': item.get('sample_label', ''),
+                    'method': item.get('method', ''),
+                    'order': item.get('order', 1),
+                },
+            )
+            panels += 1
+            panel.results.all().delete()
+            for order, result in enumerate(item.get('results', []), start=1):
+                LabResult.objects.create(
+                    user=user,
+                    panel=panel,
+                    name=result['name'],
+                    unit=result.get('unit', ''),
+                    value=_decimal(result['value']),
+                    previous_value=_decimal(result.get('previous_value')),
+                    previous_label=result.get('previous_label', ''),
+                    scale_min=_decimal(result['scale_min']),
+                    scale_max=_decimal(result['scale_max']),
+                    ref_low=_decimal(result['ref_low']),
+                    ref_high=_decimal(result['ref_high']),
+                    status=result.get('status', LabResult.Status.OK),
+                    note=result.get('note', ''),
+                    decimals=result.get('decimals', 1),
+                    order=result.get('order', order),
+                )
+                results += 1
+        self.stdout.write(f'  {panels} painel(is) laboratorial(is), {results} resultado(s)')
+
+    def _clinical_notes(self, user, items):
+        count = 0
+        for item in items:
+            ClinicalNote.objects.update_or_create(
+                user=user,
+                kind=item.get('kind', ClinicalNote.Kind.ALERT),
+                title=item['title'],
+                defaults={
+                    'severity': item.get('severity', ClinicalNote.Severity.INFO),
+                    'body': item['body'],
+                    'icon': item.get('icon', ''),
+                    'order': item.get('order', 1),
+                },
+            )
+            count += 1
+        self.stdout.write(f'  {count} nota(s) clínica(s)')
 
     def _appointments(self, user, items, doctors, treatments):
         count = 0
@@ -266,6 +343,8 @@ class Command(BaseCommand):
                     name=meal_data['name'],
                     defaults={
                         'time': _time(meal_data.get('time')),
+                        'description': meal_data.get('description', ''),
+                        'change_note': meal_data.get('change_note', ''),
                         'order': meal_data.get('order', 1),
                     },
                 )

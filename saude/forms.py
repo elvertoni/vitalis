@@ -137,6 +137,8 @@ class MedicationForm(StyledFormMixin, forms.ModelForm):
             'start_date',
             'end_date',
             'schedule_times',
+            'cycle_daily_days',
+            'cycle_alternates_after',
             'is_active',
         ]
         widgets = {'start_date': DateInput(), 'end_date': DateInput()}

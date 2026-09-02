@@ -25,7 +25,15 @@ from core.views import (
 )
 
 from .forms import AppointmentForm, DoctorForm, ExamForm, MedicationForm, TreatmentForm
-from .models import Appointment, Doctor, Exam, Medication, Treatment
+from .models import (
+    Appointment,
+    ClinicalNote,
+    Doctor,
+    Exam,
+    LabPanel,
+    Medication,
+    Treatment,
+)
 
 
 class HealthIndexView(LoginRequiredMixin, TemplateView):
@@ -189,42 +197,43 @@ class ExamAttachmentView(LoginRequiredMixin, View):
 
 
 class BiomarkersView(LoginRequiredMixin, TemplateView):
-    """Visual laboratory biomarkers dashboard with reference gauges, history and flags."""
+    """
+    The laboratory reading of the person, drawn as gauges.
+
+    Every number on the screen comes from the person's own rows — ``LabPanel``/``LabResult``
+    for the panels, ``ClinicalNote`` for what was written about them, the profile plus the
+    last weighing for the BMI. Nothing is hard coded here: a user with no panels sees the
+    empty state, not somebody else's blood work.
+    """
 
     template_name = 'saude/biomarkers.html'
 
     def get_context_data(self, **kwargs):
+        from nutricao.plans import bmi_snapshot, latest_weight
+
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        context['metrolab_exam'] = (
-            # [dado clinico removido do historico - D-061]
-            or Exam.objects.filter(user=user, attachment__isnull=False).first()
+
+        panels = list(
+            LabPanel.objects.filter(user=user)
+            .select_related('exam', 'exam__doctor')
+            .prefetch_related('results')
         )
+        context['panels'] = panels
 
-        def calc_pos(v, min_v, max_v):
-            if max_v == min_v:
-                return 50.0
-            p = ((float(v) - float(min_v)) / (float(max_v) - float(min_v))) * 100.0
-            return max(2.0, min(98.0, p))
+        # O laudo e o médico solicitante saem do exame de onde veio o painel mais recente —
+        # o painel é a leitura daquele exame, não um cadastro paralelo.
+        source_exam = next((panel.exam for panel in panels if panel.exam), None)
+        context['source_exam'] = source_exam
+        context['collection_date'] = source_exam.done_date if source_exam else None
+        context['requesting_doctor'] = source_exam.doctor if source_exam else None
 
-        panels_data = []  # [dado clinico removido do historico - D-061]
+        context['bmi'] = bmi_snapshot(getattr(user, 'profile', None), latest_weight(user))
+        context['target_weight_kg'] = getattr(getattr(user, 'profile', None), 'target_weight_kg', None)
 
-        for panel in panels_data:
-            for item in panel['exames']:
-                item['pos_v'] = calc_pos(item['v'], item['min'], item['max'])
-                item['pos_refA'] = calc_pos(item['refA'], item['min'], item['max'])
-                item['pos_refB'] = calc_pos(item['refB'], item['min'], item['max'])
-                item['width_ref'] = max(2.0, item['pos_refB'] - item['pos_refA'])
-                if 'ant' in item:
-                    item['pos_ant'] = calc_pos(item['ant'], item['min'], item['max'])
-                    item['track_left'] = min(item['pos_ant'], item['pos_v'])
-                    item['track_width'] = max(1.0, abs(item['pos_v'] - item['pos_ant']))
-                    diff_pct = ((item['v'] - item['ant']) / item['ant']) * 100.0
-                    item['diff_pct_formatted'] = f'{diff_pct:+.1f}%'
-
-        context['panels'] = panels_data
-        context['imc'] = None
-        context['imc_pos'] = 0
+        notes = ClinicalNote.objects.filter(user=user)
+        context['alerts'] = [n for n in notes if n.kind == ClinicalNote.Kind.ALERT]
+        context['alignments'] = [n for n in notes if n.kind == ClinicalNote.Kind.ALIGNMENT]
         return context
 
 
