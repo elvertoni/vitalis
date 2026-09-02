@@ -75,19 +75,27 @@
         <div class="bg-[#e8eae4] rounded-[2rem] p-8 border border-[#dcdacd] mt-8">
             <div class="flex items-center justify-between gap-4 mb-6">
                 <div class="flex items-center gap-3">
-                    <i data-lucide="chef-hat" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
-                    <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a]">Receitas</h2>
+                    <div class="w-9 h-9 rounded-full bg-white/80 border border-[#dcdacd] flex items-center justify-center text-[#5d674f] shrink-0">
+                        <i data-lucide="chef-hat" class="w-5 h-5 stroke-[1.5]"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a]">Receitas</h2>
+                        <span class="text-xs text-[#5c5c5a] block">Preparo dos alimentos caseiros cadastrados</span>
+                    </div>
                 </div>
-                <a href="{% url 'nutricao:food_list' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Todos os alimentos</a>
+                <a href="{% url 'nutricao:food_list' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors min-h-[44px] inline-flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">Todos os alimentos</a>
             </div>
             <div class="grid md:grid-cols-2 gap-4">
                 {% for food in recipes %}
-                <a href="{{ food.get_absolute_url }}" class="block bg-white rounded-2xl p-6 border border-[#dcdacd] hover:shadow-md transition-shadow">
+                <a href="{{ food.get_absolute_url }}" class="group block bg-white rounded-2xl p-6 border border-[#dcdacd] hover:border-[#5d674f]/40 hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">
                     <div class="flex items-baseline justify-between gap-3 mb-2">
-                        <h3 class="text-base font-medium text-[#1a1a1a]">{{ food.name }}</h3>
+                        <h3 class="text-base font-medium text-[#1a1a1a] group-hover:text-[#5d674f] transition-colors flex items-center gap-2">
+                            {{ food.name }}
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#5d674f]"></i>
+                        </h3>
                         <span class="text-xs text-[#5c5c5a] shrink-0 font-mono">{{ food.calories|floatformat:0 }} kcal · {{ food.protein_g|floatformat:0 }}g P</span>
                     </div>
-                    <p class="text-sm text-[#5c5c5a] leading-relaxed">{{ food.recipe|truncatechars:150 }}</p>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed line-clamp-3">{{ food.recipe|truncatechars:150 }}</p>
                 </a>
                 {% endfor %}
             </div>

@@ -234,15 +234,17 @@ irmao da barra, o menu volta a medir a janela inteira.
 {% block scripts %}{% endblock %}
 
 {# Convite de instalar: some sozinho fora do celular, quando já está instalado ou já foi dispensado. #}
-<div id="install-app" hidden class="fixed inset-x-4 bottom-4 z-[60] md:hidden">
-    <div class="bg-[#1a1a1a] text-white rounded-[1.5rem] p-5 shadow-lg flex items-start gap-4">
-        <i data-lucide="smartphone" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5"></i>
+<div id="install-app" hidden role="dialog" aria-labelledby="install-app-title" aria-describedby="install-app-hint" class="fixed inset-x-4 bottom-4 pb-[env(safe-area-inset-bottom,0px)] z-[60] md:hidden">
+    <div class="bg-[#1a1a1a] text-white rounded-[1.5rem] p-5 shadow-xl border border-white/10 flex items-start gap-4">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 mt-0.5 text-white">
+            <i data-lucide="smartphone" class="w-5 h-5 stroke-[1.5]"></i>
+        </div>
         <div class="flex-1">
-            <p class="text-base font-medium leading-snug">Instalar o Vitalis</p>
-            <p id="install-app-hint" class="text-sm text-white/70 mt-1 leading-snug">Abre em tela cheia, como um aplicativo.</p>
+            <p id="install-app-title" class="text-base font-medium leading-snug">Instalar o Vitalis</p>
+            <p id="install-app-hint" class="text-sm text-white/70 mt-1 leading-snug">Abre em tela cheia, com acesso instantâneo como um aplicativo.</p>
             <div class="flex items-center gap-3 mt-4">
-                <button type="button" id="install-app-go" class="min-h-[44px] px-6 rounded-full bg-white text-[#1a1a1a] text-sm font-medium">Instalar</button>
-                <button type="button" id="install-app-no" class="min-h-[44px] px-4 text-sm text-white/70">Agora não</button>
+                <button type="button" id="install-app-go" class="min-h-[44px] px-6 rounded-full bg-white text-[#1a1a1a] text-sm font-medium hover:bg-white/90 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]">Instalar</button>
+                <button type="button" id="install-app-no" class="min-h-[44px] px-4 text-sm text-white/70 hover:text-white transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]">Agora não</button>
             </div>
         </div>
     </div>

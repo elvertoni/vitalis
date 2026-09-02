@@ -63,10 +63,13 @@ def build_clinical_context(user):
     meds = Medication.objects.filter(user=user, is_active=True)
     if meds.exists():
         parts.append("\n--- MEDICAMENTOS EM USO ATIVO ---")
+        today = timezone.localdate()
         for m in meds:
             times_str = f" · Horários: {m.times_display}" if m.times_display else ""
+            weekdays_str = f" · Dias: {m.weekdays_display}" if m.weekdays_display else " · Dias: diário"
             cycle = f" [{m.cycle_status['text']}]" if m.cycle_status else ""
-            parts.append(f"- {m.name} ({m.dosage}) · {m.frequency}{times_str}{cycle}")
+            hoje_toma = " (Hoje: dose programada)" if m.is_current_on(today) else " (Hoje: sem dose programada)"
+            parts.append(f"- {m.name} ({m.dosage}) · {m.frequency}{times_str}{weekdays_str}{cycle}{hoje_toma}")
 
     # 3. Tratamentos e Médicos
     treatments = Treatment.objects.filter(user=user, status__in=[Treatment.Status.ONGOING, Treatment.Status.PAUSED])

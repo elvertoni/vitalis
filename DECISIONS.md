@@ -861,7 +861,7 @@ anteriores. Limpar exige reescrever história (`filter-repo`) e forçar push, de
 - **Segurança de Credenciais:** chave do Google AI Studio configurada estritamente via variável de ambiente (`GEMINI_API_KEY`) no local e na VPS EasyPanel, nunca versionada em código.
 
 
-### D-062 · Remédio semanal, alimento contado e o Vitalis instalável no celular
+### D-063 · Remédio semanal, alimento contado e o Vitalis instalável no celular
 **Contexto:** rodada de ajustes pedida pelo dono depois de usar o sistema no dia a dia.
 Quatro coisas travavam o uso real: injetável de uma vez por semana gerava lembrete todo dia,
 o alimento que se conta (ovo) aparecia sempre em grama, a receita preparada em casa não tinha
@@ -890,3 +890,11 @@ onde morar, e no celular o sistema abria como site, sem atalho de app.
 tinha sido **declarada** em `Meta.permissions` de model nenhum — ou seja, a permissão não
 existia no banco e só superusuário passava, apesar de a documentação prometer o contrário.
 Agora está declarada em `Reminder.Meta`.
+
+### D-064 · Refinamento Impeccable (A11y, PWA Safe Area e Prontuário Dinâmico da IA)
+**Contexto:** auditoria técnica e ergonômica sobre as novas funcionalidades.
+**Decisão:**
+- **Banner PWA com WCAG AA e Safe Area:** container com `role="dialog"`, `aria-labelledby`, anéis de foco explícitos (`focus-visible:ring-2`) e suporte a `env(safe-area-inset-bottom)` para evitar sobreposição à barra de gestos do iOS.
+- **Chips de Dia da Semana (`weekday_chips.html`):** grupo semântico com `role="group" aria-label="Dias da semana"`, rótulos `aria-label` completos em cada checkbox para leitor de tela, e alvos táteis `min-h-[44px]`.
+- **Hub e Lista de Alimentos:** afordância aprimorada nos cards de receitas caseiras, estados de hover com micro-animação de setas e focus rings padrão Soluna.
+- **Prontuário Contextual do Vitalis AI:** enriquecimento de `build_clinical_context` com periodicidade semanal dos medicamentos e sinalizador de dose programada no dia (`is_current_on`), permitindo respostas precisas sobre a rotina diária e semanal do paciente.

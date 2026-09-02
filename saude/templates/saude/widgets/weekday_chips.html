@@ -1,11 +1,13 @@
 {# Dias da semana como pastilhas marcáveis. Espera o contexto padrão de CheckboxSelectMultiple. #}
-<div class="flex flex-wrap gap-2" role="group">
+<div class="flex flex-wrap gap-2" role="group" aria-label="Dias da semana">
     {% for group, options, index in widget.optgroups %}{% for option in options %}
     <label class="cursor-pointer">
         <input type="checkbox" name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}"
                {% if option.selected %}checked{% endif %}
+               aria-label="{{ option.label }}"
                class="peer sr-only">
-        <span class="inline-flex items-center justify-center min-w-[3.25rem] min-h-[44px] px-4 rounded-full border border-[#dcdacd] bg-white text-sm font-medium text-[#5c5c5a] transition-colors
+        <span class="inline-flex items-center justify-center min-w-[3.25rem] min-h-[44px] px-4 rounded-full border border-[#dcdacd] bg-white text-sm font-medium text-[#5c5c5a] transition-all
+                     hover:border-[#5d674f]/60 hover:text-[#1a1a1a]
                      peer-checked:bg-[#5d674f] peer-checked:text-white peer-checked:border-[#5d674f]
                      peer-focus-visible:ring-2 peer-focus-visible:ring-[#5d674f] peer-focus-visible:ring-offset-2">
             {{ option.label|slice:':3' }}
