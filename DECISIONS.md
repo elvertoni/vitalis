@@ -775,6 +775,17 @@ Acesso direto a partir do hub de saúde, da lista de exames e dos detalhes do la
 - **Medicação:** adicionada a propriedade `cycle_status` em `saude.Medication` e badge correspondente em `saude/medication_list.html`, calculando se a data de hoje pertence à fase contínua de 30 dias ("Dia X de 30") ou à fase alternada ("Hoje toma" vs "Hoje pula").
 - **LGPD:** criada a rota `/contas/exportar-dados/` (`accounts:export_data`) e a view `ExportUserDataView`, gerando sob demanda um arquivo `.zip` com `prontuario_vitalis.json` (perfil, médicos, tratamentos, exames, consultas, remédios, dietas, pesagens e treinos) e todos os PDFs de laudos originais anexados na pasta `laudos/`.
 
+### D-060 · Acessibilidade Impeccable: Redução de Movimento, Formulários WCAG AA e Touch Targets
+**Contexto:** auditoria técnica conduzida pelo plugin Impeccable (v4.1.1) diagnosticou oportunidades de elevação de nota para 19/20:
+1. Ausência de `@media (prefers-reduced-motion)` forçava animações e rolagem suave em usuários com sensibilidade vestibular;
+2. Formulários renderizavam mensagens de erro visuais, mas os widgets `<input>`/`<select>` não recebiam `aria-invalid="true"` nem `aria-describedby`, deixando leitores de tela sem anúncio automático da falha;
+3. Links de ação secundária ("Excluir") em telas de detalhe mediam menos de 44px de altura, abaixo da recomendação WCAG 2.5.5.
+**Decisão:**
+- **Redução de Movimento:** injetada a regra `@media (prefers-reduced-motion: reduce)` em `templates/base.html` zerando durações de animação e desativando rolagem suave para usuários com a preferência ativada no sistema operacional.
+- **Formulários Acessíveis:** `StyledFormMixin` em `accounts/forms.py` aprimorado para injetar programaticamente `aria-required="true"` em campos obrigatórios, `aria-describedby="id_{field}_help"` em campos com ajuda e `aria-invalid="true"` associado ao `id_{field}_error` no método `full_clean()`.
+- **Touch Targets:** botões e links de ação nas telas de detalhe (`exam_detail`, `doctor_detail`, `appointment_detail`, `treatment_detail`, `medication_detail`, `diet_detail`, `routine_detail`) padronizados para altura mínima de 44px (`min-h-[44px]`), garantindo precisão e conforto ergonômico em dispositivos móveis.
+
+
 
 
 

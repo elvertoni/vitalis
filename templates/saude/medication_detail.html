@@ -13,8 +13,8 @@
                 <p class="text-lg text-[#5c5c5a]">{{ medication.dosage }}{% if medication.frequency %} · {{ medication.frequency }}{% endif %}</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{% url 'saude:medication_update' medication.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
-                <a href="{% url 'saude:medication_delete' medication.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+                <a href="{% url 'saude:medication_update' medication.pk %}" class="inline-flex items-center justify-center min-h-[44px] border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
+                <a href="{% url 'saude:medication_delete' medication.pk %}" class="inline-flex items-center justify-center min-h-[44px] px-3 text-sm text-[#5c5c5a] hover:text-red-700 transition-colors rounded-full">Excluir</a>
             </div>
         </div>
 

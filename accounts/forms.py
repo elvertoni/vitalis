@@ -33,12 +33,18 @@ SELECT_CLASS = (
 
 
 class StyledFormMixin:
-    """Applies the design system classes to every widget of the form."""
+    """Applies the design system classes and accessible ARIA attributes to every widget."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
+        for name, field in self.fields.items():
             widget = field.widget
+            auto_id = f'id_{name}'
+            if field.required:
+                widget.attrs.setdefault('aria-required', 'true')
+            if field.help_text:
+                existing_desc = widget.attrs.get('aria-describedby', '')
+                widget.attrs['aria-describedby'] = f'{auto_id}_help {existing_desc}'.strip()
             if isinstance(widget, (forms.Select, forms.SelectMultiple)):
                 widget.attrs.setdefault('class', SELECT_CLASS)
             elif isinstance(widget, forms.CheckboxInput):
@@ -49,6 +55,17 @@ class StyledFormMixin:
                 )
             else:
                 widget.attrs.setdefault('class', TEXT_INPUT_CLASS)
+
+    def full_clean(self):
+        super().full_clean()
+        if self._errors:
+            for name, errors in self._errors.items():
+                if name in self.fields:
+                    widget = self.fields[name].widget
+                    widget.attrs['aria-invalid'] = 'true'
+                    auto_id = f'id_{name}'
+                    existing_desc = widget.attrs.get('aria-describedby', '')
+                    widget.attrs['aria-describedby'] = f'{auto_id}_error {existing_desc}'.strip()
 
 
 class SignupForm(StyledFormMixin, BaseUserCreationForm):

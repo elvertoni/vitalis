@@ -12,7 +12,16 @@
         tailwind = { config: { theme: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
     {% block head_extra %}{% endblock %}
 </head>
 <body class="bg-[#f5f4f0] text-[#1a1a1a] antialiased selection:bg-[#5d674f] selection:text-white font-sans max-w-full overflow-x-hidden">

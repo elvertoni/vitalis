@@ -14,13 +14,13 @@
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 {% if 'metrolab' in exam.name|lower or 'hemograma' in exam.name|lower or 'painel' in exam.name|lower %}
-                <a href="{% url 'saude:biomarkers' %}" class="inline-flex items-center gap-2 bg-[#5d674f] text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-[#4a523f] transition-colors">
+                <a href="{% url 'saude:biomarkers' %}" class="inline-flex items-center justify-center min-h-[44px] gap-2 bg-[#5d674f] text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-[#4a523f] transition-colors shadow-sm">
                     <i data-lucide="bar-chart-2" class="w-4 h-4 stroke-[1.5]"></i>
                     <span>Painel Gráfico</span>
                 </a>
                 {% endif %}
-                <a href="{% url 'saude:exam_update' exam.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
-                <a href="{% url 'saude:exam_delete' exam.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+                <a href="{% url 'saude:exam_update' exam.pk %}" class="inline-flex items-center justify-center min-h-[44px] border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
+                <a href="{% url 'saude:exam_delete' exam.pk %}" class="inline-flex items-center justify-center min-h-[44px] px-3 text-sm text-[#5c5c5a] hover:text-red-700 transition-colors rounded-full">Excluir</a>
             </div>
         </div>
 
