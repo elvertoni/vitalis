@@ -31,9 +31,9 @@ class ChatIndexView(LoginRequiredMixin, TemplateView):
 
         context['active_conversation'] = active_conv
         if active_conv:
-            context['messages'] = active_conv.messages.all()
+            context['chat_messages'] = active_conv.messages.all()
         else:
-            context['messages'] = []
+            context['chat_messages'] = []
 
         # Ativação do Gemini
         api_key = getattr(settings, 'GEMINI_API_KEY', '') or os.environ.get('GEMINI_API_KEY', '')

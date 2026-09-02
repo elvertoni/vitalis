@@ -78,7 +78,7 @@
 
             {# Lista de mensagens #}
             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-                {% if not messages %}
+                {% if not chat_messages %}
                     {# Boas-vindas e comandos rápidos #}
                     <div class="max-w-2xl mx-auto text-center py-8">
                         <div class="w-16 h-16 rounded-full bg-[#5d674f]/10 text-[#5d674f] flex items-center justify-center mx-auto mb-4">
@@ -123,7 +123,7 @@
                     </div>
                 {% endif %}
 
-                {% for msg in messages %}
+                {% for msg in chat_messages %}
                     {% if msg.role == 'user' %}
                         {# Mensagem do Usuário #}
                         <div class="flex justify-end">
