@@ -173,6 +173,7 @@ class Command(BaseCommand):
                     'frequency': item.get('frequency', ''),
                     'end_date': _date(item.get('end_date')),
                     'schedule_times': item.get('schedule_times', []),
+                    'weekdays': item.get('weekdays', []),
                     'cycle_daily_days': item.get('cycle_daily_days'),
                     'cycle_alternates_after': item.get('cycle_alternates_after', False),
                     'is_active': item.get('is_active', True),
@@ -316,6 +317,9 @@ class Command(BaseCommand):
                     'protein_g': _decimal(item.get('protein_g', 0)) or Decimal('0'),
                     'carbs_g': _decimal(item.get('carbs_g', 0)) or Decimal('0'),
                     'fat_g': _decimal(item.get('fat_g', 0)) or Decimal('0'),
+                    'unit_weight_g': _decimal(item.get('unit_weight_g')),
+                    'unit_label': item.get('unit_label', ''),
+                    'recipe': item.get('recipe', ''),
                 },
             )
             result[item['name']] = food

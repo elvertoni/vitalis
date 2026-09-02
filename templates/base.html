@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Vitalis{% endblock %}</title>
     <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{% static 'apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% url 'core:web_manifest' %}">
+    <meta name="theme-color" content="#f5f4f0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vitalis">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -225,5 +232,80 @@ irmao da barra, o menu volta a medir a janela inteira.
     });
 </script>
 {% block scripts %}{% endblock %}
+
+{# Convite de instalar: some sozinho fora do celular, quando já está instalado ou já foi dispensado. #}
+<div id="install-app" hidden class="fixed inset-x-4 bottom-4 z-[60] md:hidden">
+    <div class="bg-[#1a1a1a] text-white rounded-[1.5rem] p-5 shadow-lg flex items-start gap-4">
+        <i data-lucide="smartphone" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5"></i>
+        <div class="flex-1">
+            <p class="text-base font-medium leading-snug">Instalar o Vitalis</p>
+            <p id="install-app-hint" class="text-sm text-white/70 mt-1 leading-snug">Abre em tela cheia, como um aplicativo.</p>
+            <div class="flex items-center gap-3 mt-4">
+                <button type="button" id="install-app-go" class="min-h-[44px] px-6 rounded-full bg-white text-[#1a1a1a] text-sm font-medium">Instalar</button>
+                <button type="button" id="install-app-no" class="min-h-[44px] px-4 text-sm text-white/70">Agora não</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        // Registra o worker: sem ele o navegador não oferece instalar.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('{% url "core:service_worker" %}').catch(function () { /* sem worker, o site segue normal */ });
+            });
+        }
+
+        var banner = document.getElementById('install-app');
+        var botao = document.getElementById('install-app-go');
+        var recusar = document.getElementById('install-app-no');
+        var dica = document.getElementById('install-app-hint');
+        if (!banner) { return; }
+
+        var CHAVE = 'vitalis:instalar-dispensado';
+        var dispensado = false;
+        try { dispensado = localStorage.getItem(CHAVE) === '1'; } catch (e) { dispensado = false; }
+
+        var jaInstalado = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (dispensado || jaInstalado) { return; }
+
+        function mostrar() {
+            banner.hidden = false;
+            if (window.lucide) { window.lucide.createIcons(); }
+        }
+
+        function esconder(lembrar) {
+            banner.hidden = true;
+            if (lembrar) { try { localStorage.setItem(CHAVE, '1'); } catch (e) { /* modo privado */ } }
+        }
+
+        recusar.addEventListener('click', function () { esconder(true); });
+
+        // Android e desktop: o navegador avisa quando pode instalar e guardamos o convite.
+        var convite = null;
+        window.addEventListener('beforeinstallprompt', function (evento) {
+            evento.preventDefault();
+            convite = evento;
+            mostrar();
+        });
+
+        botao.addEventListener('click', function () {
+            if (!convite) { return; }
+            convite.prompt();
+            convite.userChoice.then(function () { esconder(true); convite = null; });
+        });
+
+        window.addEventListener('appinstalled', function () { esconder(true); });
+
+        // iPhone não dispara o evento: o caminho é o botão Compartilhar, então explicamos.
+        var ios = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+        if (ios) {
+            dica.textContent = 'No Safari: toque em Compartilhar e depois em "Adicionar à Tela de Início".';
+            botao.hidden = true;
+            mostrar();
+        }
+    })();
+</script>
 </body>
 </html>

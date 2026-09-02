@@ -290,6 +290,33 @@ Duas rotas do `treino` devolvem **JSON, não HTML**, apesar de herdarem `Templat
 de carga) e a equivalente de peso em `nutricao` (`WeightProgressDataView`). Ao mexer nelas,
 o consumidor é o `<script>` da tela, não um template.
 
+### Medicamento: quando tem dose, e não só se o tratamento está aberto
+
+`Medication.is_current_on(day)` responde "tem dose nesse dia?" e junta três filtros: janela
+de início/fim, `weekdays` (lista de 0 a 6, segunda = 0 — **em branco é todo dia**, não nenhum)
+e a fase do ciclo (`takes_on_cycle_day`). É o que faz um injetável semanal não gerar lembrete
+nos outros seis dias (D-062). O gerador de lembretes e o painel usam essa mesma função — não
+refaça o filtro na view.
+
+Marcar dia sem horário é erro de formulário: `_medication_reminders` percorre `schedule_times`,
+então sem horário o remédio ficaria mudo em vez de lembrar.
+
+O widget das pastilhas de dia (`saude/templates/saude/widgets/weekday_chips.html`) é o **único
+template dentro de uma app** — e tem de ser: o renderizador de formulários do Django usa um
+motor próprio, que enxerga as pastas de template das apps mas **não** a pasta `templates/` do
+projeto. Widget novo com template segue esse caminho, senão quebra com `TemplateDoesNotExist`.
+
+### Alimento contado × alimento pesado
+
+`Food.unit_weight_g` + `Food.unit_label` fazem `quantity_display` render `3 ovos (150 g)`;
+sem eles, sai a grama pura. A conversão fica no `Food` porque `MealItem` e `DailyLog` exibem a
+mesma quantidade em telas diferentes. `Food.recipe` guarda o preparo do que é feito em casa e
+aparece na tela do alimento, com atalho a partir da refeição (D-062).
+
+Ao formatar número em template ou em Python, lembre que `'150'.rstrip('0')` vira `15`: só corte
+zero à direita depois de confirmar que existe vírgula decimal (`_decimal_text` em
+`nutricao/models.py` faz isso).
+
 ### Peso e macro: a fonte é o histórico, o formulário é só a porta
 
 `ProfileForm.current_weight_kg` não é coluna de `Profile` — é campo de formulário que lê a
@@ -363,7 +390,9 @@ texto e entrega. O comando `send_due_reminders` decide *quando*, nunca *o quê* 
 WhatsApp sai por `lembretes/whatsapp.py` (Evolution API, instância própria `vitalis` — D-045)
 quando a categoria tem `by_whatsapp`, o gateway está configurado e há telefone.
 
-O pareamento da sessão fica em `/lembretes/whatsapp/`, **só para superusuários ou quem tem `lembretes.manage_whatsapp`** e devolvendo 404
+O pareamento da sessão fica em `/lembretes/whatsapp/`, **só para superusuários ou quem tem
+`lembretes.manage_whatsapp`** (declarada em `Reminder.Meta.permissions`; até D-062 a permissão
+era checada mas nunca existiu no banco, então só superusuário passava) e devolvendo 404
 para os demais (D-046): a instância é o remetente do sistema, não o WhatsApp de cada conta —
 derrubar aquela sessão tira o canal de todo mundo. Em produção o `EVOLUTION_API_URL` aponta
 para `http://work_evolution-api:8080` (rede interna do EasyPanel); pela URL pública o
@@ -385,6 +414,27 @@ do app, `SERVICE_MODE=cron` no ambiente, e o `entrypoint.sh` entra num laço de
 `migrate` — quem aplica schema é o serviço web. Mexeu em `sync_reminders` ou no envio? Rode
 o comando duas vezes seguidas e confira que a segunda envia zero: é o teste que pega
 regressão de reenvio.
+
+## Instalação como app no celular (PWA)
+
+`manifest.json` e `sw.js` são **rotas** em `core/urls.py`, servidas por `TemplateView` a partir
+de `templates/`. Não são arquivos estáticos por um motivo só: o escopo de um service worker é
+a pasta de onde ele foi baixado, e de `/static/` ele controlaria apenas o estático — o
+navegador nunca ofereceria instalar (D-062). Passar pelo template também faz os ícones saírem
+com o hash do WhiteNoise.
+
+**O worker não guarda página nenhuma.** Só ícone e favicon. Resposta autenticada aqui carrega
+laudo, peso e medicação; cachear isso no aparelho desfaz o cuidado de servir anexo por rota
+autenticada. Offline, ele devolve um aviso franco — nunca conteúdo de saúde vencido. Ao mexer
+nele, suba a versão em `CACHE` (`vitalis-estatico-vN`), senão o `activate` não limpa o antigo.
+
+O convite de instalar vive em `templates/base.html` e some sozinho quando já foi dispensado
+(`localStorage`), quando o app já está instalado (`display-mode: standalone`) ou fora do
+celular. No iPhone o `beforeinstallprompt` não existe: lá o banner vira instrução do
+Compartilhar, e o botão some.
+
+Ícone novo entra em `static/` como PNG 192 e 512 (mais as versões `maskable`, que o Android
+recorta em círculo) e o `apple-touch-icon.png` de 180. O `manifest.json` referencia os quatro.
 
 ## Billing: `Plan` é catálogo, `Subscription` é do dono
 

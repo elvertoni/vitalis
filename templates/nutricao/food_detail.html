@@ -18,7 +18,9 @@
         </div>
 
         <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
-            <p class="text-sm text-[#5c5c5a] mb-8">Valores por {{ food.portion_base_g }}g</p>
+            <p class="text-sm text-[#5c5c5a] mb-8">
+                Valores por {{ food.portion_base_g }}g{% if food.unit_weight_g and food.unit_label %} · 1 {{ food.unit_label }} = {{ food.unit_weight_g|floatformat:'-1' }} g{% endif %}
+            </p>
             <dl class="space-y-5">
                 <div class="flex items-center justify-between border-b border-[#dcdacd] pb-4">
                     <dt class="text-base text-[#5c5c5a]">Calorias</dt>
@@ -38,6 +40,16 @@
                 </div>
             </dl>
         </div>
+
+        {% if food.recipe %}
+        <div class="bg-[#e8eae4] rounded-[2rem] p-8 border border-[#dcdacd] mt-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="chef-hat" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                <h2 class="text-xl font-medium tracking-tight text-[#1a1a1a]">Preparo</h2>
+            </div>
+            <p class="text-base text-[#1a1a1a] leading-relaxed whitespace-pre-line">{{ food.recipe }}</p>
+        </div>
+        {% endif %}
 
     </div>
 </section>

@@ -34,7 +34,7 @@
                     <div class="flex items-center justify-between py-4">
                         <div>
                             <span class="text-base font-medium text-[#1a1a1a] block">{{ log.food.name }}</span>
-                            <span class="text-sm text-[#5c5c5a]">{{ log.meal_name }} · {{ log.quantity_g }}g · {{ log.macros.calories|floatformat:0 }} kcal</span>
+                            <span class="text-sm text-[#5c5c5a]">{{ log.meal_name }} · {{ log.quantity_display }} · {{ log.macros.calories|floatformat:0 }} kcal</span>
                         </div>
                         <form method="post" action="{% url 'nutricao:dailylog_delete' log.pk %}" onsubmit="return confirm('Excluir este registro?')">
                             {% csrf_token %}

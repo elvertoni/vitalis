@@ -1,0 +1,24 @@
+{% load static %}{
+  "name": "Vitalis · Saúde, treino e nutrição",
+  "short_name": "Vitalis",
+  "description": "Saúde, treino e nutrição num só lugar, com lembretes do que precisa de ação.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f4f0",
+  "theme_color": "#f5f4f0",
+  "icons": [
+    { "src": "{% static 'icon-192.png' %}", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'icon-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'icon-maskable-192.png' %}", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "{% static 'icon-maskable-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Registrar treino", "url": "{% url 'treino:session_run_pick' %}" },
+    { "name": "Lembretes", "url": "{% url 'lembretes:index' %}" },
+    { "name": "Registrar refeição", "url": "{% url 'nutricao:dailylog_create' %}" }
+  ]
+}

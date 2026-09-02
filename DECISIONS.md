@@ -860,3 +860,33 @@ anteriores. Limpar exige reescrever história (`filter-repo`) e forçar push, de
 - **Interface e Navegação:** tela de chat interativa em `/assistente/` com suporte a sugestões rápidas de comandos, formatação Markdown e atalhos na barra de navegação desktop e mobile.
 - **Segurança de Credenciais:** chave do Google AI Studio configurada estritamente via variável de ambiente (`GEMINI_API_KEY`) no local e na VPS EasyPanel, nunca versionada em código.
 
+
+### D-062 · Remédio semanal, alimento contado e o Vitalis instalável no celular
+**Contexto:** rodada de ajustes pedida pelo dono depois de usar o sistema no dia a dia.
+Quatro coisas travavam o uso real: injetável de uma vez por semana gerava lembrete todo dia,
+o alimento que se conta (ovo) aparecia sempre em grama, a receita preparada em casa não tinha
+onde morar, e no celular o sistema abria como site, sem atalho de app.
+**Decisão:**
+- **Periodicidade semanal.** `Medication.weekdays` (lista de 0 a 6, segunda = 0) entra no
+  `is_current_on`, que agora responde "tem dose nesse dia?" em vez de "o tratamento está
+  aberto?" — junta início/fim, dia da semana e a fase do ciclo num lugar só. **Em branco
+  significa todo dia**, não "nenhum dia": é o caso da maioria das receitas. Marcar o dia sem
+  informar horário é erro de formulário, porque o gerador percorre os horários e o remédio
+  ficaria em silêncio.
+- **Alimento contado.** `Food.unit_weight_g` + `Food.unit_label` fazem `quantity_display`
+  render "3 ovos (150 g)". Quem não preenche continua em grama. A conversão vive no `Food`
+  porque `MealItem` e `DailyLog` mostram a mesma quantidade em telas diferentes.
+- **Receita.** `Food.recipe` aparece na tela do alimento, e a refeição que usa um alimento com
+  receita ganha o atalho "ver preparo". O preparo é do alimento, não da refeição: o mesmo
+  sanduíche entra em duas refeições do dia.
+- **Instalável (PWA).** `manifest.json` e `sw.js` são **rotas**, não arquivos estáticos: o
+  escopo de um service worker é a pasta de onde ele foi baixado, e servido de `/static/` ele
+  controlaria só o estático — o navegador nunca ofereceria instalar. O worker **não guarda
+  página nenhuma em cache**, só ícone: resposta autenticada carrega laudo, peso e medicação, e
+  deixar isso no disco do aparelho desfaz o cuidado de servir anexo por rota autenticada. Sem
+  rede, aparece um aviso franco em vez de dado velho de saúde. No iPhone o navegador não
+  dispara o convite de instalar, então o banner explica o caminho do Compartilhar.
+**Furo corrigido de passagem:** `lembretes.manage_whatsapp` era verificada no código mas nunca
+tinha sido **declarada** em `Meta.permissions` de model nenhum — ou seja, a permissão não
+existia no banco e só superusuário passava, apesar de a documentação prometer o contrário.
+Agora está declarada em `Reminder.Meta`.

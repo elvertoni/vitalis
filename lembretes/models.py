@@ -58,6 +58,10 @@ class Reminder(OwnedModel):
         verbose_name = 'lembrete'
         verbose_name_plural = 'lembretes'
         ordering = ['remind_at']
+        # A sessão do WhatsApp é o remetente do sistema, não o aparelho de cada pessoa: quem
+        # pode parear é quem administra a instância (D-046). A permissão mora aqui porque
+        # ``lembretes`` é a app que oferece a tela; sem declará-la, só superusuário passava.
+        permissions = [('manage_whatsapp', 'Pode conectar a sessão do WhatsApp')]
         indexes = [
             models.Index(fields=['user', 'status', 'remind_at']),
             models.Index(fields=['content_type', 'object_id']),

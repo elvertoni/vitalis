@@ -53,6 +53,31 @@ Any number rendered inside a `style` attribute must go through `|stringformat:'.
 `floatformat` localises to a comma in pt-BR, which makes `left: 75,7%` an invalid declaration
 that browsers drop silently.
 
+## Installable on phones (PWA)
+
+`manifest.json` and `sw.js` are routes in `core/urls.py`, not static files: a service worker's
+scope is the directory it was served from, so from `/static/` it would control only static
+assets and the browser would never offer to install (D-062). The worker caches icons only —
+**never a page**: authenticated responses carry lab reports, weight and medication, and caching
+those on the device undoes the reason attachments are served through an authenticated view.
+Bump the `CACHE` version when changing it. The install banner lives in `templates/base.html`
+and hides itself once dismissed, once installed, or outside phones; on iOS it becomes Share-
+sheet instructions because `beforeinstallprompt` never fires there.
+
+## Medication: a dose on that day, not just an open course
+
+`Medication.is_current_on(day)` combines the start/end window, `weekdays` (0-6, Monday = 0;
+**empty means every day**) and the two-phase cycle, so a weekly injection does not raise a
+reminder on the other six days (D-062). Marking weekdays without any `schedule_times` is a
+form error — the generator iterates the times, so the medicine would go silent. The weekday
+chips widget is the only template kept inside an app
+(`saude/templates/saude/widgets/weekday_chips.html`): Django's form renderer uses its own
+engine, which sees app template directories but not the project's `templates/`.
+
+`Food.unit_weight_g` + `Food.unit_label` render "3 ovos (150 g)" through `quantity_display`;
+`Food.recipe` holds the preparation for home-made items. When formatting numbers, strip
+trailing zeros only after confirming a decimal separator exists — `'150'.rstrip('0')` is `15`.
+
 ## Training: logging screen vs. CRUD
 
 `/treino/registrar/` is the weekly path (D-048): pick the routine day, log the whole workout

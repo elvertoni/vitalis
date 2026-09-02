@@ -55,6 +55,15 @@
                 {% else %}
                 <p class="text-base text-[#5c5c5a]">Nenhum horário definido ainda.</p>
                 {% endif %}
+
+                <div class="mt-6 pt-6 border-t border-[#dcdacd]">
+                    <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a] block mb-3">Dias da semana</span>
+                    {% if medication.weekdays_display %}
+                    <p class="text-base font-medium text-[#1a1a1a]">{{ medication.weekdays_display }}</p>
+                    {% else %}
+                    <p class="text-base text-[#5c5c5a]">Todo dia.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
 

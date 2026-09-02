@@ -164,6 +164,13 @@ class Exam(OwnedModel):
 # Ritmo das cobranças de agendamento. Vivem aqui, e não em ``lembretes``, porque as telas de
 # saúde precisam das constantes e ``saude`` não pode importar ``lembretes`` (a dependência
 # corre no sentido contrário). Ver DECISIONS.md D-042 e D-044.
+# Dias da semana como o Python conta (segunda = 0), para a periodicidade do medicamento.
+WEEKDAY_LABELS = {0: 'Seg', 1: 'Ter', 2: 'Qua', 3: 'Qui', 4: 'Sex', 5: 'Sáb', 6: 'Dom'}
+WEEKDAY_CHOICES = [
+    (0, 'Segunda'), (1, 'Terça'), (2, 'Quarta'), (3, 'Quinta'),
+    (4, 'Sexta'), (5, 'Sábado'), (6, 'Domingo'),
+]
+
 RETURN_SCHEDULING_LEAD_DAYS = 15      # retorno pedido pelo médico: avisa 15 dias antes
 EXAM_SCHEDULING_LEAD_DAYS = 3         # exame solicitado: espera 3 dias antes de cobrar
 EXAM_SCHEDULING_REPEAT_DAYS = 7       # e repete semanalmente enquanto não tiver data
@@ -281,6 +288,12 @@ class Medication(OwnedModel):
         blank=True,
         help_text='Horários do dia, separados por vírgula. Ex.: 08:00, 20:00.',
     )
+    weekdays = models.JSONField(
+        'dias da semana',
+        default=list,
+        blank=True,
+        help_text='Em branco, todo dia. Marque os dias para remédio semanal.',
+    )
     is_active = models.BooleanField('em uso', default=True)
     cycle_daily_days = models.PositiveSmallIntegerField(
         'dias da fase diária',
@@ -307,10 +320,38 @@ class Medication(OwnedModel):
         return reverse('saude:medication_detail', args=[self.pk])
 
     def is_current_on(self, day):
-        """Whether the medicine is in use on a given day."""
+        """
+        Whether a dose is due on ``day``.
+
+        Three things can rule the day out, in order of how coarse they are: the course has
+        not started or has ended, the weekly schedule does not include that weekday, or the
+        two-phase cycle says today is a skip day. A weekly medicine (``weekdays``) is the
+        reason this is not simply a date range: a shot taken every Tuesday must not raise a
+        reminder on the other six days.
+        """
         if not self.is_active or self.start_date > day:
             return False
-        return self.end_date is None or day <= self.end_date
+        if self.end_date is not None and day > self.end_date:
+            return False
+        if self.weekdays and day.weekday() not in self.weekdays:
+            return False
+        return self.takes_on_cycle_day(day)
+
+    def takes_on_cycle_day(self, day):
+        """False only on the skip day of a two-phase course; True for everything else."""
+        if not self.cycle_daily_days or not self.cycle_alternates_after:
+            return True
+        elapsed = (day - self.start_date).days
+        if elapsed < self.cycle_daily_days:
+            return True
+        return (elapsed - self.cycle_daily_days) % 2 == 0
+
+    @property
+    def weekdays_display(self):
+        """``Seg, Qui`` — or empty when the medicine is taken every day."""
+        if not self.weekdays:
+            return ''
+        return ', '.join(WEEKDAY_LABELS[d] for d in sorted(self.weekdays) if d in WEEKDAY_LABELS)
 
     @property
     def times_display(self):

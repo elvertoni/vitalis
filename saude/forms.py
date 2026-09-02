@@ -6,7 +6,7 @@ from django import forms
 
 from accounts.forms import TEXT_INPUT_CLASS, StyledFormMixin
 
-from .models import Appointment, Doctor, Exam, Medication, Treatment
+from .models import WEEKDAY_CHOICES, Appointment, Doctor, Exam, Medication, Treatment
 
 TIME_PATTERN = re.compile(r'^([01]\d|2[0-3]):([0-5]\d)$')
 
@@ -124,8 +124,42 @@ class AppointmentForm(StyledFormMixin, forms.ModelForm):
         return cleaned
 
 
+class WeekdayChips(forms.CheckboxSelectMultiple):
+    """
+    As sete caixas viram pastilhas lado a lado — sete linhas empilhadas afogam o formulário.
+
+    O template vive dentro da app, e não em ``templates/`` como todo o resto: o renderizador
+    de formulários do Django usa um motor próprio, que enxerga as pastas de template das apps
+    mas **não** a pasta do projeto. Colocado lá fora, o widget quebra com ``TemplateDoesNotExist``.
+    """
+
+    template_name = 'saude/widgets/weekday_chips.html'
+
+
+class WeekdaysField(forms.TypedMultipleChoiceField):
+    """
+    Os dias da semana em que o remédio é tomado, como caixas de marcar.
+
+    Nada marcado significa **todo dia**, não "nenhum dia": é o caso da maioria das receitas,
+    e obrigar a marcar os sete daria trabalho para dizer o que já é o padrão.
+    """
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault('required', False)
+        kwargs.setdefault('label', 'Dias da semana')
+        kwargs.setdefault('help_text', 'Deixe em branco para todo dia. Marque só os dias de remédio semanal.')
+        kwargs.setdefault('choices', WEEKDAY_CHOICES)
+        kwargs.setdefault('coerce', int)
+        kwargs.setdefault('widget', WeekdayChips())
+        super().__init__(**kwargs)
+
+    def clean(self, value):
+        return sorted(super().clean(value) or [])
+
+
 class MedicationForm(StyledFormMixin, forms.ModelForm):
     schedule_times = ScheduleTimesField()
+    weekdays = WeekdaysField()
 
     class Meta:
         model = Medication
@@ -137,6 +171,7 @@ class MedicationForm(StyledFormMixin, forms.ModelForm):
             'start_date',
             'end_date',
             'schedule_times',
+            'weekdays',
             'cycle_daily_days',
             'cycle_alternates_after',
             'is_active',
@@ -149,4 +184,11 @@ class MedicationForm(StyledFormMixin, forms.ModelForm):
         end_date = cleaned.get('end_date')
         if start_date and end_date and end_date < start_date:
             self.add_error('end_date', 'O término não pode ser antes do início.')
+        # Marcar o dia sem marcar a hora não gera lembrete nenhum: o gerador percorre os
+        # horários. Melhor barrar aqui do que deixar o remédio semanal em silêncio.
+        if cleaned.get('weekdays') and not cleaned.get('schedule_times'):
+            self.add_error(
+                'schedule_times',
+                'Informe ao menos um horário para o lembrete do dia marcado sair.',
+            )
         return cleaned

@@ -93,7 +93,7 @@
                 <p class="text-sm text-[#5c5c5a] mb-4">{% if meal.time %}{{ meal.time|time:'H:i' }} · {% endif %}{{ meal.macros.calories|floatformat:0 }} kcal</p>
                 <div class="flex flex-col gap-1">
                     {% for item in meal.items.all|slice:':4' %}
-                    <span class="text-sm text-[#1a1a1a]">{{ item.food.name }} · {{ item.quantity_g }}g</span>
+                    <span class="text-sm text-[#1a1a1a]">{{ item.food.name }} · {{ item.quantity_display }}</span>
                     {% empty %}
                     <span class="text-sm text-[#686865]">Nenhum item ainda</span>
                     {% endfor %}

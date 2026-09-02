@@ -226,6 +226,7 @@ class ExportUserDataView(LoginRequiredMixin, View):
                     'start_date': str(m.start_date),
                     'end_date': str(m.end_date) if m.end_date else None,
                     'schedule_times': m.schedule_times,
+                    'weekdays': m.weekdays,
                     'is_active': m.is_active,
                 }
                 for m in Medication.objects.filter(user=user)

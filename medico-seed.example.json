@@ -42,6 +42,7 @@
       "start_date": "2026-01-01",
       "end_date": null,
       "schedule_times": ["08:00"],
+      "weekdays": [],
       "cycle_daily_days": null,
       "cycle_alternates_after": false,
       "is_active": true,
@@ -127,7 +128,10 @@
       "calories": "128",
       "protein_g": "2.5",
       "carbs_g": "28.0",
-      "fat_g": "0.2"
+      "fat_g": "0.2",
+      "unit_weight_g": null,
+      "unit_label": "",
+      "recipe": ""
     }
   ],
 

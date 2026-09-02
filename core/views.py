@@ -19,6 +19,26 @@ from django.views.generic import (
 from .mixins import OwnerFormMixin, OwnerQuerySetMixin
 
 
+class ServiceWorkerView(TemplateView):
+    """
+    O service worker **tem** de ser servido da raiz.
+
+    O escopo de um worker é a pasta de onde ele foi baixado: servido por ``/static/sw.js``,
+    ele controlaria só ``/static/`` e o app nunca seria instalável. Por isso ele é template
+    renderizado numa rota própria, e não arquivo estático.
+    """
+
+    template_name = 'sw.js'
+    content_type = 'application/javascript'
+
+
+class WebManifestView(TemplateView):
+    """O manifesto passa pelo template para os ícones saírem com o hash do WhiteNoise."""
+
+    template_name = 'manifest.json'
+    content_type = 'application/manifest+json'
+
+
 class LandingView(TemplateView):
     """Sales page. Someone already logged in goes straight to the dashboard."""
 

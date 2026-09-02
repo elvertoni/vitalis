@@ -16,6 +16,19 @@ from django.utils import timezone
 from core.models import OwnedModel
 
 
+def _decimal_text(value):
+    """
+    ``150``, ``75,5`` — casa decimal só quando existe, vírgula como manda o pt-BR.
+
+    Cortar zero à direita sem olhar o ponto transformaria 150 em 15; é o que a checagem
+    do ponto evita.
+    """
+    text = f'{Decimal(value):.1f}'
+    if '.' in text:
+        text = text.rstrip('0').rstrip('.')
+    return text.replace('.', ',')
+
+
 class Food(OwnedModel):
     """
     A food in the person's own bank, with macros per a base portion (usually 100 g).
@@ -31,6 +44,25 @@ class Food(OwnedModel):
     protein_g = models.DecimalField('proteína (g)', max_digits=6, decimal_places=2, default=0)
     carbs_g = models.DecimalField('carboidrato (g)', max_digits=6, decimal_places=2, default=0)
     fat_g = models.DecimalField('gordura (g)', max_digits=6, decimal_places=2, default=0)
+    unit_weight_g = models.DecimalField(
+        'peso de uma unidade (g)',
+        max_digits=6,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text='Preencha para o alimento que se conta, não se pesa. Ex.: 50 para um ovo.',
+    )
+    unit_label = models.CharField(
+        'nome da unidade',
+        max_length=20,
+        blank=True,
+        help_text='No singular. Ex.: ovo, fatia, unidade.',
+    )
+    recipe = models.TextField(
+        'preparo',
+        blank=True,
+        help_text='A receita, quando o alimento é preparado em casa. Aparece na tela do alimento.',
+    )
 
     class Meta:
         verbose_name = 'alimento'
@@ -45,6 +77,33 @@ class Food(OwnedModel):
 
     def get_absolute_url(self):
         return reverse('nutricao:food_detail', args=[self.pk])
+
+    def as_units(self, quantity_g):
+        """
+        ``(3, 'ovos')`` para 150 g de um alimento cujo unitário pesa 50 g.
+
+        Devolve ``None`` quando o alimento é pesado e não contado, que é o caso da maioria.
+        O plural é o simples com "s": serve para ovo, fatia e unidade, e quem tiver um caso
+        irregular escreve o rótulo já como quer ler.
+        """
+        if not self.unit_weight_g or not self.unit_label:
+            return None
+        units = (Decimal(quantity_g) / self.unit_weight_g).quantize(Decimal('0.1'))
+        label = self.unit_label if units == 1 else f'{self.unit_label}s'
+        return units, label
+
+    def quantity_display(self, quantity_g):
+        """
+        ``3 ovos (150 g)`` quando o alimento se conta; ``150 g`` quando se pesa.
+
+        A casa decimal só aparece quando existe: ``150`` e não ``150,0``. Cortar zero à
+        direita sem checar o ponto transforma 150 em 15 — o erro que essa linha evita.
+        """
+        grams_text = f'{_decimal_text(quantity_g)} g'
+        units = self.as_units(quantity_g)
+        if not units:
+            return grams_text
+        return f'{_decimal_text(units[0])} {units[1]} ({grams_text})'
 
     def macros_for(self, quantity_g):
         """Macros scaled from the base portion to an arbitrary quantity."""
@@ -189,6 +248,10 @@ class MealItem(OwnedModel):
     def macros(self):
         return self.food.macros_for(self.quantity_g)
 
+    @property
+    def quantity_display(self):
+        return self.food.quantity_display(self.quantity_g)
+
 
 class DailyLog(OwnedModel):
     """
@@ -215,6 +278,10 @@ class DailyLog(OwnedModel):
     @property
     def macros(self):
         return self.food.macros_for(self.quantity_g)
+
+    @property
+    def quantity_display(self):
+        return self.food.quantity_display(self.quantity_g)
 
 
 class WeightLog(OwnedModel):

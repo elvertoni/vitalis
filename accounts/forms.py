@@ -45,7 +45,10 @@ class StyledFormMixin:
             if field.help_text:
                 existing_desc = widget.attrs.get('aria-describedby', '')
                 widget.attrs['aria-describedby'] = f'{auto_id}_help {existing_desc}'.strip()
-            if isinstance(widget, (forms.Select, forms.SelectMultiple)):
+            if isinstance(widget, forms.CheckboxSelectMultiple):
+                # Renderiza como pastilhas próprias: classe de <select> aqui vaza para cada caixa.
+                pass
+            elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
                 widget.attrs.setdefault('class', SELECT_CLASS)
             elif isinstance(widget, forms.CheckboxInput):
                 widget.attrs.setdefault(
