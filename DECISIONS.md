@@ -758,21 +758,23 @@ armazenados e validados visualmente na pasta `backup-vitalis`.
 
 ### D-058 · Painel Gráfico de Biomarcadores Laboratoriais integrado à Saúde
 **Contexto:** o dossiê médico pessoal do paciente (`medico-seed.json` e pasta `toni/`) contém um painel completo
-# [dado clinico removido do historico - D-061]
+de análises clínicas (hemograma, glicemia, lipídios, função renal, hormônios e vitaminas).
 A interface padrão de exames resumia o laudo em um bloco de texto puro, sem permitir ao paciente visualizar sua posição
 frente às faixas de referência e à evolução histórica de forma intuitiva.
 **Decisão:** criada a rota `/saude/biomarcadores/` (`saude:biomarkers`), a view `BiomarkersView` e o template `saude/biomarkers.html`.
 A interface implementa réguas visuais de laboratório proporcionais, marcadores de status ("na meta", "atenção", "fora da meta"),
-# [dado clinico removido do historico - D-061]
+rastro de comparação com o exame anterior e delta percentual, régua de IMC com escalas de sobrepeso e obesidade,
+alertas clínicos prioritários e pontos de alinhamento para a próxima consulta.
 Acesso direto a partir do hub de saúde, da lista de exames e dos detalhes do laudo.
 
-# [dado clinico removido do historico - D-061]
+### D-059 · Orquestração: Comparador de Cardápios, Ciclo Posológico e Exportação de Prontuário LGPD
 **Contexto:** para completar lacunas estruturais de usabilidade e governança identificadas no dossiê clínico:
-# [dado clinico removido do historico - D-061]
+1. Em Nutrição, o paciente necessitava de clareza visual entre a prescrição ajustada para perda de peso e a dieta anterior, mais pobre em proteína;
+2. Em Saúde/Medicamentos, a posologia bifásica (uma fase diária seguida de dias alternados) exigia rastreamento dinâmico automático;
 3. Em Contas, o direito à portabilidade de dados pessoais sensíveis (LGPD Art. 18) era uma lacuna deliberada pendente de entrega.
 **Decisão:**
-- **Nutrição:** incorporado em `nutricao/index.html` e `NutritionIndexView` o comparador interativo com alternância dinâmica via JS, placar de macronutrientes (calorias, déficit seguro vs agressivo, proteína/kg alvo) e linha do tempo das 6 refeições com as substituições proteicas destacadas.
-- **Medicação:** adicionada a propriedade `cycle_status` em `saude.Medication` e badge correspondente em `saude/medication_list.html`, calculando se a data de hoje pertence à fase contínua de 30 dias ("Dia X de 30") ou à fase alternada ("Hoje toma" vs "Hoje pula").
+- **Nutrição:** incorporado em `nutricao/index.html` e `NutritionIndexView` o comparador interativo com alternância dinâmica via JS, placar de macronutrientes (calorias, déficit seguro vs agressivo, proteína/kg alvo) e linha do tempo das refeições com as substituições proteicas destacadas.
+- **Medicação:** adicionada a propriedade `cycle_status` em `saude.Medication` e badge correspondente em `saude/medication_list.html`, calculando se a data de hoje pertence à fase diária ("dia X de N") ou à fase alternada ("hoje toma" vs "hoje pula").
 - **LGPD:** criada a rota `/contas/exportar-dados/` (`accounts:export_data`) e a view `ExportUserDataView`, gerando sob demanda um arquivo `.zip` com `prontuario_vitalis.json` (perfil, médicos, tratamentos, exames, consultas, remédios, dietas, pesagens e treinos) e todos os PDFs de laudos originais anexados na pasta `laudos/`.
 
 ### D-060 · Acessibilidade Impeccable: Redução de Movimento, Formulários WCAG AA e Touch Targets
