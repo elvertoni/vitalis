@@ -213,10 +213,15 @@ class SessionEntry(OwnedModel):
     @property
     def top_weight(self):
         """The heaviest set logged for this entry — the number that tracks a PR."""
+        if hasattr(self, '_prefetched_objects_cache') and 'sets' in self._prefetched_objects_cache:
+            weights = [s.weight for s in self.sets.all()]
+            return max(weights) if weights else None
         return self.sets.aggregate(models.Max('weight'))['weight__max']
 
     @property
     def total_reps(self):
+        if hasattr(self, '_prefetched_objects_cache') and 'sets' in self._prefetched_objects_cache:
+            return sum(s.reps for s in self.sets.all())
         return self.sets.aggregate(models.Sum('reps'))['reps__sum'] or 0
 
 

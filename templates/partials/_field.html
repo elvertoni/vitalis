@@ -1,15 +1,15 @@
 {# Single form field rendered with the Soluna underlined input style. #}
 <div class="mb-8">
     <label for="{{ field.id_for_label }}" class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-3">
-        {{ field.label }}
+        {{ field.label }}{% if field.field.required %} <span class="text-red-700" title="Obrigatório" aria-hidden="true">*</span>{% endif %}
     </label>
     {{ field }}
     {% if field.help_text %}
-        <p class="text-sm text-[#5c5c5a] mt-2">{{ field.help_text }}</p>
+        <p id="{{ field.auto_id }}_help" class="text-sm text-[#5c5c5a] mt-2">{{ field.help_text }}</p>
     {% endif %}
     {% for error in field.errors %}
-        <p class="text-sm text-[#4a523f] mt-2 flex items-center gap-2" role="alert">
-            <i data-lucide="alert-circle" class="w-4 h-4 stroke-[1.5] shrink-0"></i>{{ error }}
+        <p id="{% if forloop.first %}{{ field.auto_id }}_error{% else %}{{ field.auto_id }}_error_{{ forloop.counter }}{% endif %}" class="text-sm text-red-700 font-medium mt-2 flex items-center gap-2" role="alert">
+            <i data-lucide="alert-circle" class="w-4 h-4 stroke-[1.5] shrink-0 text-red-700"></i>{{ error }}
         </p>
     {% endfor %}
 </div>

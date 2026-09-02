@@ -730,3 +730,30 @@ não erro. O pior resultado possível seria não ter cópia alguma porque o envi
 estava configurado.
 **Ainda falta:** teste de restauração periódico. Backup nunca restaurado é hipótese, não
 garantia.
+
+### D-056 · Cópia externa no Google Drive via OAuth 2.0 em vez de Service Account
+**Contexto:** ao configurar o envio externo para a pasta do Google Drive (`1iXaGZs_lHAbOC_lpxEe3hXLZYigatsPC`),
+a primeira tentativa utilizou uma Conta de Serviço (*Service Account* do GCP). A execução do `rclone`
+falhou com `Error 403: Service Accounts do not have storage quota. Leverage shared drives, or use OAuth delegation instead`.
+Em contas pessoais do Google (`@gmail.com`), contas de serviço não têm cota própria de armazenamento e o Drive
+rejeita a criação de arquivos mesmo em pastas compartilhadas com permissão de editor.
+**Decisão:** autenticar o `rclone` via **OAuth 2.0 Desktop App** vinculado à conta pessoal do dono (`elvertoni@gmail.com`).
+Criado o cliente OAuth `Vitalis Backup Novo` no projeto `coimbra-500602`, gerado o token de autorização
+de longa duração (app em modo Produção) e injetadas as variáveis correspondentes no serviço `vitalis-backup`
+do EasyPanel: `RCLONE_CONFIG_GDRIVE_CLIENT_ID`, `RCLONE_CONFIG_GDRIVE_CLIENT_SECRET`, `RCLONE_CONFIG_GDRIVE_TOKEN` e
+`RCLONE_CONFIG_GDRIVE_ROOT_FOLDER_ID`.
+**Resultado:** o upload agora grava com a cota pessoal legítima do dono. Testado em produção com sucesso:
+dump do Postgres (`vitalis-db-*.sql.gz`) e tarball dos 8 laudos clínicos (`vitalis-media-*.tar.gz`)
+armazenados e validados visualmente na pasta `backup-vitalis`.
+
+### D-057 · Refinamento global: Acessibilidade WCAG, Performance ORM e Validações de Segurança
+**Contexto:** auditoria técnica abrangente identificou oportunidades em três frentes:
+1. Acessibilidade (menu oculto capturando foco via teclado, formulários com erros não anunciados e semiótica confusa de cor de erro);
+2. Performance (N+1 no cálculo de cargas de treino, sobrecarga de sincronização de lembretes no dashboard e ausência de índices compostos);
+3. Segurança (validação de anexos restrita a extensão nominal de arquivo e rota de signup vulnerável a cadastros em massa).
+**Decisão:**
+- **Acessibilidade:** inclusão de Skip Link para `#main-content`, atributo `inert` dinâmico no `#mobile-menu` quando fechado, IDs descritivos em `_field.html` (`_error` e `_help`), cores de erro corrigidas para semiótica evidente de alerta (`text-red-700`) e prevenção de múltiplos cliques (*double-submit*) em formulários.
+- **Performance:** novos índices compostos `['user', 'next_return_date']` e `['user', 'scheduled_date']` no PostgreSQL (`saude`); debounce de 10 minutos via cache na chamada `sync_reminders` no `DashboardView`; e otimização das propriedades `top_weight` e `total_reps` em `SessionEntry` para consumir sets já pré-buscados em memória pelo Django sem disparar queries SQL repetidas.
+- **Segurança:** inspeção binária de *magic bytes* em `validate_attachment` para PDF, JPG e PNG; preservação da extensão real do anexo na rota autenticada `ExamAttachmentView`; e rate limiting de 5 requisições/hora por IP no `SignupView`.
+
+

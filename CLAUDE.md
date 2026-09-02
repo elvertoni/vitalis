@@ -65,6 +65,12 @@ env, `config/settings.py` cai no SQLite de sempre. Anexos de exame vivem num vol
 em `/app/media` (dado sensível, LGPD — não pode sumir num redeploy). App publicado em
 `work/vitalis` no EasyPanel; domínio `vitalis.tonicoimbra.com`.
 
+O serviço **`vitalis-backup`** no EasyPanel roda com `SERVICE_MODE=backup` a cada 24h via `scripts/backup.sh`:
+- Gera dump do banco PostgreSQL (`vitalis-db-*.sql.gz`) e arquivo com os laudos de exame (`vitalis-media-*.tar.gz`).
+- Testa integridade de cada arquivo com `gzip -t` antes de aceitar.
+- Mantém retenção de 30 dias no volume `/backups`.
+- Envia cópia externa para o Google Drive (`RCLONE_REMOTE=gdrive:`) na pasta `backup-vitalis` (`1iXaGZs_lHAbOC_lpxEe3hXLZYigatsPC`) autenticado via OAuth 2.0 com a conta pessoal do dono (D-055, D-056).
+
 ### Configuração — só `os.environ`, sem loader de `.env`
 
 O código lê variáveis de ambiente puras via `os.environ.get` (nenhum `python-dotenv`). Defina

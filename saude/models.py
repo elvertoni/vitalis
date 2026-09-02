@@ -134,7 +134,10 @@ class Exam(OwnedModel):
         verbose_name = 'exame'
         verbose_name_plural = 'exames'
         ordering = ['-requested_date']
-        indexes = [models.Index(fields=['user', '-requested_date'])]
+        indexes = [
+            models.Index(fields=['user', '-requested_date']),
+            models.Index(fields=['user', 'scheduled_date']),
+        ]
 
     def __str__(self):
         return self.name
@@ -207,7 +210,10 @@ class Appointment(OwnedModel):
         verbose_name = 'consulta'
         verbose_name_plural = 'consultas'
         ordering = ['-date']
-        indexes = [models.Index(fields=['user', '-date'])]
+        indexes = [
+            models.Index(fields=['user', '-date']),
+            models.Index(fields=['user', 'next_return_date']),
+        ]
 
     def __str__(self):
         return f'{self.doctor} · {self.date:%d/%m/%Y}'

@@ -28,6 +28,7 @@ codex-session-*.md
 
 # Tooling screenshots dropped in repo root
 /vitalis-*.png
+*-local-command-*.txt
 
 # OS / editor
 .DS_Store

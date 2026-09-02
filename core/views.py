@@ -76,10 +76,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # A app `lembretes` (Sprint 5) formaliza isso num model próprio, sincronizado a
         # cada visita: dose de hoje, exame marcado, retorno médico e refeição da dieta
         # ativa, todos derivados dos dados reais — nada computado à parte aqui.
+        from django.core.cache import cache
         from lembretes.models import Reminder
         from lembretes.services import sync_reminders
 
-        sync_reminders(user)
+        sync_cache_key = f'reminders_synced:{user.pk}'
+        if not cache.get(sync_cache_key):
+            sync_reminders(user)
+            cache.set(sync_cache_key, True, timeout=600)  # 10 minutos
+
         soon = timezone.now() + timedelta(days=2)
         context['reminders_48h'] = Reminder.objects.filter(
             user=user, status=Reminder.Status.PENDING, remind_at__lte=soon,

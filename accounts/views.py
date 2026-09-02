@@ -38,6 +38,16 @@ class SignupView(CreateView):
             return redirect('core:dashboard')
         return super().dispatch(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        ip = get_client_ip(request)
+        if is_rate_limited(f'signup:{ip}', max_requests=5, window_seconds=3600):
+            messages.error(
+                request,
+                'Limite de cadastros atingido para esta conexão. Aguarde antes de tentar novamente.',
+            )
+            return self.render_to_response(self.get_context_data(form=self.get_form()))
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
         response = super().form_valid(form)
         login(self.request, self.object)

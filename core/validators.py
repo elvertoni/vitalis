@@ -12,9 +12,7 @@ MAX_ATTACHMENT_SIZE_MB = 10
 def validate_attachment(value):
     """
     Accepts only PDF and common image formats, up to ten megabytes.
-
-    Medical reports arrive as a scan or a lab PDF; anything else is either a mistake or
-    an upload we have no business storing.
+    Validates both the extension and the binary magic bytes of the file.
     """
     extension = Path(value.name).suffix.lower()
     if extension not in ALLOWED_ATTACHMENT_EXTENSIONS:
@@ -26,6 +24,29 @@ def validate_attachment(value):
         raise ValidationError(
             f'Arquivo muito grande. O limite é de {MAX_ATTACHMENT_SIZE_MB} MB.',
             code='file_too_large',
+        )
+
+    # Validação de integridade do conteúdo via cabeçalho binário (magic bytes)
+    try:
+        initial_pos = value.tell() if hasattr(value, 'tell') else 0
+        header = value.read(8)
+        if hasattr(value, 'seek'):
+            value.seek(initial_pos)
+    except Exception:
+        header = b''
+
+    valid = False
+    if extension == '.pdf' and header.startswith(b'%PDF-'):
+        valid = True
+    elif extension in ('.jpg', '.jpeg') and header.startswith(b'\xff\xd8\xff'):
+        valid = True
+    elif extension == '.png' and header.startswith(b'\x89PNG'):
+        valid = True
+
+    if not valid:
+        raise ValidationError(
+            'O conteúdo do arquivo não corresponde a um documento PDF, JPG ou PNG válido.',
+            code='invalid_content',
         )
 
 

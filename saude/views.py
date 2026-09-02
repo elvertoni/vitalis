@@ -6,6 +6,7 @@ hands back a file, and a report is the most sensitive thing the system stores.
 """
 
 from datetime import timedelta
+from pathlib import Path
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse, Http404
@@ -182,7 +183,9 @@ class ExamAttachmentView(LoginRequiredMixin, View):
         exam = get_object_or_404(Exam, pk=pk, user=request.user)
         if not exam.attachment:
             raise Http404('Este exame não tem laudo anexado.')
-        return FileResponse(exam.attachment.open('rb'), filename=f'{exam.name}.pdf'.replace('/', '-'))
+        ext = Path(exam.attachment.name).suffix or '.pdf'
+        clean_name = exam.name.replace('/', '-').replace('\\', '-')
+        return FileResponse(exam.attachment.open('rb'), filename=f'{clean_name}{ext}')
 
 
 # ── Consultas ────────────────────────────────────────────────────────────────

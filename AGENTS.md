@@ -27,6 +27,8 @@ The repository intentionally has no automated test suite. Validate changes with 
 
 Production on the VPS is the source of truth for user accounts, subscriptions, deployed configuration, and published behavior. For any validation involving those areas, verify production first through the authenticated EasyPanel MCP connector (`work` project, `vitalis` service); use `db.sqlite3` and the local server only for complementary development checks. Do not try SSH first. If the EasyPanel connector is unavailable, state that limitation explicitly and never infer production state from local data.
 
+The `vitalis-backup` service runs daily via `scripts/backup.sh`, creating verified (`gzip -t`) dumps of PostgreSQL and `/app/media` attachments. Backups are retained locally for 30 days and synchronized externally to the owner's Google Drive (`backup-vitalis` folder) using rclone with OAuth 2.0 Desktop credentials (DECISIONS.md D-055, D-056).
+
 ## Training: logging screen vs. CRUD
 
 `/treino/registrar/` is the weekly path (D-048): pick the routine day, log the whole workout
@@ -49,7 +51,7 @@ History uses Conventional Commit prefixes, mainly `feat:` and `chore:`, followed
 
 ## Security & Configuration
 
-Never commit `.env`, `db.sqlite3`, uploaded `media/`, collected `staticfiles/`, real health dossiers (`medico-data/`, `medico-seed.json`), or secrets. Configuration follows fail-closed principles: `DJANGO_DEBUG` defaults to `0`, requiring explicit `DJANGO_SECRET_KEY` in production (raising `RuntimeError` if missing). If `EMAIL_HOST` is unset in production, `dummy.EmailBackend` is used to prevent leaking password reset tokens and clinical data to server logs. Rate limiting is enforced on auth views (`/contas/entrar/`, `/contas/recuperar-senha/`) via `core.ratelimit`. Global WhatsApp management requires `is_superuser` or `lembretes.manage_whatsapp`. Webhooks validate `x-signature` HMAC and enforce idempotency via `ProcessedWebhookEvent`. Subscriptions track active duration via `expires_at` and fallback gracefully to `Free` when expired. CSP is enforced globally via `core.middleware.SecurityHeadersMiddleware`. Serve sensitive attachments only through authenticated, owner-checking views.
+Never commit `.env`, `db.sqlite3`, uploaded `media/`, collected `staticfiles/`, real health dossiers (`medico-data/`, `medico-seed.json`), or secrets. Configuration follows fail-closed principles: `DJANGO_DEBUG` defaults to `0`, requiring explicit `DJANGO_SECRET_KEY` in production (raising `RuntimeError` if missing). If `EMAIL_HOST` is unset in production, `dummy.EmailBackend` is used to prevent leaking password reset tokens and clinical data to server logs. Rate limiting is enforced on auth views (`/contas/entrar/`, `/contas/recuperar-senha/`, `/contas/cadastrar/`) via `core.ratelimit`. Attachments validate binary magic bytes before storage. Global WhatsApp management requires `is_superuser` or `lembretes.manage_whatsapp`. Webhooks validate `x-signature` HMAC and enforce idempotency via `ProcessedWebhookEvent`. Subscriptions track active duration via `expires_at` and fallback gracefully to `Free` when expired. CSP is enforced globally via `core.middleware.SecurityHeadersMiddleware`. Serve sensitive attachments only through authenticated, owner-checking views.
 
 ## Known Gaps
 
