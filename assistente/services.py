@@ -17,8 +17,9 @@ def build_clinical_context(user):
     Assembles a comprehensive, personalized clinical and lifestyle prompt
     based on the user's active records in Vitalis.
     """
-    from saude.models import Doctor, Treatment, Exam, Medication
+    from saude.models import ClinicalNote, Doctor, Treatment, Exam, Medication
     from nutricao.models import Diet, WeightLog
+    from nutricao.plans import bmi_snapshot
     from treino.models import WorkoutRoutine
 
     parts = [
@@ -49,12 +50,14 @@ def build_clinical_context(user):
     latest_weight = WeightLog.objects.filter(user=user).order_by('-date').first()
     if latest_weight:
         parts.append(f"Peso mais recente registrado: {latest_weight.weight_kg} kg (em {latest_weight.date.strftime('%d/%m/%Y')})")
-        if profile and profile.height_cm:
-            h_m = profile.height_cm / 100.0
-            imc = float(latest_weight.weight_kg) / (h_m * h_m)
-            parts.append(f"IMC atual: {imc:.1f} kg/m² (Faixa: Obesidade Grau I)")
+        imc = bmi_snapshot(profile, latest_weight.weight_kg)
+        if imc:
+            parts.append(f"IMC atual: {imc['value']:.1f} kg/m² (Faixa: {imc['label']})")
             meta_agua_litros = (float(latest_weight.weight_kg) * 35) / 1000.0
-            parts.append(f"Meta basal de hidratação estimada: ~{meta_agua_litros:.1f} a {meta_agua_litros + 0.5:.1f} litros/dia (mínimo recomendado diante do hematócrito: 2,8 a 3,2 L/dia)")
+            parts.append(
+                f"Meta basal de hidratação estimada pelo peso: ~{meta_agua_litros:.1f} a "
+                f"{meta_agua_litros + 0.5:.1f} litros/dia (35 ml por kg)."
+            )
 
     # 2. Medicações ativas
     meds = Medication.objects.filter(user=user, is_active=True)
@@ -79,9 +82,21 @@ def build_clinical_context(user):
         parts.append(f"Plano ativo: {active_diet.name}")
         parts.append(f"Meta diária de calorias: {active_diet.daily_calorie_target} kcal")
         parts.append(f"Meta diária de proteínas: {active_diet.protein_target_g} g")
-        if latest_weight:
+        if latest_weight and active_diet.protein_target_g:
             g_kg = active_diet.protein_target_g / float(latest_weight.weight_kg)
-            parts.append(f"Proporção de proteína atual: {g_kg:.2f} g/kg peso atual (ou ~1,74 g/kg peso-alvo)")
+            linha = f"Proporção de proteína: {g_kg:.2f} g/kg de peso atual"
+            if profile and profile.target_weight_kg:
+                g_kg_alvo = active_diet.protein_target_g / float(profile.target_weight_kg)
+                linha += f" ({g_kg_alvo:.2f} g/kg de peso-alvo)"
+            parts.append(linha)
+
+    # 4b. Observações clínicas escritas pelo próprio paciente ou pela equipe. Ficam aqui, e
+    # não no código, porque valem para esta pessoa e mudam a cada consulta.
+    notes = ClinicalNote.objects.filter(user=user)
+    if notes.exists():
+        parts.append("\n--- PONTOS DE ATENÇÃO E ALINHAMENTOS REGISTRADOS ---")
+        for n in notes:
+            parts.append(f"- [{n.get_kind_display()}] {n.title}: {n.body}")
 
     # 5. Exames Recentes e Biomarcadores
     exams = Exam.objects.filter(user=user).order_by('-requested_date')[:5]
