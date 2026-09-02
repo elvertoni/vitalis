@@ -766,5 +766,15 @@ A interface implementa réguas visuais de laboratório proporcionais, marcadores
 # [dado clinico removido do historico - D-061]
 Acesso direto a partir do hub de saúde, da lista de exames e dos detalhes do laudo.
 
+# [dado clinico removido do historico - D-061]
+**Contexto:** para completar lacunas estruturais de usabilidade e governança identificadas no dossiê clínico:
+# [dado clinico removido do historico - D-061]
+3. Em Contas, o direito à portabilidade de dados pessoais sensíveis (LGPD Art. 18) era uma lacuna deliberada pendente de entrega.
+**Decisão:**
+- **Nutrição:** incorporado em `nutricao/index.html` e `NutritionIndexView` o comparador interativo com alternância dinâmica via JS, placar de macronutrientes (calorias, déficit seguro vs agressivo, proteína/kg alvo) e linha do tempo das 6 refeições com as substituições proteicas destacadas.
+- **Medicação:** adicionada a propriedade `cycle_status` em `saude.Medication` e badge correspondente em `saude/medication_list.html`, calculando se a data de hoje pertence à fase contínua de 30 dias ("Dia X de 30") ou à fase alternada ("Hoje toma" vs "Hoje pula").
+- **LGPD:** criada a rota `/contas/exportar-dados/` (`accounts:export_data`) e a view `ExportUserDataView`, gerando sob demanda um arquivo `.zip` com `prontuario_vitalis.json` (perfil, médicos, tratamentos, exames, consultas, remédios, dietas, pesagens e treinos) e todos os PDFs de laudos originais anexados na pasta `laudos/`.
+
+
 
 

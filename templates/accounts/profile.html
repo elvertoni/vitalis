@@ -95,13 +95,17 @@
 
                 <div class="bg-[#e8eae4] rounded-[2rem] p-8">
                     <div class="flex items-center gap-3 mb-4">
-                        <i data-lucide="shield" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
-                        <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a]">Seus dados são seus</h2>
+                        <i data-lucide="shield-check" class="w-6 h-6 stroke-[1.5] text-[#5d674f]"></i>
+                        <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a]">Privacidade & Seus Dados (LGPD)</h2>
                     </div>
-                    <p class="text-base text-[#5c5c5a]">
-                        Nenhum outro usuário enxerga o que é seu. Exportação e exclusão completa da
-                        conta ficam para uma próxima entrega.
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed mb-6">
+                        Você tem controle total sobre suas informações de saúde. Seus dados são criptografados,
+                        acessíveis apenas por você, e você pode baixar a cópia integral do seu prontuário clínico e laudos a qualquer momento.
                     </p>
+                    <a href="{% url 'accounts:export_data' %}" class="inline-flex items-center gap-2 bg-[#5d674f] text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-[#4a523f] transition-colors shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4 stroke-[1.5]"></i>
+                        <span>Exportar prontuário completo (.zip)</span>
+                    </a>
                 </div>
             </div>
         </div>

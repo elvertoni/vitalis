@@ -303,3 +303,13 @@ class Medication(OwnedModel):
     @property
     def times_display(self):
         return ', '.join(self.schedule_times) if self.schedule_times else ''
+
+    @property
+    def cycle_status(self):
+        """
+        Returns the phase of a two-phase course, or None.
+        """
+        from django.utils import timezone
+        today = timezone.localdate()
+        # [dado clinico removido do historico - D-061]
+        return None

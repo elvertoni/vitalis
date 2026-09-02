@@ -31,7 +31,18 @@
                 </div>
                 <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-1">{{ medication.name }}</h2>
                 <p class="text-sm text-[#5c5c5a]">{{ medication.dosage }}{% if medication.frequency %} · {{ medication.frequency }}{% endif %}</p>
-                {% if medication.times_display %}<p class="text-sm text-[#686865] mt-2">{{ medication.times_display }}</p>{% endif %}
+                {% if medication.times_display %}<p class="text-sm text-[#686865] mt-2 font-mono"><i data-lucide="clock" class="inline w-3.5 h-3.5 mr-1 stroke-[1.5]"></i>{{ medication.times_display }}</p>{% endif %}
+
+                {% if medication.cycle_status %}
+                <div class="mt-4 pt-4 border-t border-[#dcdacd]">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold
+                        {% if medication.cycle_status.active %}bg-emerald-50 text-emerald-800 border border-emerald-200
+                        {% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                        <span class="w-1.5 h-1.5 rounded-full {% if medication.cycle_status.active %}bg-emerald-600{% else %}bg-slate-400{% endif %}"></span>
+                        {{ medication.cycle_status.text }}
+                    </span>
+                </div>
+                {% endif %}
             </a>
             {% endfor %}
         </div>

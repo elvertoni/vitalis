@@ -13,7 +13,7 @@ from django.contrib.auth.views import (
 )
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView, UpdateView
+from django.views.generic import CreateView, TemplateView, UpdateView, View
 
 from core.ratelimit import get_client_ip, is_rate_limited
 from .forms import (
@@ -150,3 +150,145 @@ class VitalisPasswordResetConfirmView(PasswordResetConfirmView):
 
 class VitalisPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'accounts/password_reset_complete.html'
+
+
+class ExportUserDataView(LoginRequiredMixin, View):
+    """
+    LGPD data portability: exports the user's complete clinical and fitness dossier
+    as a ZIP archive containing a structured JSON and all attached exam PDFs.
+    """
+
+    def get(self, request, *args, **kwargs):
+        import io
+        import json
+        import zipfile
+        from pathlib import Path
+        from django.http import FileResponse
+        from django.utils import timezone
+        from saude.models import Doctor, Treatment, Exam, Appointment, Medication
+        from treino.models import WorkoutRoutine, WorkoutSession
+        from nutricao.models import Food, Diet, DailyLog, WeightLog
+
+        user = request.user
+        today = timezone.localdate()
+
+        dossier = {
+            'export_date': timezone.now().isoformat(),
+            'user': {
+                'id': user.pk,
+                'email': user.email,
+                'full_name': user.full_name,
+                'date_joined': user.date_joined.isoformat(),
+                'profile': {
+                    'birth_date': str(user.profile.birth_date) if user.profile.birth_date else None,
+                    'sex': user.profile.sex,
+                    'height_cm': user.profile.height_cm,
+                    'target_weight_kg': float(user.profile.target_weight_kg) if user.profile.target_weight_kg else None,
+                    'phone': user.profile.phone,
+                    'notification_channel': user.profile.notification_channel,
+                },
+            },
+            'doctors': [
+                {
+                    'name': d.name,
+                    'specialty': d.specialty,
+                    'phone': d.phone,
+                    'email': d.email,
+                    'clinic_name': d.clinic_name,
+                    'notes': d.notes,
+                }
+                for d in Doctor.objects.filter(user=user)
+            ],
+            'treatments': [
+                {
+                    'name': t.name,
+                    'description': t.description,
+                    'status': t.status,
+                    'start_date': str(t.start_date),
+                    'end_date': str(t.end_date) if t.end_date else None,
+                    'notes': t.notes,
+                }
+                for t in Treatment.objects.filter(user=user)
+            ],
+            'medications': [
+                {
+                    'name': m.name,
+                    'dosage': m.dosage,
+                    'frequency': m.frequency,
+                    'start_date': str(m.start_date),
+                    'end_date': str(m.end_date) if m.end_date else None,
+                    'schedule_times': m.schedule_times,
+                    'is_active': m.is_active,
+                }
+                for m in Medication.objects.filter(user=user)
+            ],
+            'appointments': [
+                {
+                    'doctor': str(a.doctor),
+                    'date': str(a.date),
+                    'reason': a.reason,
+                    'next_return_date': str(a.next_return_date) if a.next_return_date else None,
+                    'notes': a.notes,
+                }
+                for a in Appointment.objects.filter(user=user)
+            ],
+            'exams': [
+                {
+                    'name': e.name,
+                    'doctor': str(e.doctor) if e.doctor else None,
+                    'status': e.status,
+                    'requested_date': str(e.requested_date),
+                    'done_date': str(e.done_date) if e.done_date else None,
+                    'result_summary': e.result_summary,
+                    'has_attachment': bool(e.attachment),
+                }
+                for e in Exam.objects.filter(user=user)
+            ],
+            'weight_logs': [
+                {'date': str(w.date), 'weight_kg': float(w.weight_kg), 'notes': w.notes}
+                for w in WeightLog.objects.filter(user=user).order_by('date')
+            ],
+            'diets': [
+                {
+                    'name': d.name,
+                    'goal': d.goal,
+                    'daily_calorie_target': d.daily_calorie_target,
+                    'protein_target_g': d.protein_target_g,
+                    'is_active': d.is_active,
+                }
+                for d in Diet.objects.filter(user=user)
+            ],
+            'workout_routines': [
+                {'name': r.name, 'description': r.description, 'is_active': r.is_active}
+                for r in WorkoutRoutine.objects.filter(user=user)
+            ],
+            'workout_sessions': [
+                {
+                    'date': str(s.date),
+                    'morning_after': s.morning_after,
+                    'notes': s.notes,
+                    'total_entries': s.entries.count(),
+                }
+                for s in WorkoutSession.objects.filter(user=user).order_by('-date')[:50]
+            ],
+        }
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+            json_data = json.dumps(dossier, indent=2, ensure_ascii=False)
+            zf.writestr('prontuario_vitalis.json', json_data)
+
+            for exam in Exam.objects.filter(user=user, attachment__isnull=False):
+                try:
+                    if exam.attachment and exam.attachment.storage.exists(exam.attachment.name):
+                        ext = Path(exam.attachment.name).suffix or '.pdf'
+                        clean_name = exam.name.replace('/', '_').replace('\\', '_')[:50]
+                        with exam.attachment.open('rb') as f:
+                            zf.writestr(f'laudos/{clean_name}{ext}', f.read())
+                except Exception:
+                    pass
+
+        buf.seek(0)
+        filename = f"vitalis_prontuario_{user.pk}_{today:%Y%m%d}.zip"
+        return FileResponse(buf, as_attachment=True, filename=filename, content_type='application/zip')
+

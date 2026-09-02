@@ -45,6 +45,9 @@ class NutritionIndexView(LoginRequiredMixin, TemplateView):
         context['today_totals'] = daily_totals(user, today)
         context['today_logs'] = DailyLog.objects.filter(user=user, date=today).select_related('food')
         context['latest_weight'] = WeightLog.objects.filter(user=user).order_by('-date').first()
+
+        # Comparativo clínico de cardápio (ajustado vs anterior)
+        context['planos_comparativo'] = {}  # [dado clinico removido do historico - D-061]
         return context
 
 
