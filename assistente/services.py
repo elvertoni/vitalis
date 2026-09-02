@@ -35,7 +35,7 @@ def build_clinical_context(user):
 
     # 1. Perfil e Antropometria
     profile = getattr(user, 'profile', None)
-    parts.append(f"Nome do paciente: {user.get_full_name() or user.username}")
+    parts.append(f"Nome do paciente: {user.get_full_name() or user.email}")
     if profile:
         if profile.birth_date:
             parts.append(f"Nascimento / Idade: {profile.birth_date.strftime('%d/%m/%Y')} ({profile.age} anos)")
