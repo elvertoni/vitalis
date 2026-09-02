@@ -78,6 +78,32 @@ env, `config/settings.py` cai no SQLite de sempre. Anexos de exame vivem num vol
 em `/app/media` (dado sensível, LGPD — não pode sumir num redeploy). App publicado em
 `work/vitalis` no EasyPanel; domínio `vitalis.tonicoimbra.com`.
 
+**Deploy leva código, nunca dado — e a tela quebra em silêncio.** O EasyPanel builda a partir
+do GitHub e o `entrypoint.sh` roda `migrate`, então schema novo chega sozinho; **linha nenhuma
+chega**. Sempre que um recurso deixar de ser literal no código e passar a ler do banco (foi o
+caso de D-061), o deploy sozinho deixa a tela **vazia**, não com erro: a view encontra zero
+linhas e cai no estado vazio, e `manage.py check` continua passando. Aconteceu com o painel de
+biomarcadores, que ficou em branco em produção até a semeadura.
+
+A regra, então: **mudou de literal para model? semeie a produção no mesmo dia.** O dossiê real
+está fora do git (D-041), então o caminho é levar o JSON até o contêiner e rodar o comando lá:
+
+```bash
+# local: gera o payload só com o que falta e transforma em base64
+python -c "import base64;print(base64.b64encode(open('medico-data/prod-patch.json','rb').read()).decode())"
+
+# no contêiner (MCP do EasyPanel, projeto work / serviço vitalis), em pedaços de ~8 KB:
+printf '%s' '<base64>' >> /tmp/p.b64
+base64 -d /tmp/p.b64 > /tmp/p.json
+python manage.py seed_medico --email <e-mail> --source /tmp/p.json
+rm -f /tmp/p.b64 /tmp/p.json      # exige confirm: "CONFIRMO" no MCP
+```
+
+`seed_medico` aceita payload **parcial**: cada seção do JSON é opcional, então dá para mandar
+só `lab_panels`, `clinical_notes`, `foods` e `diets` em vez do dossiê inteiro. Apague o arquivo
+temporário depois — é dado de saúde no disco do contêiner. Conferir antes e depois com uma
+contagem (`LabPanel.objects.count()` e companhia) evita descobrir pela tela.
+
 O serviço **`vitalis-backup`** no EasyPanel roda com `SERVICE_MODE=backup` a cada 24h via `scripts/backup.sh`:
 - Gera dump do banco PostgreSQL (`vitalis-db-*.sql.gz`) e arquivo com os laudos de exame (`vitalis-media-*.tar.gz`).
 - Testa integridade de cada arquivo com `gzip -t` antes de aceitar.

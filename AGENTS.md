@@ -27,6 +27,16 @@ The repository intentionally has no automated test suite. Validate changes with 
 
 Production on the VPS is the source of truth for user accounts, subscriptions, deployed configuration, and published behavior. For any validation involving those areas, verify production first through the authenticated EasyPanel MCP connector (`work` project, `vitalis` service); use `db.sqlite3` and the local server only for complementary development checks. Do not try SSH first. If the EasyPanel connector is unavailable, state that limitation explicitly and never infer production state from local data.
 
+Deploys carry code, never rows. EasyPanel builds from GitHub and `entrypoint.sh` runs
+`migrate`, so a new schema arrives on its own — but no data does. Whenever a feature stops
+being a literal in the code and starts reading from the database (D-061), deploying alone
+leaves the screen **empty rather than broken**: the view finds no rows and renders the empty
+state, and `manage.py check` still passes. Seed production the same day, through the EasyPanel
+MCP: base64 the payload locally, write it into the container in ~8 KB chunks, decode it, run
+`manage.py seed_medico --email <email> --source /tmp/p.json`, then delete the temporary file
+(health data on disk). `seed_medico` accepts a partial payload — every JSON section is
+optional — so send only the sections that are missing. Verify with row counts before and after.
+
 The `vitalis-backup` service runs daily via `scripts/backup.sh`, creating verified (`gzip -t`) dumps of PostgreSQL and `/app/media` attachments. Backups are retained locally for 30 days and synchronized externally to the owner's Google Drive (`backup-vitalis` folder) using rclone with OAuth 2.0 Desktop credentials (DECISIONS.md D-055, D-056).
 
 ## Reminders: the channel is chosen per category (D-054)
