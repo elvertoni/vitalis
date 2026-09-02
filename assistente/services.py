@@ -9,7 +9,7 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
-GEMINI_FALLBACK_MODEL = 'gemini-1.5-flash'
+GEMINI_FALLBACK_MODEL = 'gemini-flash-latest'
 
 
 def build_clinical_context(user):
