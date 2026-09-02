@@ -674,3 +674,35 @@ na primeira tela — e a página encolhe de 2323px para 1819px.
 **Por que "Ver ficha" é link e não botão:** a hierarquia espelha a frequência real de uso —
 registrar acontece 3x por semana, consultar a ficha talvez 1x por mês. Dar a ela um cartão de
 178px repetiria o erro que a mudança veio corrigir.
+
+### D-053 · Consulta marcada tem contagem regressiva própria
+**Contexto:** o sistema cobria as duas pontas e deixava o meio vazio. Havia o aviso de
+*marcar* o retorno (D-042, 15 dias antes) e o aviso no *dia* da consulta — mas nada entre
+"já marquei" e "é hoje", que é justamente onde uma consulta é esquecida.
+**Decisão:** `_appointment_countdown_reminders` gera avisos em
+`APPOINTMENT_COUNTDOWN_DAYS = (6, 4, 2, 1)` antes da data da consulta. Consulta marcada é
+simplesmente um `Appointment` cuja própria `date` ainda está no futuro — o registro existe
+porque a pessoa marcou; não há campo de controle novo.
+**Por que a véspera está fora da sequência de dois em dois:** é o aviso que faz separar
+documento e sair de casa na hora, e não pode depender da paridade da contagem cair certo.
+**O dia da consulta em si fica de fora** desta série: `_appointment_reminders` já fala nele,
+e dois avisos para a mesma manhã é ruído.
+
+### D-054 · O canal é escolhido por categoria, não por pessoa
+**Contexto:** `Profile.notification_channel` era um valor único para tudo. Escolher WhatsApp
+movia *todos* os avisos de uma vez, e por isso a resposta segura tinha sido não notificar
+quase nada (D-044): o dono do produto não podia querer a dose de remédio no WhatsApp sem
+querer também as onze refeições da dieta.
+**Decisão:** `lembretes.ChannelPreference` — uma linha por `(user, category)` com `by_email`
+e `by_whatsapp`. `notifications.channels_for(user, category)` resolve, e `should_notify` deixa
+de consultar uma constante para consultar a pessoa. Tela em `/lembretes/preferencias/`.
+**A ausência de linha não é "desligado"** — significa "nunca decidiu", e cai em
+`DEFAULT_CHANNELS`. Isso é o que impede que salvar preferências hoje silencie para sempre uma
+categoria que o produto criar amanhã.
+**Padrão novo, decidido com o dono:** e-mail só para `agendar` e `retorno` — o que é data a
+combinar com terceiro e exige uma ação (ligar, sair de casa). Remédio, refeição e treino não
+saem por nada até a pessoa pedir. Substitui a regra fixa de D-044, mantendo o motivo dela.
+**Falha de gateway não vaza para e-mail:** se o WhatsApp cair e a categoria não tiver e-mail
+marcado, `send_reminder` devolve `None` e o comando **não** marca como enviado — o lembrete
+segue pendente para a próxima rodada. Mandar por e-mail o que a pessoa tirou do e-mail
+desfaria a escolha que a tela existe para fazer.

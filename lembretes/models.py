@@ -80,3 +80,35 @@ class Reminder(OwnedModel):
     def mark_cancelled(self):
         self.status = self.Status.CANCELLED
         self.save(update_fields=['status', 'updated_at'])
+
+
+class ChannelPreference(OwnedModel):
+    """
+    Which channels a category of reminder is allowed to leave through, per person.
+
+    Before this, ``Profile.notification_channel`` was a single value for everything: choosing
+    WhatsApp moved *all* notices at once, which is why the safe answer was to notify almost
+    nothing (D-044). One row per category makes the decision granular — dose of medicine on
+    WhatsApp, booking on e-mail, diet on neither — and lets the defaults stay conservative
+    while the person opts in to more.
+
+    A missing row is not "off": it means "never touched", and the code falls back to the
+    defaults in ``lembretes.notifications``. Only an explicit row overrides them, so adding a
+    category later does not silently mute it for whoever already saved preferences.
+    """
+
+    category = models.CharField('categoria', max_length=10, choices=Reminder.Category.choices)
+    by_email = models.BooleanField('por e-mail', default=False)
+    by_whatsapp = models.BooleanField('por whatsapp', default=False)
+
+    class Meta:
+        verbose_name = 'preferência de canal'
+        verbose_name_plural = 'preferências de canal'
+        ordering = ['category']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'category'], name='uma_preferencia_por_categoria'),
+        ]
+
+    def __str__(self):
+        canais = [nome for ligado, nome in ((self.by_email, 'e-mail'), (self.by_whatsapp, 'WhatsApp')) if ligado]
+        return f'{self.get_category_display()}: {" e ".join(canais) or "silenciado"}'

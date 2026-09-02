@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
@@ -19,7 +20,7 @@ from core.views import OwnerCreateView
 
 from . import whatsapp
 from .forms import ReminderForm
-from .models import Reminder
+from .models import ChannelPreference, Reminder
 from .services import sync_reminders
 
 
@@ -171,3 +172,75 @@ class WhatsAppTestView(StaffRequiredMixin, View):
         except whatsapp.WhatsAppError as exc:
             messages.error(request, f'Falha no envio: {exc}')
         return redirect('lembretes:whatsapp')
+
+
+class NotificationPreferenceView(LoginRequiredMixin, View):
+    """
+    Which categories may leave by e-mail and by WhatsApp, for this person.
+
+    The screen writes one ``ChannelPreference`` row per configurable category on every save,
+    including the ones left unticked. That is deliberate: a saved row means "the person
+    decided", and only a decision should be able to silence a category — the absence of a row
+    keeps meaning "never touched", so the conservative default still applies to whatever the
+    product adds later (D-054).
+    """
+
+    template_name = 'lembretes/preferences.html'
+
+    def _rows(self, user):
+        from lembretes import notifications
+
+        rows = []
+        for category in notifications.CONFIGURABLE_CATEGORIES:
+            channels = notifications.channels_for(user, category)
+            rows.append({
+                'value': category,
+                'label': Reminder.Category(category).label,
+                'help': CATEGORY_HELP.get(category, ''),
+                'email': notifications.EMAIL in channels,
+                'whatsapp': notifications.WHATSAPP in channels,
+            })
+        return rows
+
+    def get(self, request):
+        return TemplateResponse(request, self.template_name, self._context(request))
+
+    def _context(self, request):
+        from lembretes import notifications
+
+        profile = request.user.profile
+        return {
+            'rows': self._rows(request.user),
+            'whatsapp_ready': whatsapp.is_configured(),
+            'has_phone': bool(profile.phone),
+            'phone': profile.phone,
+            'categories': notifications.CONFIGURABLE_CATEGORIES,
+        }
+
+    def post(self, request):
+        from lembretes import notifications
+
+        for category in notifications.CONFIGURABLE_CATEGORIES:
+            ChannelPreference.objects.update_or_create(
+                user=request.user, category=category,
+                defaults={
+                    'by_email': f'{category}_email' in request.POST,
+                    'by_whatsapp': f'{category}_whatsapp' in request.POST,
+                },
+            )
+        messages.success(request, 'Preferências de aviso salvas.')
+        return redirect('lembretes:preferences')
+
+
+# Uma linha por categoria explicando *quando* aquele aviso acontece, porque o nome sozinho
+# ('Retorno médico') não diz se dispara uma vez ou todo dia — que é o que decide se a pessoa
+# quer aquilo no WhatsApp.
+CATEGORY_HELP = {
+    Reminder.Category.SCHEDULING: 'Ligar para marcar algo que ainda não tem data: retorno pedido pelo médico, exame solicitado, tratamento sem acompanhamento agendado.',
+    Reminder.Category.RETURN: 'Consulta já marcada se aproximando: 6, 4 e 2 dias antes, e na véspera.',
+    Reminder.Category.MEDICATION: 'Cada horário de dose. Um remédio de uso contínuo dispara todos os dias.',
+    Reminder.Category.EXAM: 'No dia do exame já agendado.',
+    Reminder.Category.NUTRITION: 'Cada refeição da dieta, nos horários cadastrados. Vários por dia.',
+    Reminder.Category.TRAINING: 'Avisos ligados ao treino. Hoje o sistema não gera nenhum automaticamente.',
+    Reminder.Category.OTHER: 'Os lembretes que você cria à mão em “Novo lembrete”.',
+}

@@ -4,9 +4,9 @@ Where a reminder turns into a message that leaves the system.
 Two things live here on purpose. **What gets sent**: not every reminder is worth an
 interruption. A dose of medicine and a meal of the diet are a routine the person already
 lives — mailing eleven of those a day teaches them to ignore the channel, and the notice that
-actually matters (something with no date booked yet) drowns. So only
-``Reminder.Category.SCHEDULING`` leaves the building; everything else stays visible in the
-central and on the dashboard. See ``DECISIONS.md`` D-044.
+actually matters drowns. What leaves the building is decided per person and per category by
+``ChannelPreference``; ``DEFAULT_CHANNELS`` below is what applies until someone chooses
+otherwise. See ``DECISIONS.md`` D-044 and D-054.
 
 **How it is worded and delivered**: the channel is isolated in ``send_reminder``. WhatsApp
 goes through the Evolution API (``lembretes.whatsapp``) when the person picked it and the
@@ -27,12 +27,55 @@ from .models import Reminder
 
 logger = logging.getLogger(__name__)
 
-# O único grupo que vira mensagem. Os outros continuam na tela, não na caixa de entrada.
-NOTIFY_CATEGORIES = frozenset({Reminder.Category.SCHEDULING})
+EMAIL = 'email'
+WHATSAPP = 'whatsapp'
+
+# O padrão até a pessoa escolher. Só o que é *data a combinar com terceiro* sai sozinho:
+# marcar o retorno enquanto há vaga, e a aproximação da consulta já marcada. Dose de remédio,
+# refeição e treino são rotina que a pessoa já vive — ficam na central e no painel, e só saem
+# por mensagem se ela pedir na tela de preferências (D-054).
+DEFAULT_CHANNELS = {
+    Reminder.Category.SCHEDULING: frozenset({EMAIL}),
+    Reminder.Category.RETURN: frozenset({EMAIL}),
+}
+NO_CHANNEL = frozenset()
+
+# Categorias oferecidas na tela de preferências, na ordem em que aparecem.
+CONFIGURABLE_CATEGORIES = (
+    Reminder.Category.SCHEDULING,
+    Reminder.Category.RETURN,
+    Reminder.Category.MEDICATION,
+    Reminder.Category.EXAM,
+    Reminder.Category.NUTRITION,
+    Reminder.Category.TRAINING,
+    Reminder.Category.OTHER,
+)
+
+
+def channels_for(user, category):
+    """
+    The channels one category may use for ``user``.
+
+    An explicit ``ChannelPreference`` row wins; its absence means the person never touched
+    this category, and the conservative default applies. Saving preferences therefore never
+    mutes a category the product adds later.
+    """
+    from .models import ChannelPreference
+
+    pref = ChannelPreference.objects.filter(user=user, category=category).first()
+    if pref is None:
+        return DEFAULT_CHANNELS.get(category, NO_CHANNEL)
+    chosen = set()
+    if pref.by_email:
+        chosen.add(EMAIL)
+    if pref.by_whatsapp:
+        chosen.add(WHATSAPP)
+    return frozenset(chosen)
 
 
 def should_notify(reminder):
-    return reminder.category in NOTIFY_CATEGORIES
+    """True when this reminder has at least one channel open for its owner."""
+    return bool(channels_for(reminder.user, reminder.category))
 
 
 def _absolute_url(reminder):
@@ -77,18 +120,33 @@ def _send_whatsapp(reminder):
 
 def send_reminder(reminder):
     """
-    Delivers one reminder and returns the channel that actually took it.
+    Delivers one reminder and returns the channel that took it, or ``None``.
 
-    WhatsApp only when the person asked for it, the gateway is configured and there is a
-    phone on the profile. Anything short of that — and any failure talking to the gateway —
-    falls back to e-mail: a notice that arrives on the wrong channel is worth much more than
-    one that does not arrive. 'push' has no implementation and falls back the same way.
+    The person chose, per category, which channels may carry it (``channels_for``). WhatsApp
+    additionally needs the gateway configured and a phone on the profile; a failure talking to
+    the gateway falls back to e-mail **only if e-mail was also chosen for that category** —
+    silently mailing something deliberately kept off e-mail would undo the very choice the
+    preferences screen exists to make.
+
+    Returns ``None`` when nothing could be delivered, so the caller never marks as sent a
+    reminder that did not leave.
     """
+    allowed = channels_for(reminder.user, reminder.category)
+    if not allowed:
+        return None
+
     profile = reminder.user.profile
-    wants_whatsapp = profile.notification_channel == Profile.NotificationChannel.WHATSAPP
-    if wants_whatsapp and whatsapp.is_configured() and profile.phone:
+    if WHATSAPP in allowed and whatsapp.is_configured() and profile.phone:
         try:
             return _send_whatsapp(reminder)
         except whatsapp.WhatsAppError:
-            logger.warning('WhatsApp falhou para o lembrete %s; caindo para e-mail.', reminder.pk, exc_info=True)
-    return _send_email(reminder)
+            logger.warning(
+                'WhatsApp falhou para o lembrete %s; %s.',
+                reminder.pk,
+                'caindo para e-mail' if EMAIL in allowed else 'e-mail nao autorizado nesta categoria',
+                exc_info=True,
+            )
+
+    if EMAIL in allowed:
+        return _send_email(reminder)
+    return None

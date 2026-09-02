@@ -38,6 +38,12 @@ from .models import Reminder
 DEFAULT_TIME = time(8, 0)  # exame e retorno não têm horário próprio; lembra de manhã.
 LOOKAHEAD_DAYS = 7
 
+# Cadência do aviso de consulta **já marcada**: de dois em dois dias na aproximação, e
+# sempre na véspera. A véspera entra fora da sequência de propósito — é o aviso que faz a
+# pessoa separar documento e sair de casa na hora, e não pode depender da paridade da
+# contagem cair certo (D-053).
+APPOINTMENT_COUNTDOWN_DAYS = (6, 4, 2, 1)
+
 
 def _aware(day, at_time):
     return timezone.make_aware(datetime.combine(day, at_time))
@@ -70,6 +76,7 @@ def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
     batch += _medication_reminders(user, today, horizon)
     batch += _exam_reminders(user, today, horizon)
     batch += _appointment_reminders(user, today, horizon)
+    batch += _appointment_countdown_reminders(user, today, horizon)
     batch += _return_scheduling_reminders(user, today, horizon)
     batch += _exam_scheduling_reminders(user, today, horizon)
     batch += _treatment_checkup_reminders(user, today, horizon)
@@ -163,6 +170,42 @@ def _appointment_reminders(user, today, horizon):
             remind_at=_aware(appointment.next_return_date, DEFAULT_TIME),
             content_type=content_type, object_id=appointment.pk,
         ))
+    return reminders
+
+
+def _appointment_countdown_reminders(user, today, horizon):
+    """
+    The run-up to a visit that is **already booked**.
+
+    ``_appointment_reminders`` fires on the return date the doctor asked for, and
+    ``_return_scheduling_reminders`` chases the booking beforehand. Neither covers the days
+    between "it is booked" and "it is today", which is where a consultation is actually
+    forgotten. This one counts down on ``APPOINTMENT_COUNTDOWN_DAYS``.
+
+    A booked visit is simply an ``Appointment`` whose own ``date`` is still ahead: the record
+    exists because the person marked it. Today's visit is left out — at that point the day
+    reminder speaks, and two notices for the same morning is noise.
+    """
+    content_type = ContentType.objects.get_for_model(Appointment)
+    reminders = []
+    for visit in Appointment.objects.filter(
+        user=user, date__gt=today, date__lte=horizon + timedelta(days=max(APPOINTMENT_COUNTDOWN_DAYS)),
+    ).select_related('doctor'):
+        for days_before in APPOINTMENT_COUNTDOWN_DAYS:
+            remind_day = visit.date - timedelta(days=days_before)
+            if not today <= remind_day <= horizon:
+                continue
+            falta = 'amanhã' if days_before == 1 else f'em {days_before} dias'
+            reminders.append(Reminder(
+                user=user, category=Reminder.Category.RETURN,
+                title=f'Consulta {falta} · {visit.doctor}',
+                description=(
+                    f'{visit.date:%d/%m/%Y}'
+                    + (f' · {visit.reason}' if visit.reason else '')
+                ),
+                remind_at=_aware(remind_day, DEFAULT_TIME),
+                content_type=content_type, object_id=visit.pk,
+            ))
     return reminders
 
 

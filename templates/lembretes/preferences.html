@@ -1,0 +1,105 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Como quero ser avisado · Vitalis{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-lg mx-auto px-6 md:px-12">
+
+        <div class="mb-12">
+            <a href="{% url 'lembretes:index' %}" class="inline-flex items-center gap-2 min-h-[2.75rem] py-3 text-sm font-medium text-[#5d674f] hover:text-[#4a523f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors mb-4">
+                <i data-lucide="arrow-left" class="w-4 h-4 stroke-[1.5]"></i> Central de lembretes
+            </a>
+            <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">
+                Como quero ser avisado
+            </h1>
+            <p class="text-lg text-[#5c5c5a] mt-5 max-w-2xl leading-relaxed">
+                Tudo continua aparecendo na central e no painel. Aqui você escolhe só o que
+                merece sair do sistema e chegar até você.
+            </p>
+        </div>
+
+        {% if not whatsapp_ready %}
+        <div class="bg-[#f2ece5] border border-[#dcdacd] rounded-[2rem] p-6 md:p-8 mb-8 flex items-start gap-4">
+            <i data-lucide="info" class="w-5 h-5 stroke-[1.5] text-[#5d674f] flex-none mt-0.5"></i>
+            <div>
+                <h2 class="text-base font-medium text-[#1a1a1a] mb-1">O canal de WhatsApp ainda não está ligado</h2>
+                <p class="text-sm text-[#5c5c5a] leading-relaxed">
+                    Você pode marcar as opções agora — elas ficam guardadas e passam a valer
+                    assim que a sessão do WhatsApp for pareada. Até lá, esses avisos saem por
+                    e-mail se você também marcar a coluna de e-mail.
+                </p>
+            </div>
+        </div>
+        {% elif not has_phone %}
+        <div class="bg-[#f2ece5] border border-[#dcdacd] rounded-[2rem] p-6 md:p-8 mb-8 flex items-start gap-4">
+            <i data-lucide="phone-off" class="w-5 h-5 stroke-[1.5] text-[#96412f] flex-none mt-0.5"></i>
+            <div>
+                <h2 class="text-base font-medium text-[#1a1a1a] mb-1">Falta o seu telefone</h2>
+                <p class="text-sm text-[#5c5c5a] leading-relaxed mb-3">
+                    Sem número no perfil, nenhuma mensagem de WhatsApp tem para onde ir.
+                </p>
+                <a href="{% url 'accounts:profile' %}" class="inline-flex items-center gap-2 min-h-[2.75rem] py-2 text-sm font-medium text-[#5d674f] hover:text-[#4a523f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                    Cadastrar telefone <i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5]"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="bg-white rounded-[2rem] border border-[#dcdacd] overflow-hidden">
+                {# Cabeçalho de colunas: só no desktop. No celular cada linha traz os rótulos. #}
+                <div class="hidden md:grid grid-cols-[1fr_6rem_6rem] gap-4 px-8 py-4 border-b border-[#dcdacd] bg-[#f5f4f0]">
+                    <span class="text-xs font-medium tracking-[0.12em] uppercase text-[#5c5c5a]">Tipo de aviso</span>
+                    <span class="text-xs font-medium tracking-[0.12em] uppercase text-[#5c5c5a] text-center">E-mail</span>
+                    <span class="text-xs font-medium tracking-[0.12em] uppercase text-[#5c5c5a] text-center">WhatsApp</span>
+                </div>
+
+                {% for row in rows %}
+                <div class="grid md:grid-cols-[1fr_6rem_6rem] gap-x-4 gap-y-4 px-6 md:px-8 py-5 {% if not forloop.first %}border-t border-[#dcdacd]{% endif %}">
+                    <div class="min-w-0">
+                        <span class="text-base font-medium text-[#1a1a1a] block">{{ row.label }}</span>
+                        {% if row.help %}
+                        <span class="text-sm text-[#5c5c5a] leading-relaxed block mt-1 max-w-prose">{{ row.help }}</span>
+                        {% endif %}
+                    </div>
+
+                    <label class="flex md:justify-center items-center gap-3 min-h-[2.75rem] cursor-pointer select-none">
+                        <input type="checkbox" name="{{ row.value }}_email" {% if row.email %}checked{% endif %}
+                               class="w-5 h-5 accent-[#5d674f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">
+                        <span class="md:hidden text-sm text-[#5c5c5a]">E-mail</span>
+                    </label>
+
+                    <label class="flex md:justify-center items-center gap-3 min-h-[2.75rem] cursor-pointer select-none">
+                        <input type="checkbox" name="{{ row.value }}_whatsapp" {% if row.whatsapp %}checked{% endif %}
+                               class="w-5 h-5 accent-[#5d674f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">
+                        <span class="md:hidden text-sm text-[#5c5c5a]">WhatsApp</span>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex flex-wrap items-center gap-6 mt-8">
+                <button type="submit" class="group inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                    <span class="text-base font-normal tracking-wide">Salvar preferências</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 motion-reduce:transform-none transition-transform"></i>
+                </button>
+                <a href="{% url 'lembretes:index' %}" class="inline-flex items-center min-h-[2.75rem] py-3 text-base text-[#5c5c5a] hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Cancelar</a>
+            </div>
+        </form>
+
+        <div class="mt-14 pt-8 border-t border-[#dcdacd] max-w-2xl">
+            <h2 class="text-base font-medium text-[#1a1a1a] mb-3">Sobre o volume</h2>
+            <p class="text-sm text-[#5c5c5a] leading-relaxed">
+                Agendamento e consulta chegam poucas vezes por mês e quase sempre exigem uma
+                ação sua — ligar, separar exame, sair de casa. Já remédio e refeição podem
+                disparar dez ou mais avisos por dia: se ligar esses canais, escolha um lugar
+                onde esse volume não afogue o resto.
+            </p>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
