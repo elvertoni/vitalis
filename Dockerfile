@@ -7,7 +7,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential libpq5 postgresql-client rclone \
+        build-essential libpq5 postgresql-client ca-certificates curl unzip \
+    && curl -fsSL https://downloads.rclone.org/rclone-current-linux-amd64.zip \
+        -o /tmp/rclone.zip \
+    && unzip -q /tmp/rclone.zip -d /tmp/rclone \
+    && install -m 0755 /tmp/rclone/rclone-*/rclone /usr/local/bin/rclone \
+    && rm -rf /tmp/rclone /tmp/rclone.zip \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
