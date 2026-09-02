@@ -68,6 +68,13 @@
                 <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
             </span>
         </a>
+        <a href="{% url 'assistente:index' %}" {% if namespace == 'assistente' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'assistente' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
+            <span class="flex items-center gap-2.5"><i data-lucide="sparkles" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i> Vitalis AI</span>
+            <span class="flex items-center gap-3">
+                {% if namespace == 'assistente' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
+        </a>
     </div>
 
     {# Nivel de conta: mesma largura, peso menor, separado por respiro. #}

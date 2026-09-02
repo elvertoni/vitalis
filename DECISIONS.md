@@ -845,3 +845,18 @@ tela não mostra selo, que é o comportamento certo para uso contínuo.
 
 **Continua pendente:** o histórico do git ainda contém os valores clínicos dos commits
 anteriores. Limpar exige reescrever história (`filter-repo`) e forçar push, decisão do dono.
+
+### D-062 · Vitalis AI: Copiloto Clínico, Multimodal e Esportivo com Gemini (Google AI Studio)
+**Contexto:** necessidade de um assistente de inteligência artificial integrado diretamente ao sistema para:
+1. Leitura e interpretação multimodal de receitas e exames médicos enviados em PDF e foto;
+2. Sugestão e adaptação de receitas nutricionais, cálculo de macronutrientes e propostas de refeições;
+3. Montagem e progressão de rotinas de musculação;
+4. Orientações de suplementação e metas personalizadas de hidratação.
+**Decisão:**
+- **App Dedicado (`assistente`):** criado o app Django com os models `Conversation` e `Message` (ambos herdando de `OwnedModel` com `CASCADE` conforme D-021), armazenando histórico por usuário.
+- **Cliente Gemini REST Nativo:** integração via `urllib.request` conectando-se ao endpoint `v1beta` do Google AI Studio com `gemini-2.5-flash` (fallback para `gemini-1.5-flash`), sem dependência de SDKs adicionais.
+- **Visão Multimodal:** suporte a envio de laudos em PDF e fotos de exames/refeições encapsulados em Base64 (`inlineData`).
+- **Prontuário Contextual Ativo (`build_clinical_context`):** o prompt de sistema é alimentado em tempo real com os dados do próprio usuário (perfil, altura, peso recente, IMC, 7 medicações ativas, dietas, biomarcadores e divisões de treino).
+- **Interface e Navegação:** tela de chat interativa em `/assistente/` com suporte a sugestões rápidas de comandos, formatação Markdown e atalhos na barra de navegação desktop e mobile.
+- **Segurança de Credenciais:** chave do Google AI Studio configurada estritamente via variável de ambiente (`GEMINI_API_KEY`) no local e na VPS EasyPanel, nunca versionada em código.
+

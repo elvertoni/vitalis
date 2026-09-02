@@ -102,6 +102,8 @@ no shell antes do `runserver`:
 | `DJANGO_DEFAULT_FROM_EMAIL` | `config/settings.py` | `Vitalis <nao-responda@vitalis.app>` | remetente dos lembretes e do reset de senha |
 | `MERCADOPAGO_ACCESS_TOKEN` | `billing/services.py` | ausente | token de autenticação da API Mercado Pago |
 | `MERCADOPAGO_WEBHOOK_SECRET` | `config/settings.py` | ausente | validação de assinatura HMAC (`x-signature`) no webhook |
+| `GEMINI_API_KEY` | `config/settings.py` | ausente | chave de API do Google AI Studio para o copiloto Vitalis AI (D-062) |
+
 
 ## Idioma — a regra que mais se erra
 
@@ -120,6 +122,7 @@ treino/      grupos, exercícios, fichas, sessões, tela de registro   (Sprint 3
 nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 4 — pronta)
 lembretes/   central de lembretes + command agendado                 (Sprint 5 — pronta)
 billing/     planos, assinatura, gateway                             (Sprint 6 — pronta)
+assistente/  Vitalis AI: copiloto com Gemini, visão multimodal e exames (D-062 — pronta)
 ```
 
 ### Rotas

@@ -1,0 +1,349 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Vitalis AI · Copiloto Clínico & Esportivo{% endblock %}
+
+{% block content %}
+<div class="max-w-screen-2xl mx-auto px-4 md:px-8 py-6">
+    <div class="bg-white rounded-[2rem] border border-[#dcdacd] overflow-hidden shadow-sm flex flex-col lg:flex-row min-h-[750px] max-h-[85vh]">
+        
+        {# Barra lateral de conversas #}
+        <aside class="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-[#dcdacd] bg-[#fbfbfa] flex flex-col flex-none">
+            <div class="p-6 border-b border-[#dcdacd] flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-[#5d674f] text-white flex items-center justify-center">
+                        <i data-lucide="sparkles" class="w-4 h-4 stroke-[2]"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-medium text-[#1a1a1a] text-sm">Vitalis AI</h2>
+                        <span class="text-xs text-[#5c5c5a] block">Gemini 2.5 Flash</span>
+                    </div>
+                </div>
+                <a href="{% url 'assistente:new_conversation' %}" class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-[#1a1a1a] text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors" title="Nova conversa">
+                    <i data-lucide="plus" class="w-4 h-4 stroke-[2]"></i>
+                </a>
+            </div>
+
+            {# Histórico de conversas #}
+            <div class="flex-1 overflow-y-auto p-4 space-y-1.5 max-h-48 lg:max-h-none">
+                {% for conv in conversations %}
+                    <a href="{% url 'assistente:conversation_detail' conv.pk %}" class="group flex items-center justify-between p-3 rounded-xl text-sm transition-colors {% if active_conversation and active_conversation.pk == conv.pk %}bg-[#5d674f] text-white font-medium{% else %}text-[#1a1a1a] hover:bg-[#f0eee9]{% endif %}">
+                        <div class="flex items-center gap-2.5 truncate">
+                            <i data-lucide="message-square" class="w-4 h-4 shrink-0 {% if active_conversation and active_conversation.pk == conv.pk %}text-white{% else %}text-[#5c5c5a]{% endif %}"></i>
+                            <span class="truncate">{{ conv.title }}</span>
+                        </div>
+                        <form method="post" action="{% url 'assistente:delete_conversation' conv.pk %}" class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0" onsubmit="return confirm('Excluir esta conversa?')">
+                            {% csrf_token %}
+                            <button type="submit" class="p-1 hover:text-red-500 transition-colors" title="Excluir">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5 stroke-[1.5]"></i>
+                            </button>
+                        </form>
+                    </a>
+                {% empty %}
+                    <div class="p-6 text-center text-xs text-[#5c5c5a]">
+                        Nenhuma conversa anterior.<br>Inicie uma nova pergunta abaixo!
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# Card de status de prontuário #}
+            <div class="p-4 border-t border-[#dcdacd] bg-[#f5f4f0]/60">
+                <div class="flex items-center gap-2 text-xs text-[#5d674f] font-medium mb-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Prontuário Ativo Conectado
+                </div>
+                <p class="text-[11px] text-[#5c5c5a] leading-tight">
+                    A IA lê automaticamente seu peso, dieta de 1.884 kcal, 7 medicamentos e biomarcadores Metrolab.
+                </p>
+            </div>
+        </aside>
+
+        {# Área principal do Chat #}
+        <main class="flex-1 flex flex-col bg-white overflow-hidden">
+            
+            {# Cabeçalho do chat #}
+            <header class="p-4 md:px-8 border-b border-[#dcdacd] flex items-center justify-between bg-white flex-none">
+                <div>
+                    <h1 class="text-lg font-medium text-[#1a1a1a]">
+                        {% if active_conversation %}{{ active_conversation.title }}{% else %}Nova Consulta com Vitalis AI{% endif %}
+                    </h1>
+                    <span class="text-xs text-[#5c5c5a]">Suporte multimodal a exames, receitas, nutrição e treinos</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex items-center gap-1.5 text-xs bg-[#5d674f]/10 text-[#5d674f] px-3 py-1 rounded-full font-medium">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        Privacidade Protegida
+                    </span>
+                </div>
+            </header>
+
+            {# Lista de mensagens #}
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+                {% if not messages %}
+                    {# Boas-vindas e comandos rápidos #}
+                    <div class="max-w-2xl mx-auto text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-[#5d674f]/10 text-[#5d674f] flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="sparkles" class="w-8 h-8 stroke-[1.5]"></i>
+                        </div>
+                        <h3 class="text-2xl font-medium text-[#1a1a1a] mb-2">Olá, {{ user.first_name|default:user.username }}!</h3>
+                        <p class="text-sm text-[#5c5c5a] mb-8 leading-relaxed">
+                            Sou seu copiloto de saúde e longevidade no Vitalis. Analiso seus laudos de exame em PDF, receitas médicas, planos de alimentação, divisões de treino e cálculos de hidratação e suplementação.
+                        </p>
+
+                        <div class="text-xs font-medium tracking-widest uppercase text-[#5d674f] mb-4">Perguntas sugeridas para começar:</div>
+                        <div class="grid sm:grid-cols-2 gap-3 text-left">
+                            <button type="button" onclick="setPrompt(this.innerText)" class="p-4 rounded-2xl border border-[#dcdacd] hover:border-[#5d674f] hover:bg-[#fbfbfa] text-xs text-[#1a1a1a] transition-all flex items-start gap-3">
+                                <span class="text-base">🩸</span>
+                                <div>
+                                    <strong class="block font-medium mb-0.5">Analisar meu hematócrito</strong>
+                                    <span class="text-[#5c5c5a]">O que fazer diante do valor de 53,7% no último exame?</span>
+                                </div>
+                            </button>
+                            <button type="button" onclick="setPrompt(this.innerText)" class="p-4 rounded-2xl border border-[#dcdacd] hover:border-[#5d674f] hover:bg-[#fbfbfa] text-xs text-[#1a1a1a] transition-all flex items-start gap-3">
+                                <span class="text-base">🥗</span>
+                                <div>
+                                    <strong class="block font-medium mb-0.5">Bater 148 g de proteína</strong>
+                                    <span class="text-[#5c5c5a]">Opções práticas de lanches sem estourar as 1.884 kcal.</span>
+                                </div>
+                            </button>
+                            <button type="button" onclick="setPrompt(this.innerText)" class="p-4 rounded-2xl border border-[#dcdacd] hover:border-[#5d674f] hover:bg-[#fbfbfa] text-xs text-[#1a1a1a] transition-all flex items-start gap-3">
+                                <span class="text-base">💧</span>
+                                <div>
+                                    <strong class="block font-medium mb-0.5">Meta ideal de água</strong>
+                                    <span class="text-[#5c5c5a]">Calcular volume diário pelo meu peso atual e treino.</span>
+                                </div>
+                            </button>
+                            <button type="button" onclick="setPrompt(this.innerText)" class="p-4 rounded-2xl border border-[#dcdacd] hover:border-[#5d674f] hover:bg-[#fbfbfa] text-xs text-[#1a1a1a] transition-all flex items-start gap-3">
+                                <span class="text-base">💊</span>
+                                <div>
+                                    <strong class="block font-medium mb-0.5">Esquema do Indux 50mg</strong>
+                                    <span class="text-[#5c5c5a]">Como conduzir a transição de dias diários para alternados?</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% for msg in messages %}
+                    {% if msg.role == 'user' %}
+                        {# Mensagem do Usuário #}
+                        <div class="flex justify-end">
+                            <div class="max-w-2xl bg-[#5d674f] text-white rounded-2xl rounded-tr-none p-4 shadow-sm">
+                                <p class="text-sm whitespace-pre-line leading-relaxed">{{ msg.content }}</p>
+                                {% if msg.attachment_name %}
+                                    <div class="mt-2 pt-2 border-t border-white/20 flex items-center gap-2 text-xs text-white/90">
+                                        <i data-lucide="paperclip" class="w-3.5 h-3.5"></i>
+                                        <span>{{ msg.attachment_name }}</span>
+                                    </div>
+                                {% endif %}
+                                <span class="text-[10px] text-white/70 block text-right mt-1">{{ msg.created_at|date:'H:i' }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        {# Mensagem do Assistente #}
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-[#5d674f]/10 text-[#5d674f] flex items-center justify-center shrink-0 mt-1">
+                                <i data-lucide="sparkles" class="w-4 h-4 stroke-[2]"></i>
+                            </div>
+                            <div class="max-w-3xl bg-[#f5f4f0]/80 rounded-2xl rounded-tl-none p-5 border border-[#dcdacd]/80 shadow-sm">
+                                <div class="prose text-sm text-[#1a1a1a] leading-relaxed markdown-content">
+                                    {{ msg.content|linebreaksbr }}
+                                </div>
+                                <span class="text-[10px] text-[#5c5c5a] block mt-2">{{ msg.created_at|date:'H:i' }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {# Formulário de envio inferior #}
+            <div class="p-4 md:px-8 border-t border-[#dcdacd] bg-white flex-none">
+                {# Pré-visualização de anexo #}
+                <div id="attachment-preview" class="hidden mb-3 p-2 bg-[#f5f4f0] rounded-xl flex items-center justify-between text-xs text-[#1a1a1a]">
+                    <div class="flex items-center gap-2 truncate">
+                        <i data-lucide="file" class="w-4 h-4 text-[#5d674f]"></i>
+                        <span id="attachment-filename" class="truncate font-medium"></span>
+                    </div>
+                    <button type="button" onclick="clearAttachment()" class="text-[#5c5c5a] hover:text-red-600 p-1">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <form id="chat-form" method="post" enctype="multipart/form-data" class="flex items-center gap-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="conversation_id" value="{{ active_conversation.pk|default:'' }}">
+                    <input type="file" id="attachment-input" name="attachment" accept=".pdf,image/*" class="hidden" onchange="handleFileSelected(this)">
+
+                    <button type="button" onclick="document.getElementById('attachment-input').click()" class="inline-flex items-center justify-center w-11 h-11 rounded-full border border-[#dcdacd] text-[#5c5c5a] hover:text-[#1a1a1a] hover:border-[#1a1a1a] transition-colors shrink-0" title="Anexar laudo em PDF ou foto de exame/receita">
+                        <i data-lucide="paperclip" class="w-5 h-5 stroke-[1.5]"></i>
+                    </button>
+
+                    <div class="flex-1 relative">
+                        <textarea id="message-input" name="content" rows="1" placeholder="Pergunte sobre seus exames, treinos, receitas ou suplementação..." class="w-full bg-[#fbfbfa] border border-[#dcdacd] rounded-2xl py-3 pl-4 pr-12 text-sm text-[#1a1a1a] placeholder:text-[#888885] focus:border-[#5d674f] focus:outline-none focus:ring-1 focus:ring-[#5d674f] resize-none transition-colors" onkeydown="handleKeyDown(event)"></textarea>
+                    </div>
+
+                    <button type="submit" id="send-btn" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-[#5d674f] text-white hover:bg-[#4a523f] transition-colors shrink-0 disabled:opacity-50">
+                        <i data-lucide="arrow-up" class="w-5 h-5 stroke-[2]" id="send-icon"></i>
+                        <div class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" id="send-spinner"></div>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    function setPrompt(text) {
+        const input = document.getElementById('message-input');
+        input.value = text.trim();
+        input.focus();
+    }
+
+    function handleFileSelected(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            document.getElementById('attachment-filename').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+            document.getElementById('attachment-preview').classList.remove('hidden');
+            lucide.createIcons();
+        }
+    }
+
+    function clearAttachment() {
+        document.getElementById('attachment-input').value = '';
+        document.getElementById('attachment-preview').classList.add('hidden');
+    }
+
+    function handleKeyDown(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+        }
+    }
+
+    // Scroll automático para a última mensagem
+    function scrollToBottom() {
+        const container = document.getElementById('chat-messages');
+        container.scrollTop = container.scrollHeight;
+    }
+    scrollToBottom();
+
+    // Envio assíncrono via AJAX
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('message-input');
+        const text = input.value.trim();
+        const fileInput = document.getElementById('attachment-input');
+        const hasFile = fileInput.files && fileInput.files.length > 0;
+
+        if (!text && !hasFile) return;
+
+        const sendBtn = document.getElementById('send-btn');
+        const sendIcon = document.getElementById('send-icon');
+        const sendSpinner = document.getElementById('send-spinner');
+
+        sendBtn.disabled = true;
+        sendIcon.classList.add('hidden');
+        sendSpinner.classList.remove('hidden');
+
+        // Renderiza mensagem do usuário instantaneamente no chat
+        const container = document.getElementById('chat-messages');
+        const now = new Date();
+        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        
+        let attachmentHtml = '';
+        if (hasFile) {
+            attachmentHtml = `
+                <div class="mt-2 pt-2 border-t border-white/20 flex items-center gap-2 text-xs text-white/90">
+                    <i data-lucide="paperclip" class="w-3.5 h-3.5"></i>
+                    <span>${fileInput.files[0].name}</span>
+                </div>
+            `;
+        }
+
+        const userBubble = document.createElement('div');
+        userBubble.className = 'flex justify-end';
+        userBubble.innerHTML = `
+            <div class="max-w-2xl bg-[#5d674f] text-white rounded-2xl rounded-tr-none p-4 shadow-sm">
+                <p class="text-sm whitespace-pre-line leading-relaxed">${text || 'Analise o documento anexo'}</p>
+                ${attachmentHtml}
+                <span class="text-[10px] text-white/70 block text-right mt-1">${timeStr}</span>
+            </div>
+        `;
+        container.appendChild(userBubble);
+        scrollToBottom();
+
+        // Bubble de carregamento do assistente
+        const loadingBubble = document.createElement('div');
+        loadingBubble.id = 'assistant-loading';
+        loadingBubble.className = 'flex items-start gap-3';
+        loadingBubble.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-[#5d674f]/10 text-[#5d674f] flex items-center justify-center shrink-0 mt-1">
+                <i data-lucide="sparkles" class="w-4 h-4 stroke-[2] animate-spin"></i>
+            </div>
+            <div class="bg-[#f5f4f0]/80 rounded-2xl rounded-tl-none p-4 border border-[#dcdacd]/80 shadow-sm flex items-center gap-2 text-xs text-[#5c5c5a]">
+                <div class="w-2 h-2 rounded-full bg-[#5d674f] animate-ping"></div>
+                Analisando prontuário e processando resposta com o Gemini...
+            </div>
+        `;
+        container.appendChild(loadingBubble);
+        scrollToBottom();
+        lucide.createIcons();
+
+        // Envia FormData para a view
+        const formData = new FormData(this);
+        input.value = '';
+        clearAttachment();
+
+        fetch("{% url 'assistente:send_message' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('assistant-loading').remove();
+            sendBtn.disabled = false;
+            sendIcon.classList.remove('hidden');
+            sendSpinner.classList.add('hidden');
+
+            if (data.status === 'ok') {
+                // Atualiza conversation_id se for a primeira
+                document.querySelector('[name=conversation_id]').value = data.conversation_id;
+
+                const replyBubble = document.createElement('div');
+                replyBubble.className = 'flex items-start gap-3';
+                
+                // Formatação simples de Markdown
+                let formatted = data.assistant_message.content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+
+                replyBubble.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-[#5d674f]/10 text-[#5d674f] flex items-center justify-center shrink-0 mt-1">
+                        <i data-lucide="sparkles" class="w-4 h-4 stroke-[2]"></i>
+                    </div>
+                    <div class="max-w-3xl bg-[#f5f4f0]/80 rounded-2xl rounded-tl-none p-5 border border-[#dcdacd]/80 shadow-sm">
+                        <div class="prose text-sm text-[#1a1a1a] leading-relaxed">${formatted}</div>
+                        <span class="text-[10px] text-[#5c5c5a] block mt-2">${data.assistant_message.created_at}</span>
+                    </div>
+                `;
+                container.appendChild(replyBubble);
+                scrollToBottom();
+                lucide.createIcons();
+            } else {
+                alert(data.error || 'Ocorreu um erro.');
+            }
+        })
+        .catch(err => {
+            const loading = document.getElementById('assistant-loading');
+            if (loading) loading.remove();
+            sendBtn.disabled = false;
+            sendIcon.classList.remove('hidden');
+            sendSpinner.classList.add('hidden');
+            alert('Falha na comunicação com o servidor: ' + err);
+        });
+    });
+</script>
+{% endblock %}
