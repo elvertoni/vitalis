@@ -6,45 +6,117 @@
 <section class="pt-32 lg:pt-40 pb-24">
     <div class="max-w-screen-xl mx-auto px-6 md:px-12">
 
-        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-16">
-            <div>
-                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Ficha{% if not workoutroutine.is_active %} · Inativa{% endif %}</span>
-                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1] mb-2">{{ workoutroutine.name }}</h1>
-                {% if workoutroutine.description %}<p class="text-lg text-[#5c5c5a] max-w-xl">{{ workoutroutine.description }}</p>{% endif %}
+        {# ── Cabeçalho ─────────────────────────────────────────────────────── #}
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+            <div class="max-w-2xl">
+                <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">
+                    Ficha{% if not workoutroutine.is_active %} · Inativa{% endif %}
+                </span>
+                <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">
+                    {{ workoutroutine.name }}
+                </h1>
+                {% for section in sections %}{% if not section.title and forloop.first %}
+                <p class="text-lg text-[#5c5c5a] mt-5 leading-relaxed">{{ section.body|join:' ' }}</p>
+                {% endif %}{% endfor %}
             </div>
-            <div class="flex items-center gap-3">
-                <a href="{% url 'treino:routine_update' workoutroutine.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">Editar</a>
-                <a href="{% url 'treino:routine_delete' workoutroutine.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors px-2">Excluir</a>
+            <div class="flex items-center gap-3 flex-none">
+                <a href="{% url 'treino:routine_update' workoutroutine.pk %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Editar</a>
+                <a href="{% url 'treino:routine_delete' workoutroutine.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors px-2">Excluir</a>
             </div>
         </div>
 
-        <div class="flex items-center justify-between mb-8">
+        {# ── As divisões, em tabela: a ficha inteira, sem cortar exercício ── #}
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
             <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a]">Divisões</h2>
-            <a href="{% url 'treino:routine_day_create' workoutroutine.pk %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+            <a href="{% url 'treino:routine_day_create' workoutroutine.pk %}" class="inline-flex items-center gap-2 border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
                 <i data-lucide="plus" class="w-4 h-4 stroke-[1.5]"></i> Nova divisão
             </a>
         </div>
 
         {% if workoutroutine.days.all %}
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="flex flex-col gap-8 mb-20">
             {% for day in workoutroutine.days.all %}
-            <a href="{{ day.get_absolute_url }}" class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] hover:shadow-xl transition-shadow">
-                <h3 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-2">{{ day.label }}</h3>
-                <p class="text-sm text-[#5c5c5a] mb-4">
-                    {% for group in day.muscle_groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}Sem grupo definido{% endfor %}
-                </p>
-                <div class="flex flex-col gap-1">
-                    {% for target in day.exercise_targets.all|slice:':4' %}
-                    <span class="text-sm text-[#1a1a1a]">{{ target.exercise.name }} · {{ target.target_sets }}x{{ target.target_reps }}</span>
-                    {% empty %}
-                    <span class="text-sm text-[#686865]">Nenhum exercício ainda</span>
-                    {% endfor %}
+            <article class="bg-white rounded-[2rem] border border-[#dcdacd] overflow-hidden">
+
+                <header class="flex flex-wrap items-center justify-between gap-4 p-6 md:p-8 border-b border-[#dcdacd]">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-3">
+                            <span class="flex-none w-10 h-10 rounded-full bg-[#5d674f] text-white flex items-center justify-center text-base font-medium">{{ day.label }}</span>
+                            <h3 class="text-xl tracking-tight font-medium text-[#1a1a1a]">
+                                {{ day.exercise_targets.count }} exercício{{ day.exercise_targets.count|pluralize }}
+                            </h3>
+                        </div>
+                        <p class="text-sm text-[#5c5c5a] mt-2">
+                            {% for group in day.muscle_groups.all %}{{ group.name }}{% if not forloop.last %} · {% endif %}{% empty %}Sem grupo definido{% endfor %}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="{% url 'treino:session_run' day.pk %}" class="group inline-flex items-center gap-2 bg-[#5d674f] text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-[#4a523f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                            Registrar
+                            <i data-lucide="arrow-right" class="w-4 h-4 stroke-[1.5] group-hover:translate-x-1 motion-reduce:transform-none transition-transform"></i>
+                        </a>
+                        <a href="{{ day.get_absolute_url }}" class="text-sm font-medium text-[#5c5c5a] hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors px-2">Editar</a>
+                    </div>
+                </header>
+
+                {% if day.exercise_targets.all %}
+                {# Rola dentro do próprio container: a página nunca rola de lado. #}
+                <div class="overflow-x-auto">
+                    <table class="w-full md:min-w-[34rem] text-left border-collapse">
+                        <caption class="sr-only">Exercícios da divisão {{ day.label }}</caption>
+                        <thead>
+                            <tr class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">
+                                <th scope="col" class="font-medium py-3 pl-6 md:pl-8 pr-3 w-10">#</th>
+                                <th scope="col" class="font-medium py-3 pr-3">Exercício</th>
+                                <th scope="col" class="hidden md:table-cell font-medium py-3 pr-3 w-28 whitespace-nowrap">Séries</th>
+                                <th scope="col" class="hidden md:table-cell font-medium py-3 pr-6 md:pr-8 w-28 whitespace-nowrap">Descanso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for target in day.exercise_targets.all %}
+                            <tr class="border-t border-[#dcdacd] align-top">
+                                <td class="py-4 pl-6 md:pl-8 pr-3 text-sm text-[#5c5c5a] tabular-nums">{{ forloop.counter }}</td>
+                                <td class="py-4 pr-3">
+                                    <span class="text-base text-[#1a1a1a] leading-snug">{{ target.exercise.name }}</span>
+                                    {# No celular as colunas numéricas somem e a prescrição desce para cá #}
+                                    <span class="md:hidden flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-sm text-[#1a1a1a] tabular-nums">
+                                        <span class="font-medium">{{ target.target_sets }} &times; {{ target.target_reps }}</span>
+                                        {% if target.rest_seconds %}
+                                        <span class="w-1 h-1 rounded-full bg-[#a0a09e]"></span>
+                                        <span class="text-[#5c5c5a]">descanso {{ target.rest_seconds }}s</span>
+                                        {% elif target.rest_seconds == 0 %}
+                                        <span class="w-1 h-1 rounded-full bg-[#a0a09e]"></span>
+                                        <span class="text-[#5c5c5a]">sem pausa</span>
+                                        {% endif %}
+                                    </span>
+                                    {% if target.exercise.notes %}
+                                    <span class="block text-sm text-[#5c5c5a] mt-1 max-w-prose leading-relaxed">{{ target.exercise.notes }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="hidden md:table-cell py-4 pr-3 text-base text-[#1a1a1a] tabular-nums whitespace-nowrap">
+                                    {{ target.target_sets }} &times; {{ target.target_reps }}
+                                </td>
+                                <td class="hidden md:table-cell py-4 pr-6 md:pr-8 text-base text-[#5c5c5a] tabular-nums whitespace-nowrap">
+                                    {% if target.rest_seconds %}{{ target.rest_seconds }}s
+                                    {% elif target.rest_seconds == 0 %}<span class="text-sm">sem pausa</span>
+                                    {% else %}<span class="text-[#a0a09e]">—</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            </a>
+                {% else %}
+                <p class="px-6 md:px-8 py-8 text-base text-[#5c5c5a]">
+                    Nenhum exercício nesta divisão ainda.
+                    <a href="{{ day.get_absolute_url }}" class="text-[#5d674f] hover:text-[#4a523f] font-medium underline underline-offset-4">Adicionar</a>
+                </p>
+                {% endif %}
+            </article>
             {% endfor %}
         </div>
         {% else %}
-        <div class="bg-[#f5f4f0] rounded-[2rem] p-16 flex flex-col items-center text-center border border-dashed border-[#dcdacd]">
+        <div class="bg-[#f5f4f0] rounded-[2rem] p-16 flex flex-col items-center text-center border border-dashed border-[#dcdacd] mb-20">
             <div class="w-14 h-14 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-white">
                 <i data-lucide="layers" class="w-6 h-6 stroke-[1.5] text-[#5d674f]"></i>
             </div>
@@ -55,6 +127,32 @@
                 <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
             </a>
         </div>
+        {% endif %}
+
+        {# ── Protocolo: o texto da ficha, lido como seções ─────────────────── #}
+        {% if sections %}
+        <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Protocolo</h2>
+        <p class="text-base text-[#5c5c5a] mb-8 max-w-2xl">As regras que valem para toda sessão desta ficha.</p>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            {% for section in sections %}{% if section.title %}
+            <article class="bg-white rounded-[2rem] border border-[#dcdacd] p-6 md:p-8">
+                <h3 class="text-xs font-medium tracking-[0.12em] uppercase text-[#5d674f]">{{ section.title }}</h3>
+                {% if section.subtitle %}
+                <p class="text-lg tracking-tight text-[#1a1a1a] mt-2 leading-snug">{{ section.subtitle }}</p>
+                {% endif %}
+                <div class="flex flex-col gap-3 mt-4">
+                    {% for paragraph in section.body %}
+                    <p class="text-base text-[#5c5c5a] leading-relaxed">{{ paragraph }}</p>
+                    {% endfor %}
+                </div>
+            </article>
+            {% endif %}{% endfor %}
+        </div>
+
+        {% for section in sections %}{% if not section.title and not forloop.first %}
+        <p class="text-base text-[#5c5c5a] leading-relaxed max-w-2xl mt-8">{{ section.body|join:' ' }}</p>
+        {% endif %}{% endfor %}
         {% endif %}
 
     </div>

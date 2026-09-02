@@ -30,7 +30,7 @@ from core.views import (
     OwnerUpdateView,
 )
 
-from . import progression
+from . import progression, protocol
 from .forms import (
     ExerciseForm,
     MuscleGroupForm,
@@ -206,7 +206,17 @@ class WorkoutRoutineDetailView(OwnerDetailView):
     template_name = 'treino/routine_detail.html'
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related('days__exercise_targets__exercise')
+        return super().get_queryset().prefetch_related(
+            'days__muscle_groups', 'days__exercise_targets__exercise',
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # The description is prose the person wrote by hand, with headings in it. Reading it
+        # back as sections is what lets the template typeset it instead of dumping one wall
+        # of text — see ``treino/protocol.py``.
+        context['sections'] = protocol.parse_sections(self.object.description)
+        return context
 
 
 class WorkoutRoutineCreateView(OwnerCreateView):
