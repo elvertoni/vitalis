@@ -59,13 +59,13 @@ class RoutineExerciseTargetForm(StyledFormMixin, forms.ModelForm):
 
     class Meta:
         model = RoutineExerciseTarget
-        fields = ['exercise', 'target_sets', 'target_reps', 'order']
+        fields = ['exercise', 'target_sets', 'target_reps', 'rest_seconds', 'order']
 
 
 class WorkoutSessionForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = WorkoutSession
-        fields = ['routine_day', 'date', 'duration_minutes', 'notes']
+        fields = ['routine_day', 'date', 'duration_minutes', 'morning_after', 'notes']
         widgets = {'date': DateInput(), 'notes': forms.Textarea(attrs={'rows': 3})}
 
 

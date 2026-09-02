@@ -27,6 +27,22 @@ The repository intentionally has no automated test suite. Validate changes with 
 
 Production on the VPS is the source of truth for user accounts, subscriptions, deployed configuration, and published behavior. For any validation involving those areas, verify production first through the authenticated EasyPanel MCP connector (`work` project, `vitalis` service); use `db.sqlite3` and the local server only for complementary development checks. Do not try SSH first. If the EasyPanel connector is unavailable, state that limitation explicitly and never infer production state from local data.
 
+## Training: logging screen vs. CRUD
+
+`/treino/registrar/` is the weekly path (D-048): pick the routine day, log the whole workout
+in one POST. The session CRUD stays as "Sessão avulsa" for corrections and off-routine
+workouts. Three rules when touching it: the GET never writes — form fields are keyed by the
+target (`t<target_pk>s<n>reps`), and the session plus its entries are created in the POST only
+when numbers arrived, so an abandoned visit leaves no phantom session (D-049);
+`RoutineExerciseTarget.rest_seconds` is the prescription that arms the timer while
+`SessionEntry.rest_seconds` is what was actually rested, and any new prescription field must
+also reach `RoutineExerciseTargetForm`; `WorkoutSession.morning_after` is a queried column,
+not a note, because `progression.morning_streak` counts weeks without a `worse` answer
+(D-050). `treino/progression.py` is pure calculation: it suggests a load increase only when
+every prescribed set hit the top of the rep range (+5 kg for leg groups, +2.5 kg otherwise),
+and time-based prescriptions (`45s`) never progress by reps. The suggestion is displayed,
+never written automatically.
+
 ## Commit & Pull Request Guidelines
 
 History uses Conventional Commit prefixes, mainly `feat:` and `chore:`, followed by concise Portuguese summaries (for example, `feat: Vitalis S5 — lembretes + dashboard consolidado`). Keep each commit focused and include migrations with their model changes. Pull requests should explain behavior and architectural impact, list manual checks, link the relevant requirement or issue, and include before/after screenshots for UI changes.

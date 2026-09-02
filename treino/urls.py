@@ -41,6 +41,16 @@ urlpatterns = [
         name='routine_exercise_delete',
     ),
 
+    # Registrar treino: a tela única. Vem antes das rotas de sessão porque é o caminho
+    # que se usa toda semana — o CRUD abaixo é para corrigir o que a tela não cobre.
+    path('registrar/', views.SessionRunPickView.as_view(), name='session_run_pick'),
+    path('registrar/<int:pk>/', views.SessionRunView.as_view(), name='session_run'),
+    path(
+        'sessoes/<int:pk>/manha-seguinte/',
+        views.SessionMorningAfterView.as_view(),
+        name='session_morning_after',
+    ),
+
     path('sessoes/', views.WorkoutSessionListView.as_view(), name='session_list'),
     path('sessoes/nova/', views.WorkoutSessionCreateView.as_view(), name='session_create'),
     path('sessoes/<int:pk>/', views.WorkoutSessionDetailView.as_view(), name='session_detail'),

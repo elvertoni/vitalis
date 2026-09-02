@@ -128,6 +128,11 @@ class RoutineExerciseTarget(OwnedModel):
     )
     target_sets = models.PositiveSmallIntegerField('séries alvo', default=3)
     target_reps = models.CharField('repetições alvo', max_length=20, default='10', help_text="Ex.: 10, 8-12, até a falha.")
+    # O descanso é prescrição, não execução: pertence ao alvo, e não ao ``SessionEntry``,
+    # que guarda o descanso realmente praticado naquele dia.
+    rest_seconds = models.PositiveSmallIntegerField(
+        'descanso (s)', null=True, blank=True, help_text='Ex.: 90. Arma o cronômetro da tela de registro.',
+    )
     order = models.PositiveSmallIntegerField('ordem', default=1)
 
     class Meta:
@@ -147,12 +152,23 @@ class RoutineExerciseTarget(OwnedModel):
 class WorkoutSession(OwnedModel):
     """A day the person actually trained, optionally following a routine day."""
 
+    class MorningAfter(models.TextChoices):
+        OK = 'ok', 'Igual ou melhor'
+        WORSE = 'worse', 'Pior que o normal'
+
     routine_day = models.ForeignKey(
         RoutineDay, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='sessions', verbose_name='divisão seguida',
     )
     date = models.DateField('data', default=timezone.localdate)
     duration_minutes = models.PositiveSmallIntegerField('duração (min)', null=True, blank=True)
+    # Numa tendinopatia a dor aparece no dia seguinte, não durante: é a manhã seguinte que
+    # diz se a carga estava certa. Fica em coluna própria — e não em ``notes`` — porque é
+    # dado consultado (contagem de semanas limpas), não texto livre.
+    morning_after = models.CharField(
+        'manhã seguinte', max_length=8, choices=MorningAfter.choices, blank=True,
+        help_text='Como o corpo amanheceu no dia seguinte a este treino.',
+    )
     notes = models.TextField('anotações', blank=True)
 
     class Meta:

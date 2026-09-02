@@ -97,7 +97,7 @@ config/      settings, urls raiz, wsgi/asgi
 core/        base models, mixins de isolamento, CBVs genéricas de dono, landing, dashboard
 accounts/    User (login por e-mail), UserManager, Profile, signal, telas de auth
 saude/       médicos, tratamentos, exames, consultas, medicamentos   (Sprint 2 — pronta)
-treino/      grupos, exercícios, fichas, sessões                     (Sprint 3 — pronta)
+treino/      grupos, exercícios, fichas, sessões, tela de registro   (Sprint 3 — pronta)
 nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 4 — pronta)
 lembretes/   central de lembretes + command agendado                 (Sprint 5 — pronta)
 billing/     planos, assinatura, gateway                             (Sprint 6 — pronta)
@@ -213,6 +213,34 @@ aplicadas pelo `StyledFormMixin`. Formulário novo herda dele.
 Botão primário: `rounded-full px-8 py-5`, ícone `arrow-right` que desliza no hover. Cartão:
 `rounded-[2rem]`. Container: `max-w-screen-xl` ou `2xl` com `px-6 md:px-12`. Seção: `py-32`.
 Tipografia Inter, peso máximo 600. Ícones Lucide com `stroke-[1.5]`.
+
+### Treino: a tela de registro e o CRUD são caminhos diferentes
+
+`/treino/registrar/` é o caminho semanal (D-048): escolhe a divisão e grava o treino inteiro
+num POST — um par de campos por série, cronômetro que arma com o descanso prescrito, sugestão
+de carga ao lado do campo. O CRUD de sessão continua existindo como "Sessão avulsa", para
+corrigir e para treino que não segue ficha. **A tela nova não edita prescrição**: séries e
+faixa de repetição mudam na ficha.
+
+Três regras que valem ao mexer nela:
+
+- **Visitar não é registrar** (D-049). O GET não escreve nada. Os campos são nomeados pelo
+  alvo (`t<target_pk>s<n>reps`), não pela entrada, justamente porque a sessão ainda não
+  existe. No POST, `read_submission` lê o formulário inteiro antes de tocar no banco; sessão e
+  `SessionEntry` nascem só se veio número, e sessão que termina sem entrada é apagada. Não
+  reintroduza `get_or_create` no GET: sessão vazia mente na frequência da semana.
+- **Descanso prescrito ≠ descanso praticado** (D-050). `RoutineExerciseTarget.rest_seconds` é
+  o plano (arma o cronômetro); `SessionEntry.rest_seconds` é o que aconteceu no dia. Campo
+  novo de prescrição entra no alvo **e** em `RoutineExerciseTargetForm`, senão exercício
+  criado pela interface nunca chega à tela.
+- **`WorkoutSession.morning_after`** (`ok`/`worse`) é dado consultado, não anotação: numa
+  tendinopatia a dor aparece no dia seguinte, e `progression.morning_streak` conta as semanas
+  sem `worse`. Por isso é coluna, e não texto em `notes`.
+
+`treino/progression.py` é puro cálculo, sem view: `top_of_range` lê a faixa (`'8-12'` → 12,
+`'45s'` → `None`, porque prescrição em tempo não progride por repetição) e `suggestion_for` só
+sugere subir carga quando **todas** as séries bateram o topo — +5 kg em perna, +2,5 kg no
+resto. É sugestão exibida no campo, nunca escrita automática.
 
 ### Peso e macro: a fonte é o histórico, o formulário é só a porta
 

@@ -588,3 +588,47 @@ duas verdades sobre o mesmo número divergem em semanas — a mesma razão pela 
 calculado e nunca congelado (D-022). O formulário é só uma porta melhor para o mesmo dado.
 **Também:** a tela de perfil passa a mostrar "Peso atual" com a data da pesagem, ou um link
 para registrar a primeira quando não existe nenhuma.
+
+### D-048 · Uma tela para registrar o treino inteiro, ao lado do CRUD que já existia
+**Contexto:** registrar uma sessão pelo CRUD de `treino` custa uma sessão, uma entrada por
+exercício e uma série por linha — para o treino A da ficha full-body isso é **mais de trinta
+formulários** com o celular na mão, entre um exercício e outro, com o intervalo correndo.
+Ninguém faz isso duas vezes. O histórico de carga é a matéria-prima da progressão, então o
+custo de registrar decide se o resto do app tem dado para trabalhar.
+**Decisão:** `/treino/registrar/` — escolhe a divisão, e uma única tela lista os exercícios
+prescritos com um par de campos (repetições, carga) por série. Um POST grava tudo.
+**O CRUD continua** (`treino:session_create`, agora rotulado "Sessão avulsa"): é o caminho de
+correção e o de treino que não segue ficha nenhuma. A tela nova cobre o caso semanal, não
+substitui o geral.
+**Fora do escopo:** editar a prescrição por ali. Mudar séries ou faixa de repetição continua
+na ficha — a tela de registro escreve histórico, não altera o plano.
+
+### D-049 · A sessão nasce na escrita, não na visita
+**Contexto:** a primeira versão fazia `get_or_create` da sessão e das entradas no GET, para
+ter uma `SessionEntry` estável em que pendurar as séries. Abrir a tela e desistir — conferir a
+prescrição no vestiário, errar a divisão, fechar o navegador — deixava uma `WorkoutSession`
+vazia que entrava em "sessões recentes" e contava na frequência da semana.
+**Decisão:** o GET não escreve. Os campos do formulário são nomeados pelo **alvo**
+(`t<target_pk>s<n>reps`), que existe desde a ficha, e não pela entrada. No POST o formulário
+é lido inteiro antes de tocar no banco (`read_submission`); sessão e entradas nascem só se
+veio número. No fim, entrada sem série é apagada, e sessão que ficou sem entrada nenhuma
+também.
+**Consequência:** "frequência da semana" volta a significar treino que aconteceu. Regra geral
+para tela de registro: **visitar não é registrar**.
+
+### D-050 · Descanso é prescrição (fica no alvo), manhã seguinte é coluna própria
+**Descanso:** `SessionEntry.rest_seconds` já existia e guarda o descanso *praticado* naquele
+dia. O cronômetro da tela precisa do descanso *prescrito*, que vale antes de a sessão
+existir — por isso `RoutineExerciseTarget` ganhou seu próprio `rest_seconds`. Os dois campos
+não são duplicata: um é plano, o outro é execução. O do alvo aparece no formulário da ficha,
+senão exercício criado pela interface nunca arma o cronômetro.
+**Manhã seguinte:** `WorkoutSession.morning_after` (`ok` / `worse`). Numa tendinopatia a dor
+não aparece durante o treino, e sim no dia seguinte — a manhã seguinte é o que diz se a carga
+estava certa. Vai em coluna, e não em `notes`, porque é **dado consultado**: `progression.
+morning_streak` conta as semanas seguidas sem `worse`, que é o critério objetivo para
+reintroduzir exercício suspenso. Texto livre não se conta.
+**Progressão dupla** (`treino/progression.py`): sugere subir carga só quando **todas** as
+séries prescritas bateram o topo da faixa de repetições — `top_of_range` lê `'8-12'` como 12 e
+devolve `None` para prescrição em tempo (`'45s'`), que não progride por repetição. O passo é
++5 kg para grupo de perna e +2,5 kg para o resto. É sugestão no campo, nunca escrita
+automática: quem decide a carga é quem levanta.

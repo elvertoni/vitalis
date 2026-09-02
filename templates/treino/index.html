@@ -37,10 +37,11 @@
         </div>
 
         <div class="flex flex-wrap gap-3 mb-16">
-            <a href="{% url 'treino:session_create' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
-                <span class="text-base font-normal tracking-wide">Registrar sessão</span>
-                <i data-lucide="plus" class="w-5 h-5 stroke-[1.5]"></i>
+            <a href="{% url 'treino:session_run_pick' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                <span class="text-base font-normal tracking-wide">Registrar treino</span>
+                <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
             </a>
+            <a href="{% url 'treino:session_create' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors self-center">Sessão avulsa</a>
             <a href="{% url 'treino:routine_create' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors self-center">Nova ficha</a>
         </div>
 

@@ -1,0 +1,261 @@
+{% extends 'app_base.html' %}
+{% load l10n %}
+
+{% block title %}{{ day.label }} · Registrar treino · Vitalis{% endblock %}
+
+{% block content %}
+{# A barra do cronômetro é fixa no rodapé; o padding evita que ela cubra o botão de salvar. #}
+<section class="pt-32 lg:pt-40 pb-40">
+    <div class="max-w-screen-lg mx-auto px-6 md:px-12">
+
+        <div class="mb-10">
+            <a href="{% url 'treino:session_run_pick' %}" class="inline-flex items-center gap-2 text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors mb-6">
+                <i data-lucide="arrow-left" class="w-4 h-4 stroke-[1.5]"></i> Trocar divisão
+            </a>
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">{{ day.routine.name }}</span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">
+                {{ day.label }}
+            </h1>
+            <p class="text-lg text-[#5c5c5a] mt-6">
+                {{ today|date:'l, d \d\e F' }} ·
+                <span id="progress-count">{{ done_sets }} de {{ total_sets }}</span> séries registradas
+            </p>
+        </div>
+
+        {% if pending_morning %}
+        <div class="bg-[#f2ece5] rounded-[2rem] p-6 md:p-8 border border-[#dcdacd] mb-10">
+            <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-2">Antes de começar: como amanheceu?</h2>
+            <p class="text-base text-[#5c5c5a] mb-6">Treino de {{ pending_morning.date|date:'d/m' }}. Se piorou, recue carga hoje.</p>
+            <form method="post" action="{% url 'treino:session_morning_after' pending_morning.pk %}" class="flex flex-wrap gap-3">
+                {% csrf_token %}
+                <button type="submit" name="morning_after" value="ok"
+                        class="inline-flex items-center gap-2 bg-white border border-[#dcdacd] text-[#1a1a1a] px-6 py-3 rounded-full text-sm font-medium hover:border-[#5d674f] transition-colors">
+                    <i data-lucide="check" class="w-4 h-4 stroke-[1.5] text-[#5d674f]"></i> Igual ou melhor
+                </button>
+                <button type="submit" name="morning_after" value="worse"
+                        class="inline-flex items-center gap-2 bg-white border border-[#dcdacd] text-[#1a1a1a] px-6 py-3 rounded-full text-sm font-medium hover:border-[#96412f] transition-colors">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 stroke-[1.5] text-[#96412f]"></i> Pior que o normal
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <form method="post" id="run-form">
+            {% csrf_token %}
+
+            <div class="flex flex-col gap-6">
+                {% for row in rows %}
+                <article class="exercise bg-white rounded-[2rem] border {% if row.complete %}border-[#5d674f]{% else %}border-[#dcdacd]{% endif %} overflow-hidden"
+                         data-rest="{{ row.target.rest_seconds|default_if_none:0 }}"
+                         data-name="{{ row.target.exercise.name }}"
+                         data-sets="{{ row.target.target_sets }}">
+
+                    <header class="flex items-start gap-4 p-6 md:p-8 pb-0">
+                        <span class="counter flex-none w-8 h-8 rounded-full bg-[#f5f4f0] text-[#5c5c5a] flex items-center justify-center text-sm font-medium">{{ forloop.counter }}</span>
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-lg md:text-xl tracking-tight font-medium text-[#1a1a1a] leading-snug">{{ row.target.exercise.name }}</h2>
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#5c5c5a] mt-1">
+                                <span>{{ row.target.target_sets }} &times; {{ row.target.target_reps }}</span>
+                                {% if row.target.rest_seconds %}
+                                <span class="w-1 h-1 rounded-full bg-[#a0a09e]"></span>
+                                <span>descanso {{ row.target.rest_seconds }}s</span>
+                                {% endif %}
+                                {% if row.hint.suggested_weight %}
+                                <span class="inline-flex items-center gap-1 text-xs font-medium tracking-wide uppercase text-[#2f6b4f] bg-[#e6efe8] px-2.5 py-0.5 rounded-full">
+                                    <i data-lucide="chevron-up" class="w-3 h-3 stroke-[2]"></i>
+                                    subir para {{ row.hint.suggested_weight|floatformat:'-2'|unlocalize }} kg
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="p-6 md:p-8 pt-5">
+                      {# max-w-md: no celular nao muda nada, no desktop evita campo gigante para dois digitos #}
+                      <div class="max-w-md">
+                        <div class="grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] gap-3 items-center text-xs tracking-[0.12em] uppercase text-[#5c5c5a] pb-2">
+                            <span></span>
+                            <span>{% if row.is_timed %}Tempo (s){% else %}Reps{% endif %}</span>
+                            <span>Carga (kg)</span>
+                        </div>
+
+                        {% for item in row.sets %}
+                        <div class="grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] gap-3 items-center py-1">
+                            <span class="text-sm text-[#5c5c5a] text-center tabular-nums">{{ item.number }}</span>
+                            <input type="number" inputmode="numeric" min="1" max="500" step="1"
+                                   name="t{{ row.target.pk }}s{{ item.number }}reps"
+                                   value="{{ item.reps|default_if_none:'' }}"
+                                   placeholder="{% if item.previous %}{{ item.previous.reps }}{% else %}—{% endif %}"
+                                   aria-label="{% if row.is_timed %}Tempo{% else %}Repetições{% endif %} da série {{ item.number }} de {{ row.target.exercise.name }}"
+                                   class="reps-field w-full min-w-0 text-center text-lg font-medium tabular-nums px-2 py-3 rounded-xl border border-[#dcdacd] bg-[#f5f4f0] text-[#1a1a1a] focus:outline-none focus:border-[#5d674f] focus:bg-white transition-colors">
+                            <input type="text" inputmode="decimal"
+                                   name="t{{ row.target.pk }}s{{ item.number }}kg"
+                                   value="{{ item.weight|default_if_none:''|floatformat:'-2'|unlocalize }}"
+                                   placeholder="{% if row.hint.suggested_weight %}{{ row.hint.suggested_weight|floatformat:'-2'|unlocalize }}{% elif item.previous %}{{ item.previous.weight|floatformat:'-2'|unlocalize }}{% else %}—{% endif %}"
+                                   aria-label="Carga em quilos da série {{ item.number }} de {{ row.target.exercise.name }}"
+                                   class="w-full min-w-0 text-center text-lg font-medium tabular-nums px-2 py-3 rounded-xl border border-[#dcdacd] bg-[#f5f4f0] text-[#1a1a1a] focus:outline-none focus:border-[#5d674f] focus:bg-white transition-colors">
+                        </div>
+                        {% endfor %}
+
+                      </div>
+
+                        {% if row.hint.last_session %}
+                        <p class="flex items-center gap-2 text-sm text-[#5c5c5a] pt-3">
+                            <i data-lucide="history" class="w-3.5 h-3.5 stroke-[1.5]"></i>
+                            {{ row.hint.last_session.date|date:'d/m' }}:
+                            {% for s in row.hint.last_sets %}{{ s.reps }}&times;{{ s.weight|floatformat:'-2'|unlocalize }}kg{% if not forloop.last %} · {% endif %}{% endfor %}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    {% if row.target.exercise.notes %}
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed px-6 md:px-8 py-4 border-t border-[#dcdacd]">{{ row.target.exercise.notes }}</p>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+
+            <div class="bg-white rounded-[2rem] border border-[#dcdacd] p-6 md:p-8 mt-6">
+                <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-6">Fechar a sessão</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="duration_minutes" class="block text-sm font-medium text-[#1a1a1a] mb-2">Duração (min)</label>
+                        <input type="number" id="duration_minutes" name="duration_minutes" min="1" max="600"
+                               value="{{ session.duration_minutes|default_if_none:'' }}" placeholder="60"
+                               class="w-full px-4 py-3 rounded-xl border border-[#dcdacd] bg-[#f5f4f0] text-[#1a1a1a] tabular-nums focus:outline-none focus:border-[#5d674f] focus:bg-white transition-colors">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="notes" class="block text-sm font-medium text-[#1a1a1a] mb-2">Anotações</label>
+                        <input type="text" id="notes" name="notes" value="{{ session.notes }}" maxlength="2000"
+                               placeholder="Ex.: calcanhar esquerdo incomodou na prancha"
+                               class="w-full px-4 py-3 rounded-xl border border-[#dcdacd] bg-[#f5f4f0] text-[#1a1a1a] focus:outline-none focus:border-[#5d674f] focus:bg-white transition-colors">
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3 mt-8">
+                    <button type="submit" name="finish" value="1"
+                            class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                        <span class="text-base font-normal tracking-wide">Encerrar treino</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    <button type="submit"
+                            class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors self-center">
+                        Salvar e continuar
+                    </button>
+                </div>
+                <p class="text-sm text-[#5c5c5a] mt-6">
+                    Apagar o número de repetições apaga aquela série. Encerrar sem nenhuma série descarta a sessão.
+                </p>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% comment %}
+Cronômetro de descanso. Arma sozinho com o descanso prescrito do exercício quando uma
+série ganha repetições. É por isso que o descanso virou campo do alvo: sem ele aqui, a
+prescrição de 45s a 120s ficava só no papel.
+{% endcomment %}
+<div id="rest-bar" hidden
+     class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#dcdacd] shadow-[0_-12px_32px_rgba(26,26,26,0.08)]">
+    <div class="max-w-screen-lg mx-auto px-6 md:px-12 h-20 flex items-center gap-4">
+        <div class="relative w-12 h-12 flex-none">
+            <svg viewBox="0 0 48 48" class="w-12 h-12 -rotate-90" aria-hidden="true">
+                <circle cx="24" cy="24" r="21" fill="none" stroke="#dcdacd" stroke-width="3"></circle>
+                <circle id="rest-ring" cx="24" cy="24" r="21" fill="none" stroke="#5d674f" stroke-width="3"
+                        stroke-linecap="round" stroke-dasharray="131.95" stroke-dashoffset="0"></circle>
+            </svg>
+            <span id="rest-clock" class="absolute inset-0 flex items-center justify-center text-sm font-medium tabular-nums text-[#1a1a1a]">0:00</span>
+        </div>
+        <div class="min-w-0 flex-1">
+            <p id="rest-name" class="text-sm font-medium text-[#1a1a1a] truncate">Descanso</p>
+            <p id="rest-sub" class="text-sm text-[#5c5c5a]"></p>
+        </div>
+        <button type="button" id="rest-plus" aria-label="Somar 30 segundos"
+                class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center hover:border-[#5d674f] transition-colors">
+            <i data-lucide="plus" class="w-4 h-4 stroke-[1.5]"></i>
+        </button>
+        <button type="button" id="rest-stop" aria-label="Encerrar descanso"
+                class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center hover:border-[#5d674f] transition-colors">
+            <i data-lucide="x" class="w-4 h-4 stroke-[1.5]"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var bar = document.getElementById('rest-bar');
+    var ring = document.getElementById('rest-ring');
+    var clock = document.getElementById('rest-clock');
+    var CIRC = 2 * Math.PI * 21;
+    var timer = null, left = 0, total = 0;
+
+    function paint() {
+        var over = left <= 0;
+        var m = Math.floor(Math.abs(left) / 60), s = Math.abs(left) % 60;
+        clock.textContent = (over && left < 0 ? '+' : '') + m + ':' + String(s).padStart(2, '0');
+        ring.setAttribute('stroke', over ? '#2f6b4f' : '#5d674f');
+        ring.setAttribute('stroke-dashoffset', String(CIRC * (1 - (over ? 0 : left / total))));
+        document.getElementById('rest-sub').textContent = over ? 'pronto para a próxima série' : 'descanso prescrito ' + total + 's';
+    }
+
+    function start(seconds, name) {
+        if (!seconds) { return; }
+        total = seconds; left = seconds;
+        document.getElementById('rest-name').textContent = name;
+        bar.hidden = false;
+        paint();
+        clearInterval(timer);
+        timer = setInterval(function () {
+            left -= 1;
+            if (left === 0 && navigator.vibrate) { try { navigator.vibrate([120, 70, 120]); } catch (e) {} }
+            paint();
+        }, 1000);
+    }
+
+    document.getElementById('rest-plus').addEventListener('click', function () {
+        left += 30; total = Math.max(total, left); paint();
+    });
+    document.getElementById('rest-stop').addEventListener('click', function () {
+        clearInterval(timer); bar.hidden = true;
+    });
+
+    // Uma série "fecha" quando sai do campo de repetições com número dentro. É o gatilho
+    // do cronômetro e o que repinta o cartão como concluído.
+    Array.prototype.forEach.call(document.querySelectorAll('.exercise'), function (card) {
+        var rest = parseInt(card.getAttribute('data-rest'), 10) || 0;
+        var name = card.getAttribute('data-name');
+        var target = parseInt(card.getAttribute('data-sets'), 10) || 0;
+
+        function refresh() {
+            var filled = 0;
+            Array.prototype.forEach.call(card.querySelectorAll('.reps-field'), function (f) {
+                if (f.value.trim() !== '') { filled += 1; }
+            });
+            var done = target > 0 && filled >= target;
+            card.classList.toggle('border-[#5d674f]', done);
+            card.classList.toggle('border-[#dcdacd]', !done);
+            card.querySelector('.counter').classList.toggle('bg-[#e6efe8]', done);
+            card.querySelector('.counter').classList.toggle('text-[#2f6b4f]', done);
+            card.querySelector('.counter').classList.toggle('bg-[#f5f4f0]', !done);
+            recount();
+        }
+
+        Array.prototype.forEach.call(card.querySelectorAll('.reps-field'), function (field) {
+            field.addEventListener('change', function () {
+                refresh();
+                if (field.value.trim() !== '') { start(rest, name); }
+            });
+        });
+    });
+
+    function recount() {
+        var all = document.querySelectorAll('.reps-field'), filled = 0;
+        Array.prototype.forEach.call(all, function (f) { if (f.value.trim() !== '') { filled += 1; } });
+        var label = document.getElementById('progress-count');
+        if (label) { label.textContent = filled + ' de ' + all.length; }
+    }
+})();
+</script>
+{% endblock %}
