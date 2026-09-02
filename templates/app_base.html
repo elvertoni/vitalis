@@ -31,21 +31,60 @@
 
 {% block mobile_links %}
     {% with namespace=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
-    <div class="flex flex-col items-center gap-7">
-        <a href="{% url 'core:dashboard' %}" {% if namespace == 'core' and url_name == 'dashboard' %}aria-current="page"{% endif %} class="inline-flex items-center gap-2 text-2xl font-medium tracking-tight mobile-link rounded px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] {% if namespace == 'core' and url_name == 'dashboard' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
-            <i data-lucide="home" class="w-5 h-5 stroke-[1.5]"></i> Painel
+    {# Linhas de largura total: 56px passa os 44px do HIG e dispensa mira horizontal #}
+    <div class="flex flex-col border-t border-[#dcdacd]">
+        <a href="{% url 'core:dashboard' %}" {% if namespace == 'core' and url_name == 'dashboard' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'core' and url_name == 'dashboard' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
+            <span class="flex items-center gap-2.5"><i data-lucide="home" class="w-5 h-5 stroke-[1.5]"></i> Painel</span>
+            <span class="flex items-center gap-3">
+                {% if namespace == 'core' and url_name == 'dashboard' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
         </a>
-        <span class="w-10 h-px bg-[#dcdacd]" aria-hidden="true"></span>
-        <a href="{% url 'saude:index' %}" {% if namespace == 'saude' %}aria-current="page"{% endif %} class="text-2xl font-medium tracking-tight mobile-link rounded px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] {% if namespace == 'saude' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">Saúde</a>
-        <a href="{% url 'treino:index' %}" {% if namespace == 'treino' %}aria-current="page"{% endif %} class="text-2xl font-medium tracking-tight mobile-link rounded px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] {% if namespace == 'treino' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">Treino</a>
-        <a href="{% url 'nutricao:index' %}" {% if namespace == 'nutricao' %}aria-current="page"{% endif %} class="text-2xl font-medium tracking-tight mobile-link rounded px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] {% if namespace == 'nutricao' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">Nutrição</a>
-        <a href="{% url 'lembretes:index' %}" {% if namespace == 'lembretes' %}aria-current="page"{% endif %} class="text-2xl font-medium tracking-tight mobile-link rounded px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] {% if namespace == 'lembretes' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">Lembretes</a>
+        <a href="{% url 'saude:index' %}" {% if namespace == 'saude' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'saude' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
+            <span class="flex items-center gap-2.5">Saúde</span>
+            <span class="flex items-center gap-3">
+                {% if namespace == 'saude' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
+        </a>
+        <a href="{% url 'treino:index' %}" {% if namespace == 'treino' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'treino' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
+            <span class="flex items-center gap-2.5">Treino</span>
+            <span class="flex items-center gap-3">
+                {% if namespace == 'treino' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
+        </a>
+        <a href="{% url 'nutricao:index' %}" {% if namespace == 'nutricao' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'nutricao' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
+            <span class="flex items-center gap-2.5">Nutrição</span>
+            <span class="flex items-center gap-3">
+                {% if namespace == 'nutricao' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
+        </a>
+        <a href="{% url 'lembretes:index' %}" {% if namespace == 'lembretes' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'lembretes' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
+            <span class="flex items-center gap-2.5">Lembretes</span>
+            <span class="flex items-center gap-3">
+                {% if namespace == 'lembretes' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
+        </a>
     </div>
-    <div class="flex flex-col items-center gap-4 pt-8 border-t border-[#dcdacd] w-44">
-        <a href="{% url 'accounts:profile' %}" {% if namespace == 'accounts' %}aria-current="page"{% endif %} class="text-lg font-medium tracking-tight mobile-link rounded px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] {% if namespace == 'accounts' %}text-[#5d674f]{% else %}text-[#5c5c5a]{% endif %}">Perfil</a>
+
+    {# Nivel de conta: mesma largura, peso menor, separado por respiro. #}
+    <div class="flex flex-col mt-8 border-t border-[#dcdacd]">
+        <a href="{% url 'accounts:profile' %}" {% if namespace == 'accounts' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-3 min-h-[3rem] text-lg font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'accounts' %}text-[#5d674f]{% else %}text-[#5c5c5a]{% endif %}">
+            Perfil
+            <span class="flex items-center gap-3">
+                {% if namespace == 'accounts' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
+        </a>
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
-            <button type="submit" class="text-lg font-medium tracking-tight text-[#5c5c5a] rounded px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]">Sair</button>
+            <button type="submit" class="w-full flex items-center justify-between gap-4 px-6 py-3 min-h-[3rem] text-lg font-medium tracking-tight text-[#5c5c5a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">
+                Sair
+                <i data-lucide="log-out" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </button>
         </form>
     </div>
     {% endwith %}

@@ -632,3 +632,45 @@ séries prescritas bateram o topo da faixa de repetições — `top_of_range` l�
 devolve `None` para prescrição em tempo (`'45s'`), que não progride por repetição. O passo é
 +5 kg para grupo de perna e +2,5 kg para o resto. É sugestão no campo, nunca escrita
 automática: quem decide a carga é quem levanta.
+
+### D-051 · O menu mobile ficava dentro do `<nav>` — e por isso nunca funcionou
+**Contexto:** `templates/base.html` trazia o `<nav>` do `design_system/design-system.html`
+com `backdrop-blur-md`, e o `#mobile-menu` (`fixed inset-0`) **dentro** dele. `backdrop-filter`
+estabelece bloco de contenção para descendentes `position: fixed`: o `inset-0` passava a medir
+a barra de 96px em vez da janela. Medido com o menu aberto a 390px: Painel em y=−199, Saúde
+em −102, Treino em −34 — os três acima do topo da tela — e Nutrição coberta pelo logotipo
+(`z-50` contra o `z-40` do menu). **Quatro dos sete destinos não abriam ao toque**, em todo
+dispositivo abaixo de 1024px, desde `f0fb235`, o commit fundador. O defeito não produz erro:
+o dedo toca e nada acontece.
+**Decisão:** o menu é **irmão** do `<nav>`, não filho — é a única correção que preserva o
+efeito de vidro da barra, que é assinatura do Soluna. Junto: `inset-0` vira
+`top-0 left-0 right-0 h-[100dvh]` (a barra de URL do Safari iOS come altura de `100vh`),
+`z-40` vira `z-[60]` para passar na frente do logotipo, e o menu ganha botão de fechar
+próprio em vez de trocar o ícone do hambúrguer por JS.
+**Consequência de layout:** os itens deixam de ser texto centralizado de 40px de altura e
+viram **linhas de largura total com 56px** (`w-full px-6 py-4 min-h-[3.5rem]`), com chevron à
+direita e um ponto de acento no item de `aria-current`. Ocupar a largura inteira elimina a
+mira horizontal, que é o custo real de operar com uma mão só; 56px passa os 44px do HIG e os
+48px do Material. **Botão/pílula foi considerado e recusado**: no design system
+`rounded-full px-8 py-5` significa *ação primária*, e transformar quatro destinos em pílula
+faria a navegação competir com "Registrar treino" — além de aumentar a altura total do menu.
+**Também:** `matchMedia('(min-width: 1024px)')` fecha o menu ao cruzar o breakpoint, senão
+ele some por CSS mas deixa o `<body>` presa em `overflow-hidden`. E a mesma correção foi
+aplicada em `design_system/design-system.html`, senão a referência seguiria ensinando o bug.
+
+### D-052 · O hub de treino mostra a ficha ativa, não a contagem de tabelas
+**Contexto:** `/treino/` abria com quatro cartões que eram, literalmente, as quatro tabelas do
+app reduzidas a `.count()` — grupos, exercícios, fichas, sessões. 782px de inventário antes de
+qualquer verbo, com "Registrar treino" em y=1114, além da primeira dobra. O caminho até a
+ficha passava por um cartão escrito "1 Fichas ativas" — um número no lugar de um nome — sem
+nenhuma afordância de clique (só `hover:shadow-xl`, que não existe em toque).
+**Decisão:** o topo do hub é a **ficha ativa**: nome, divisões com a contagem de exercícios,
+e o par "Registrar treino" (pílula primária) + "Ver ficha" (link). `TrainingIndexView` troca
+`routine_count = ....count()` por `active_routines = list(...)`, sem migração. Os quatro
+contadores viram uma linha de texto de 14px abaixo do bloco, com cada termo linkado — são
+dados de manutenção de catálogo, consultados poucas vezes, não de uso semanal.
+**Medido:** a ação primária sai de y=1114 para **y=458** num viewport de 844 — passa a caber
+na primeira tela — e a página encolhe de 2323px para 1819px.
+**Por que "Ver ficha" é link e não botão:** a hierarquia espelha a frequência real de uso —
+registrar acontece 3x por semana, consultar a ficha talvez 1x por mês. Dar a ela um cartão de
+178px repetiria o erro que a mudança veio corrigir.

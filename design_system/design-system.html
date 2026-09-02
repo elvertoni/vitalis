@@ -43,16 +43,24 @@
                 <i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>
             </button>
         </div>
-        <div id="mobile-menu" class="fixed inset-0 bg-[#f5f4f0] z-40 flex flex-col justify-center items-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300">
-            <a href="#0" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Hero</a>
-            <a href="#1" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Tipografia</a>
-            <a href="#2" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Cores</a>
-            <a href="#3" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Componentes</a>
-            <a href="#4" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Layout</a>
-            <a href="#5" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Motion</a>
-            <a href="#6" class="text-3xl font-medium tracking-tight text-[#1a1a1a] mobile-link">Ícones</a>
-        </div>
     </nav>
+
+    <!-- O menu e IRMAO do <nav>, nao filho. O `backdrop-blur-md` da barra cria bloco de
+         contencao para `position: fixed`, e la dentro o `inset-0` mediria a barra de 96px em
+         vez da janela: metade dos itens nasce fora da tela. Linhas de largura total (56px)
+         em vez de itens centrados: passa os 44px do HIG e dispensa mira horizontal. -->
+    <div id="mobile-menu" class="lg:hidden fixed top-0 left-0 right-0 h-[100dvh] bg-[#f5f4f0] z-[60] flex flex-col opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="h-24 flex-none"></div>
+        <nav class="flex-1 overflow-y-auto border-t border-[#dcdacd]" aria-label="Navegação">
+            <a href="#0" class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight text-[#1a1a1a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">Hero <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i></a>
+            <a href="#1" class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight text-[#1a1a1a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">Tipografia <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i></a>
+            <a href="#2" class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight text-[#1a1a1a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">Cores <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i></a>
+            <a href="#3" class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight text-[#1a1a1a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">Componentes <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i></a>
+            <a href="#4" class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight text-[#1a1a1a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">Layout <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i></a>
+            <a href="#5" class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight text-[#1a1a1a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">Motion <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i></a>
+            <a href="#6" class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight text-[#1a1a1a] border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors">Ícones <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i></a>
+        </nav>
+    </div>
 
     <main>
         <section id="0" class="relative min-h-screen pt-32 lg:pt-40 pb-0 overflow-hidden flex flex-col justify-between">

@@ -66,7 +66,15 @@ class TrainingIndexView(LoginRequiredMixin, TemplateView):
 
         context['muscle_group_count'] = MuscleGroup.objects.filter(user=user).count()
         context['exercise_count'] = Exercise.objects.filter(user=user).count()
-        context['routine_count'] = WorkoutRoutine.objects.filter(user=user, is_active=True).count()
+        # A ficha ativa vai inteira para a tela, e nao so contada: o hub existe para levar a
+        # pessoa ao treino da semana, e um contador '1' nao diz qual ficha nem leva a lugar
+        # nenhum util.
+        active_routines = list(
+            WorkoutRoutine.objects.filter(user=user, is_active=True)
+            .prefetch_related('days__exercise_targets')
+        )
+        context['active_routines'] = active_routines
+        context['routine_count'] = len(active_routines)
         context['week_start'] = monday
         context['week_end'] = sunday
         context['sessions_this_week'] = WorkoutSession.objects.filter(

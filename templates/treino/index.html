@@ -13,36 +13,59 @@
             </h1>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <a href="{% url 'treino:muscle_group_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow">
-                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="layout-grid" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
-                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ muscle_group_count }}</span>
-                <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Grupos musculares</span>
-            </a>
-            <a href="{% url 'treino:exercise_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow">
-                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="dumbbell" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
-                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ exercise_count }}</span>
-                <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Exercícios</span>
-            </a>
-            <a href="{% url 'treino:routine_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow">
-                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="clipboard-list" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
-                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ routine_count }}</span>
-                <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Fichas ativas</span>
-            </a>
-            <a href="{% url 'treino:session_list' %}" class="bg-white rounded-[2rem] p-6 border border-[#dcdacd] hover:shadow-xl transition-shadow">
-                <div class="w-10 h-10 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-[#f5f4f0]"><i data-lucide="calendar-check" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i></div>
-                <span class="text-3xl font-medium tracking-tight text-[#1a1a1a] block mb-1">{{ sessions_this_week }}</span>
-                <span class="text-xs tracking-[0.12em] uppercase text-[#5c5c5a]">Sessões esta semana</span>
+        {% if active_routines %}
+        {% for routine in active_routines %}
+        <div class="bg-white rounded-[2rem] border border-[#dcdacd] p-6 md:p-10 mb-6">
+            <span class="text-xs font-medium tracking-[0.12em] uppercase text-[#5c5c5a] block mb-3">Ficha ativa</span>
+            <h2 class="text-2xl md:text-3xl tracking-tight font-medium text-[#1a1a1a] leading-snug">{{ routine.name }}</h2>
+
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-base text-[#5c5c5a]">
+                {% for day in routine.days.all %}
+                <span class="inline-flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-[#e8eae4] text-[#1a1a1a] flex items-center justify-center text-xs font-medium">{{ day.label }}</span>
+                    {{ day.exercise_targets.count }} exercício{{ day.exercise_targets.count|pluralize }}
+                </span>
+                {% empty %}
+                <span>Nenhuma divisão ainda.</span>
+                {% endfor %}
+            </div>
+
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mt-8">
+                <a href="{% url 'treino:session_run_pick' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors group">
+                    <span class="text-base font-normal tracking-wide">Registrar treino</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 motion-reduce:transform-none transition-transform"></i>
+                </a>
+                <a href="{{ routine.get_absolute_url }}" class="inline-flex items-center gap-2 min-h-[2.75rem] py-3 text-base font-medium text-[#5d674f] hover:text-[#4a523f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                    <i data-lucide="clipboard-list" class="w-4 h-4 stroke-[1.5]"></i> Ver ficha
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="bg-[#f5f4f0] rounded-[2rem] p-10 md:p-16 flex flex-col items-center text-center border border-dashed border-[#dcdacd] mb-6">
+            <div class="w-14 h-14 rounded-full border border-[#dcdacd] flex items-center justify-center mb-6 bg-white">
+                <i data-lucide="clipboard-list" class="w-6 h-6 stroke-[1.5] text-[#5d674f]"></i>
+            </div>
+            <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-2">Nenhuma ficha ativa</h2>
+            <p class="text-base text-[#5c5c5a] max-w-sm mb-8">Monte uma ficha com as divisões que você treina e ela aparece aqui, pronta para registrar.</p>
+            <a href="{% url 'treino:routine_create' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-4 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                <span class="text-base font-normal tracking-wide">Criar ficha</span>
+                <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 motion-reduce:transform-none transition-transform"></i>
             </a>
         </div>
+        {% endif %}
 
-        <div class="flex flex-wrap gap-3 mb-16">
-            <a href="{% url 'treino:session_run_pick' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
-                <span class="text-base font-normal tracking-wide">Registrar treino</span>
-                <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 transition-transform"></i>
-            </a>
-            <a href="{% url 'treino:session_create' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors self-center">Sessão avulsa</a>
-            <a href="{% url 'treino:routine_create' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-2 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors self-center">Nova ficha</a>
+        {# Catalogo: consultado poucas vezes, nao merece quatro cartoes na primeira tela #}
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#5c5c5a] mb-16">
+            <a href="{% url 'treino:muscle_group_list' %}" class="inline-flex items-center min-h-[2.75rem] py-3 hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">{{ muscle_group_count }} grupo{{ muscle_group_count|pluralize }}</a>
+            <span class="w-1 h-1 rounded-full bg-[#a0a09e]" aria-hidden="true"></span>
+            <a href="{% url 'treino:exercise_list' %}" class="inline-flex items-center min-h-[2.75rem] py-3 hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">{{ exercise_count }} exercício{{ exercise_count|pluralize }}</a>
+            <span class="w-1 h-1 rounded-full bg-[#a0a09e]" aria-hidden="true"></span>
+            <a href="{% url 'treino:session_list' %}" class="inline-flex items-center min-h-[2.75rem] py-3 hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">{{ sessions_this_week }} sessõe{{ sessions_this_week|pluralize:'m,s' }} esta semana</a>
+            <span class="w-1 h-1 rounded-full bg-[#a0a09e]" aria-hidden="true"></span>
+            <a href="{% url 'treino:session_create' %}" class="inline-flex items-center min-h-[2.75rem] py-3 hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Sessão avulsa</a>
+            <span class="w-1 h-1 rounded-full bg-[#a0a09e]" aria-hidden="true"></span>
+            <a href="{% url 'treino:routine_create' %}" class="inline-flex items-center min-h-[2.75rem] py-3 hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Nova ficha</a>
         </div>
 
         <div class="grid lg:grid-cols-12 gap-8">

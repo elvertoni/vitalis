@@ -214,6 +214,16 @@ Botão primário: `rounded-full px-8 py-5`, ícone `arrow-right` que desliza no 
 `rounded-[2rem]`. Container: `max-w-screen-xl` ou `2xl` com `px-6 md:px-12`. Seção: `py-32`.
 Tipografia Inter, peso máximo 600. Ícones Lucide com `stroke-[1.5]`.
 
+### Navegação: o menu mobile é irmão do `<nav>`, nunca filho
+
+`templates/base.html` tem `backdrop-blur-md` na barra, e `backdrop-filter` cria **bloco de
+contenção para `position: fixed`**. Com o `#mobile-menu` dentro do `<nav>`, o `inset-0` media
+a barra de 96px em vez da janela e metade dos itens nascia fora da tela, sem erro nenhum
+(D-051). Se algum dia o menu for movido de volta para dentro da barra, o bug volta inteiro.
+Os itens são **linhas de largura total de 56px**, não pílulas: pílula no design system
+significa ação primária, e navegação não disputa com "Registrar treino". `h-[100dvh]`, não
+`100vh` — a barra de URL do Safari iOS come a diferença.
+
 ### Treino: a tela de registro e o CRUD são caminhos diferentes
 
 `/treino/registrar/` é o caminho semanal (D-048): escolhe a divisão e grava o treino inteiro
