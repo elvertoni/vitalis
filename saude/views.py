@@ -188,6 +188,46 @@ class ExamAttachmentView(LoginRequiredMixin, View):
         return FileResponse(exam.attachment.open('rb'), filename=f'{clean_name}{ext}')
 
 
+class BiomarkersView(LoginRequiredMixin, TemplateView):
+    """Visual laboratory biomarkers dashboard with reference gauges, history and flags."""
+
+    template_name = 'saude/biomarkers.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['metrolab_exam'] = (
+            # [dado clinico removido do historico - D-061]
+            or Exam.objects.filter(user=user, attachment__isnull=False).first()
+        )
+
+        def calc_pos(v, min_v, max_v):
+            if max_v == min_v:
+                return 50.0
+            p = ((float(v) - float(min_v)) / (float(max_v) - float(min_v))) * 100.0
+            return max(2.0, min(98.0, p))
+
+        panels_data = []  # [dado clinico removido do historico - D-061]
+
+        for panel in panels_data:
+            for item in panel['exames']:
+                item['pos_v'] = calc_pos(item['v'], item['min'], item['max'])
+                item['pos_refA'] = calc_pos(item['refA'], item['min'], item['max'])
+                item['pos_refB'] = calc_pos(item['refB'], item['min'], item['max'])
+                item['width_ref'] = max(2.0, item['pos_refB'] - item['pos_refA'])
+                if 'ant' in item:
+                    item['pos_ant'] = calc_pos(item['ant'], item['min'], item['max'])
+                    item['track_left'] = min(item['pos_ant'], item['pos_v'])
+                    item['track_width'] = max(1.0, abs(item['pos_v'] - item['pos_ant']))
+                    diff_pct = ((item['v'] - item['ant']) / item['ant']) * 100.0
+                    item['diff_pct_formatted'] = f'{diff_pct:+.1f}%'
+
+        context['panels'] = panels_data
+        context['imc'] = None
+        context['imc_pos'] = 0
+        return context
+
+
 # ── Consultas ────────────────────────────────────────────────────────────────
 
 

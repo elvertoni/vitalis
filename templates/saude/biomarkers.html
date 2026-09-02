@@ -1,0 +1,245 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Painel de Biomarcadores · Vitalis{% endblock %}
+
+{% block head_extra %}
+<style>
+    .gauge-track { position: relative; height: 10px; background-color: #e5e3dc; border-radius: 9999px; overflow: visible; }
+    .gauge-normal-zone { position: absolute; top: 0; bottom: 0; background-color: #d1dfd2; border-radius: 9999px; }
+    .gauge-point { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 9999px; transform: translate(-50%, -50%); box-shadow: 0 1px 3px rgba(0,0,0,0.25); border: 2px solid #ffffff; }
+    .gauge-point.ok { background-color: #4a7c59; }
+    .gauge-point.olho { background-color: #d97706; }
+    .gauge-point.fora { background-color: #dc2626; }
+    .gauge-ghost { position: absolute; top: 50%; width: 8px; height: 8px; border-radius: 9999px; background-color: #9ca3af; transform: translate(-50%, -50%); opacity: 0.8; }
+    .gauge-trail { position: absolute; top: 3px; height: 4px; background: repeating-linear-gradient(90deg, #9ca3af, #9ca3af 3px, transparent 3px, transparent 6px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+
+        {# Cabeçalho da Página #}
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f]">Saúde</span>
+                    <span class="text-sm text-[#5c5c5a]">·</span>
+                    <span class="text-sm font-medium tracking-widest uppercase text-[#5c5c5a]">Laboratório</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-medium tracking-tight text-[#1a1a1a] leading-tight">
+                    Painel de Biomarcadores
+                </h1>
+                <p class="text-lg text-[#5c5c5a] mt-2 max-w-2xl">
+                    # [dado clinico removido do historico - D-061]
+                </p>
+            </div>
+            <div class="flex items-center gap-3 self-start md:self-auto">
+                {% if metrolab_exam and metrolab_exam.attachment %}
+                <a href="{% url 'saude:exam_attachment' metrolab_exam.pk %}" class="inline-flex items-center gap-2 bg-[#5d674f] text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-[#4a523f] transition-colors shadow-sm">
+                    <i data-lucide="file-text" class="w-4 h-4 stroke-[1.5]"></i>
+                    <span>Ver laudo em PDF</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'saude:exam_list' %}" class="border border-[#1a1a1a] text-[#1a1a1a] px-6 py-3 rounded-full text-sm font-medium hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                    Lista de exames
+                </a>
+            </div>
+        </div>
+
+        {# Panorama: IMC e Antropometria #}
+        <div class="grid lg:grid-cols-3 gap-6 mb-12">
+            {# Card IMC #}
+            <div class="lg:col-span-2 bg-white rounded-[2rem] p-8 border border-[#dcdacd] shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-medium tracking-tight text-[#1a1a1a]">Índice de Massa Corporal (IMC)</h2>
+                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
+                        # [dado clinico removido do historico - D-061]
+                    </span>
+                </div>
+                <div class="grid sm:grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 bg-[#f5f4f0] rounded-xl">
+                        <span class="text-xs uppercase text-[#5c5c5a] tracking-wider block">Peso Atual</span>
+                        {# [dado clinico removido do historico - D-061] #}
+                    </div>
+                    <div class="p-4 bg-[#f5f4f0] rounded-xl">
+                        <span class="text-xs uppercase text-[#5c5c5a] tracking-wider block">Altura</span>
+                        {# [dado clinico removido do historico - D-061] #}
+                    </div>
+                    <div class="p-4 bg-[#f5f4f0] rounded-xl">
+                        <span class="text-xs uppercase text-[#5c5c5a] tracking-wider block">IMC Calculado</span>
+                        {# [dado clinico removido do historico - D-061] #}
+                    </div>
+                </div>
+
+                {# Régua Visual de IMC #}
+                <div class="mt-4">
+                    <div class="flex justify-between text-xs text-[#5c5c5a] mb-2 font-mono">
+                        <span>18.5 (Normal)</span>
+                        <span>25.0 (Sobrepeso)</span>
+                        <span>30.0 (Obesidade)</span>
+                        <span>35.0 (Grau II)</span>
+                    </div>
+                    <div class="relative h-4 rounded-full bg-gradient-to-r from-emerald-200 via-amber-200 to-rose-300 w-full overflow-visible">
+                        <div class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-[#1a1a1a] border-2 border-white rounded-full shadow-md" style="left: {{ imc_pos }}%;">
+                            {# [dado clinico removido do historico - D-061] #}
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-xs text-[#5c5c5a] mt-3">
+                        {# [dado clinico removido do historico - D-061] #}
+                    </div>
+                </div>
+            </div>
+
+            {# Card Alertas Médicos Imediatos #}
+            <div class="bg-[#e8eae4] rounded-[2rem] p-8 border border-[#dcdacd] flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-700 stroke-[1.5]"></i>
+                        <h2 class="text-xl font-medium tracking-tight text-[#1a1a1a]">Pontos de Atenção</h2>
+                    </div>
+                    <ul class="space-y-3 text-sm text-[#1a1a1a]">
+                        <li class="flex items-start gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-600 mt-2 shrink-0"></span>
+                            {# [dado clinico removido do historico - D-061] #}
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600 mt-2 shrink-0"></span>
+                            {# [dado clinico removido do historico - D-061] #}
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-2 shrink-0"></span>
+                            {# [dado clinico removido do historico - D-061] #}
+                        </li>
+                    </ul>
+                </div>
+                <div class="mt-6 pt-4 border-t border-[#dcdacd]">
+                    {# [dado clinico removido do historico - D-061] #}
+                </div>
+            </div>
+        </div>
+
+        {# Painéis de Biomarcadores com Réguas Laboratoriais #}
+        <div class="space-y-8">
+            {% for panel in panels %}
+            <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-[#dcdacd] gap-2">
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full 
+                            {% if panel.tubo == 'edta' %}bg-purple-600
+                            {% elif panel.tubo == 'fluoreto' %}bg-slate-500
+                            {% else %}bg-amber-600{% endif %}">
+                        </span>
+                        <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a]">{{ panel.titulo }}</h2>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider bg-[#f5f4f0] text-[#5c5c5a] border border-[#dcdacd]">
+                            {{ panel.badge }}
+                        </span>
+                    </div>
+                    <span class="text-xs text-[#5c5c5a]">{{ panel.material }}</span>
+                </div>
+
+                <div class="divide-y divide-[#f5f4f0]">
+                    {% for exam in panel.exames %}
+                    <div class="py-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                        {# Nome do Exame #}
+                        <div class="md:col-span-4">
+                            <span class="text-base font-medium text-[#1a1a1a] block">{{ exam.nome }}</span>
+                            {% if exam.obs %}
+                            <span class="text-xs text-[#5c5c5a] block mt-0.5">{{ exam.obs }}</span>
+                            {% endif %}
+                            {% if exam.ant %}
+                            <span class="text-xs text-[#5c5c5a] block mt-0.5 font-mono">
+                                # [dado clinico removido do historico - D-061]
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        {# Régua Visual #}
+                        <div class="md:col-span-5 px-2">
+                            <div class="gauge-track">
+                                {# Faixa normal de referência #}
+                                <span class="gauge-normal-zone" style="left: {{ exam.pos_refA }}%; width: {{ exam.width_ref }}%;"></span>
+
+                                {# Rastro comparativo com exame anterior #}
+                                {% if exam.ant %}
+                                <span class="gauge-trail" style="left: {{ exam.track_left }}%; width: {{ exam.track_width }}%;"></span>
+                                <span class="gauge-ghost" style="left: {{ exam.pos_ant }}%;" title="Exame anterior"></span>
+                                {% endif %}
+
+                                {# Ponto do resultado atual #}
+                                <span class="gauge-point {{ exam.st }}" style="left: {{ exam.pos_v }}%;" title="{{ exam.v }} {{ exam.un }}"></span>
+                            </div>
+                            <div class="flex justify-between text-[11px] text-[#5c5c5a] mt-1.5 font-mono">
+                                <span>Ref: {{ exam.refA }}</span>
+                                <span>{{ exam.refB }} {{ exam.un }}</span>
+                            </div>
+                        </div>
+
+                        {# Leitura e Tag de Status #}
+                        <div class="md:col-span-3 flex items-center justify-between md:justify-end gap-3 text-right">
+                            <div>
+                                <span class="text-lg font-semibold text-[#1a1a1a] font-mono">{{ exam.v }}</span>
+                                <span class="text-xs text-[#5c5c5a] ml-1">{{ exam.un }}</span>
+                            </div>
+                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider
+                                {% if exam.st == 'ok' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+                                {% elif exam.st == 'olho' %}bg-amber-50 text-amber-800 border border-amber-200
+                                {% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
+                                {% if exam.st == 'ok' %}Na meta
+                                {% elif exam.st == 'olho' %}Atenção
+                                {% else %}Fora da meta{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# Seção de Dúvidas para Levar ao Médico #}
+        <div class="mt-12 bg-white rounded-[2rem] p-8 border border-[#dcdacd]">
+            <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a] mb-6">Pontos de Alinhamento com a Equipe Médica</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="p-5 rounded-2xl bg-[#f5f4f0] border border-[#dcdacd]">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-700 stroke-[1.5]"></i>
+                        {# [dado clinico removido do historico - D-061] #}
+                    </div>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed">
+                        # [dado clinico removido do historico - D-061]
+                    </p>
+                </div>
+                <div class="p-5 rounded-2xl bg-[#f5f4f0] border border-[#dcdacd]">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="git-compare" class="w-4 h-4 text-[#5d674f] stroke-[1.5]"></i>
+                        {# [dado clinico removido do historico - D-061] #}
+                    </div>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed">
+                        # [dado clinico removido do historico - D-061]
+                    </p>
+                </div>
+                <div class="p-5 rounded-2xl bg-[#f5f4f0] border border-[#dcdacd]">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="dumbbell" class="w-4 h-4 text-[#5d674f] stroke-[1.5]"></i>
+                        <span class="text-base font-medium text-[#1a1a1a]">Preservação de Massa Magra</span>
+                    </div>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed">
+                        # [dado clinico removido do historico - D-061]
+                    </p>
+                </div>
+                <div class="p-5 rounded-2xl bg-[#f5f4f0] border border-[#dcdacd]">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="droplet" class="w-4 h-4 text-[#5d674f] stroke-[1.5]"></i>
+                        <span class="text-base font-medium text-[#1a1a1a]">Solicitação de Ferritina</span>
+                    </div>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed">
+                        # [dado clinico removido do historico - D-061]
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

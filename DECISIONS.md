@@ -756,4 +756,15 @@ armazenados e validados visualmente na pasta `backup-vitalis`.
 - **Performance:** novos índices compostos `['user', 'next_return_date']` e `['user', 'scheduled_date']` no PostgreSQL (`saude`); debounce de 10 minutos via cache na chamada `sync_reminders` no `DashboardView`; e otimização das propriedades `top_weight` e `total_reps` em `SessionEntry` para consumir sets já pré-buscados em memória pelo Django sem disparar queries SQL repetidas.
 - **Segurança:** inspeção binária de *magic bytes* em `validate_attachment` para PDF, JPG e PNG; preservação da extensão real do anexo na rota autenticada `ExamAttachmentView`; e rate limiting de 5 requisições/hora por IP no `SignupView`.
 
+### D-058 · Painel Gráfico de Biomarcadores Laboratoriais integrado à Saúde
+**Contexto:** o dossiê médico pessoal do paciente (`medico-seed.json` e pasta `toni/`) contém um painel completo
+# [dado clinico removido do historico - D-061]
+A interface padrão de exames resumia o laudo em um bloco de texto puro, sem permitir ao paciente visualizar sua posição
+frente às faixas de referência e à evolução histórica de forma intuitiva.
+**Decisão:** criada a rota `/saude/biomarcadores/` (`saude:biomarkers`), a view `BiomarkersView` e o template `saude/biomarkers.html`.
+A interface implementa réguas visuais de laboratório proporcionais, marcadores de status ("na meta", "atenção", "fora da meta"),
+# [dado clinico removido do historico - D-061]
+Acesso direto a partir do hub de saúde, da lista de exames e dos detalhes do laudo.
+
+
 

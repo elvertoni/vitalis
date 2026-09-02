@@ -19,6 +19,7 @@ urlpatterns = [
     path('tratamentos/<int:pk>/editar/', views.TreatmentUpdateView.as_view(), name='treatment_update'),
     path('tratamentos/<int:pk>/excluir/', views.TreatmentDeleteView.as_view(), name='treatment_delete'),
 
+    path('biomarcadores/', views.BiomarkersView.as_view(), name='biomarkers'),
     path('exames/', views.ExamListView.as_view(), name='exam_list'),
     path('exames/novo/', views.ExamCreateView.as_view(), name='exam_create'),
     path('exames/<int:pk>/', views.ExamDetailView.as_view(), name='exam_detail'),

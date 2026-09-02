@@ -17,6 +17,7 @@ db.sqlite3
 # Dados médicos reais — ficam fora do git (LGPD, ver DECISIONS.md D-041)
 medico-seed.json
 /medico-data/
+/toni/
 
 # Tooling junk
 .impeccable/

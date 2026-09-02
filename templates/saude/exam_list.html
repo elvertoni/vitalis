@@ -11,10 +11,16 @@
                 <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Saúde</span>
                 <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1]">Exames</h1>
             </div>
-            <a href="{% url 'saude:exam_create' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group self-start">
-                <span class="text-base font-normal tracking-wide">Novo exame</span>
-                <i data-lucide="plus" class="w-5 h-5 stroke-[1.5]"></i>
-            </a>
+            <div class="flex flex-wrap items-center gap-3 self-start md:self-auto">
+                <a href="{% url 'saude:biomarkers' %}" class="inline-flex border border-[#5d674f] text-[#5d674f] px-6 py-4 rounded-full items-center gap-2 hover:bg-[#5d674f] hover:text-white transition-colors">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4 stroke-[1.5]"></i>
+                    <span class="text-sm font-medium">Painel de Biomarcadores</span>
+                </a>
+                <a href="{% url 'saude:exam_create' %}" class="inline-flex bg-[#5d674f] text-white px-8 py-4 rounded-full items-center gap-3 hover:bg-[#4a523f] transition-colors group">
+                    <span class="text-base font-normal tracking-wide">Novo exame</span>
+                    <i data-lucide="plus" class="w-5 h-5 stroke-[1.5]"></i>
+                </a>
+            </div>
         </div>
 
         {% if object_list %}
