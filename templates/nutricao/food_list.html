@@ -22,8 +22,13 @@
             {% for food in object_list %}
             <a href="{{ food.get_absolute_url }}" class="group flex items-center justify-between py-6 hover:bg-[#f5f4f0]/50 transition-colors -mx-4 md:-mx-8 px-4 md:px-8 rounded-xl">
                 <div>
-                    <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a]">{{ food.name }}</h2>
-                    <span class="text-sm text-[#5c5c5a]">por {{ food.portion_base_g }}g</span>
+                    <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] flex items-center gap-2">
+                        {{ food.name }}
+                        {% if food.recipe %}<i data-lucide="chef-hat" class="w-4 h-4 stroke-[1.5] text-[#5d674f]" title="Tem receita"></i>{% endif %}
+                    </h2>
+                    <span class="text-sm text-[#5c5c5a]">
+                        por {{ food.portion_base_g }}g{% if food.unit_weight_g and food.unit_label %} · 1 {{ food.unit_label }} = {{ food.unit_weight_g|floatformat:'-1' }} g{% endif %}
+                    </span>
                 </div>
                 <span class="text-sm text-[#5c5c5a]">{{ food.calories|floatformat:0 }} kcal · {{ food.protein_g|floatformat:0 }}P {{ food.carbs_g|floatformat:0 }}C {{ food.fat_g|floatformat:0 }}G</span>
             </a>

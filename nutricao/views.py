@@ -47,6 +47,10 @@ class NutritionIndexView(LoginRequiredMixin, TemplateView):
         context['today_logs'] = DailyLog.objects.filter(user=user, date=today).select_related('food')
         context['latest_weight'] = WeightLog.objects.filter(user=user).order_by('-date').first()
 
+        # As receitas ficavam a quatro cliques (dieta → refeição → alimento). Preparo é
+        # coisa que se consulta na hora de montar o prato, então aparece no hub.
+        context['recipes'] = Food.objects.filter(user=user).exclude(recipe='').order_by('name')
+
         # Comparador de cardápios: a dieta ativa contra a anterior, ambas do próprio dono.
         # Sem duas dietas cadastradas o bloco simplesmente não aparece (``plans``).
         context['plan_comparison'] = plan_comparison(

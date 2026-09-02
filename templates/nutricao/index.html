@@ -70,6 +70,30 @@
             {% endif %}
         </div>
 
+        {# Receitas do próprio cadastro: o que é preparado em casa e se consulta na hora #}
+        {% if recipes %}
+        <div class="bg-[#e8eae4] rounded-[2rem] p-8 border border-[#dcdacd] mt-8">
+            <div class="flex items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="chef-hat" class="w-5 h-5 stroke-[1.5] text-[#5d674f]"></i>
+                    <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a]">Receitas</h2>
+                </div>
+                <a href="{% url 'nutricao:food_list' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Todos os alimentos</a>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+                {% for food in recipes %}
+                <a href="{{ food.get_absolute_url }}" class="block bg-white rounded-2xl p-6 border border-[#dcdacd] hover:shadow-md transition-shadow">
+                    <div class="flex items-baseline justify-between gap-3 mb-2">
+                        <h3 class="text-base font-medium text-[#1a1a1a]">{{ food.name }}</h3>
+                        <span class="text-xs text-[#5c5c5a] shrink-0 font-mono">{{ food.calories|floatformat:0 }} kcal · {{ food.protein_g|floatformat:0 }}g P</span>
+                    </div>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed">{{ food.recipe|truncatechars:150 }}</p>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         {# Comparador de cardápios: a dieta ativa contra a anterior, tudo lido das dietas do dono #}
         {% if plan_comparison %}
         <div class="bg-white rounded-[2rem] p-8 border border-[#dcdacd] mt-8 shadow-sm">
