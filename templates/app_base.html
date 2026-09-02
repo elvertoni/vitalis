@@ -14,6 +14,10 @@
     <a href="{% url 'treino:index' %}" {% if namespace == 'treino' %}aria-current="page"{% endif %} class="text-sm hover:text-[#5d674f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4 transition-colors {% if namespace == 'treino' %}text-[#5d674f] font-medium underline underline-offset-8 decoration-2{% else %}text-[#1a1a1a] font-normal{% endif %}">Treino</a>
     <a href="{% url 'nutricao:index' %}" {% if namespace == 'nutricao' %}aria-current="page"{% endif %} class="text-sm hover:text-[#5d674f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4 transition-colors {% if namespace == 'nutricao' %}text-[#5d674f] font-medium underline underline-offset-8 decoration-2{% else %}text-[#1a1a1a] font-normal{% endif %}">Nutrição</a>
     <a href="{% url 'lembretes:index' %}" {% if namespace == 'lembretes' %}aria-current="page"{% endif %} class="text-sm hover:text-[#5d674f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4 transition-colors {% if namespace == 'lembretes' %}text-[#5d674f] font-medium underline underline-offset-8 decoration-2{% else %}text-[#1a1a1a] font-normal{% endif %}">Lembretes</a>
+    <span class="w-px h-4 bg-[#dcdacd]" aria-hidden="true"></span>
+    <a href="{% url 'assistente:index' %}" {% if namespace == 'assistente' %}aria-current="page"{% endif %} class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all min-h-[36px] {% if namespace == 'assistente' %}bg-[#5d674f] text-white shadow-sm{% else %}bg-[#5d674f]/10 text-[#5d674f] hover:bg-[#5d674f] hover:text-white border border-[#5d674f]/20{% endif %} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 stroke-[2]"></i> Vitalis AI
+    </a>
     {% endwith %}
 {% endblock %}
 

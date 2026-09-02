@@ -52,9 +52,34 @@
                         <a href="{% url 'saude:medication_create' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="pill" class="w-4 h-4 stroke-[1.5]"></i>Novo medicamento</a>
                         <a href="{% url 'nutricao:weightlog_create' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="scale" class="w-4 h-4 stroke-[1.5]"></i>Registrar peso</a>
                         <a href="{% url 'treino:session_create' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="dumbbell" class="w-4 h-4 stroke-[1.5]"></i>Sessão avulsa</a>
+                        <span class="border-t border-[#dcdacd] my-1"></span>
+                        <a href="{% url 'assistente:index' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[#5d674f] hover:bg-[#5d674f]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f]"><i data-lucide="sparkles" class="w-4 h-4 stroke-[1.5]"></i>Vitalis AI (Copiloto)</a>
                     </div>
                 </details>
             </div>
+        </section>
+
+        {# ── Cartão Copiloto Vitalis AI ─ #}
+        <section class="bg-gradient-to-br from-[#e8eae4] to-[#f5f4f0] rounded-[2rem] border border-[#dcdacd] p-8 md:p-10 mb-12 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden shadow-sm" aria-labelledby="ai-copilot-title">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-[#5d674f] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                    <i data-lucide="sparkles" class="w-6 h-6 stroke-[1.5]"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xs font-semibold uppercase tracking-widest text-[#5d674f]">Inteligência Artificial</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#5d674f]/10 text-[#5d674f] border border-[#5d674f]/20">Gemini 2.5 Flash</span>
+                    </div>
+                    <h2 id="ai-copilot-title" class="text-2xl md:text-3xl tracking-tight font-medium text-[#1a1a1a]">Vitalis AI · Seu Copiloto de Saúde</h2>
+                    <p class="text-sm md:text-base text-[#5c5c5a] mt-1 max-w-2xl leading-relaxed">
+                        Envie fotos de receitas e laudos em PDF, tire dúvidas sobre seu hematócrito e exames, ajuste receitas alimentares e planeje sua hidratação e treinos com base no seu prontuário real.
+                    </p>
+                </div>
+            </div>
+            <a href="{% url 'assistente:index' %}" class="group inline-flex items-center gap-3 bg-[#1a1a1a] text-white px-8 py-4 rounded-full text-base font-medium hover:bg-[#5d674f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-all shrink-0 self-start lg:self-center shadow-sm">
+                <span>Abrir Vitalis AI</span>
+                <i data-lucide="arrow-right" class="w-5 h-5 stroke-[1.5] group-hover:translate-x-1 motion-reduce:transform-none transition-transform"></i>
+            </a>
         </section>
 
         {# ── Panorama: contexto das três áreas — leitura, não chamada para ação ─ #}
