@@ -375,26 +375,25 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 - **Content-Security-Policy (CSP):** Injetado por `core.middleware.SecurityHeadersMiddleware` em todas as respostas HTTP.
 - **Fail-Closed:** Em produção sem `DJANGO_SECRET_KEY`, o app recusa inicializar. Sem `EMAIL_HOST` em produção, e-mails usam `dummy.EmailBackend` para evitar vazamento de tokens em stdout/logs.
 
-## LGPD
+## LGPD e Portabilidade
 
-Anexo de exame é dado sensível. `MEDIA_URL` só é servido pelo Django com `DEBUG=True`; em
-produção o laudo tem de sair por view autenticada que confere o dono, nunca por URL direta.
-Dossiê médico real fora do git (`medico-data/`, `medico-seed.json` — D-041).
+- **Portabilidade de Dados (Art. 18):** Implementada a rota autenticada `/contas/exportar-dados/` (`ExportUserDataView`) que gera download direto em `.zip` contendo `prontuario_vitalis.json` com o histórico clínico/antropométrico completo e os laudos anexados em PDF na pasta `laudos/` (D-059).
+- **Dados Sensíveis:** Anexos de exame são dados de saúde sensíveis. `MEDIA_URL` só é servido pelo Django com `DEBUG=True`; em produção o laudo tem de sair por view autenticada (`ExamAttachmentView`) que confere a titularidade do dono. Dossiês reais vivem fora do git (`medico-data/`, `medico-seed.json`, `/toni/` — D-041, D-058).
+
+## Módulos Clínicos Recentes
+
+- **Biomarcadores Laboratoriais (`/saude/biomarcadores/`):** Painel gráfico com réguas de referência proporcionais, rastro comparativo com exames anteriores e delta percentual, régua de IMC e alertas clínicos prioritários (D-058).
+# [dado clinico removido do historico - D-061]
+- **Acessibilidade Impeccable (D-060):** Regra global `@media (prefers-reduced-motion: reduce)` em `base.html`, injeção automática de `aria-required`, `aria-invalid` e `aria-describedby` em todos os formulários via `StyledFormMixin`, e touch targets mínimos de 44px em botões de ação e exclusão.
 
 ## O que ainda não existe
 
-O roadmap S1–S6 do PRD está entregue, o que não quer dizer que tudo o que se possa esperar
-do produto esteja no código. Antes de "corrigir" alguma destas, saiba que é lacuna conhecida:
+O roadmap S1–S6 do PRD e as extensões clínicas estão entregues. As lacunas conhecidas remanescentes são:
 
-- **Exclusão e exportação completas da conta (LGPD).** Não implementadas. `accounts/urls.py`
-  tem perfil, acesso e senha — não tem `delete_account` nem export. Ao construir: a exclusão
-  cai em `user.delete()` com CASCADE por toda a base, e é exatamente o cenário que a regra de
-  `PROTECT` do D-021 protege — verifique que nenhum `PROTECT` novo entre models do mesmo dono
-  entrou no caminho.
-- **Pagamento real.** O `MercadoPagoGateway` nunca rodou contra o Mercado Pago; ver seção
-  Billing.
-- **Catálogo de alimentos de referência (TACO).** `Food` é 100% cadastro do usuário (D-025).
+- **Exclusão completa da conta (LGPD).** A exportação está entregue (`/contas/exportar-dados/`), mas a exclusão irreversível da conta (`delete_account`) ainda não foi implementada. Ao construir: a exclusão cai em `user.delete()` com CASCADE por toda a base (D-021).
+- **Pagamento real.** O `MercadoPagoGateway` nunca rodou contra o Mercado Pago de vendedor real; opera com checkout simulado.
+- **Catálogo de alimentos de referência (TACO).** `Food` é cadastro do usuário (D-025).
 - **Lembrete automático de treino.** Decisão explícita de não ter (D-027).
-- **Envio por WhatsApp/push.** `Profile.notification_channel` aceita mais valores, mas só
-  e-mail é enviado (D-028).
+- **Instância WhatsApp conectada.** A integração Evolution API existe no código, mas o envio ativo em produção requer chip conectado (D-028).
+
 
