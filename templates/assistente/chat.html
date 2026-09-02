@@ -198,12 +198,18 @@
         input.focus();
     }
 
+    function refreshIcons() {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+        }
+    }
+
     function handleFileSelected(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
             document.getElementById('attachment-filename').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
             document.getElementById('attachment-preview').classList.remove('hidden');
-            lucide.createIcons();
+            refreshIcons();
         }
     }
 
@@ -286,7 +292,7 @@
         `;
         container.appendChild(loadingBubble);
         scrollToBottom();
-        lucide.createIcons();
+        refreshIcons();
 
         // Envia FormData para a view
         const formData = new FormData(this);
@@ -331,7 +337,7 @@
                 `;
                 container.appendChild(replyBubble);
                 scrollToBottom();
-                lucide.createIcons();
+                refreshIcons();
             } else {
                 alert(data.error || 'Ocorreu um erro.');
             }
