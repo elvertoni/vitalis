@@ -837,7 +837,7 @@ D-058, sem erro nenhum no servidor. Número que entra em CSS sai por `|stringfor
 Vale para qualquer largura, posição ou porcentagem calculada em template.
 
 **A mesma poda alcançou o ciclo de medicação.** `Medication.cycle_status` decidia a fase
-# [dado clinico removido do historico - D-061]
+comparando o **nome** do remédio com uma lista fixa no código e assumindo 30 dias: regra de uma
 pessoa escrita no código, que nunca funcionaria para outra conta nem para o mesmo remédio em
 outro protocolo. Virou dado: `cycle_daily_days` e `cycle_alternates_after`, ambos no
 formulário e no `seed_medico`. Sem os campos preenchidos a propriedade devolve `None` e a

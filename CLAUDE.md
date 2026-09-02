@@ -459,7 +459,8 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 - **Ciclo de medicação em fases (`saude.Medication.cycle_status`):** calcula a fase do dia
   (fase diária "dia N de M" e depois "hoje toma"/"hoje pula") a partir de dois campos da
   linha — `cycle_daily_days` e `cycle_alternates_after` (D-059, generalizado em D-061). Até
-  # [dado clinico removido do historico - D-061]
+  D-061 a regra casava o **nome** do remédio numa lista fixa, o que só valia para um
+  remédio de uma pessoa;
   agora o esquema é dado, editável no formulário. Remédio contínuo devolve `None` e a tela
   não mostra selo.
 - **Acessibilidade Impeccable (D-060):** Regra global `@media (prefers-reduced-motion: reduce)` em `base.html`, injeção automática de `aria-required`, `aria-invalid` e `aria-describedby` em todos os formulários via `StyledFormMixin`, e touch targets mínimos de 44px em botões de ação e exclusão.
