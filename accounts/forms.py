@@ -42,6 +42,16 @@ class StyledFormMixin:
             auto_id = f'id_{name}'
             if field.required:
                 widget.attrs.setdefault('aria-required', 'true')
+            # O "---------" do Django não diz nada a quem lê e o leitor de tela soletra traço.
+            # Campo obrigatório pede uma escolha; opcional avisa que dá para deixar sem.
+            blank_label = 'Selecione' if field.required else 'Não informado'
+            if isinstance(field, forms.ModelChoiceField):
+                if field.empty_label is not None:
+                    field.empty_label = blank_label
+            elif isinstance(field, forms.ChoiceField):
+                choices = list(field.choices)
+                if choices and choices[0] == ('', '---------'):
+                    field.choices = [('', blank_label), *choices[1:]]
             if field.help_text:
                 existing_desc = widget.attrs.get('aria-describedby', '')
                 widget.attrs['aria-describedby'] = f'{auto_id}_help {existing_desc}'.strip()
