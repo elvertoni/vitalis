@@ -223,8 +223,14 @@ class Meal(OwnedModel):
 
     @property
     def macros(self):
+        # Quem lista dietas já faz prefetch de `meals__items__food`. Refazer a consulta aqui
+        # jogava esse cache fora: uma ida ao banco por refeição, a cada macro lido na tela.
+        if 'items' in getattr(self, '_prefetched_objects_cache', {}):
+            items = self.items.all()
+        else:
+            items = self.items.select_related('food')
         total = Macros.zero()
-        for item in self.items.select_related('food').all():
+        for item in items:
             total = total + item.macros
         return total
 

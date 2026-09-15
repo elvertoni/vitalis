@@ -63,6 +63,21 @@ def channels_for(user, category):
     from .models import ChannelPreference
 
     pref = ChannelPreference.objects.filter(user=user, category=category).first()
+    return _channels_from(pref, category)
+
+
+def channels_by_category(user, categories=CONFIGURABLE_CATEGORIES):
+    """The same answer as ``channels_for`` for several categories, in a single query."""
+    from .models import ChannelPreference
+
+    prefs = {
+        pref.category: pref
+        for pref in ChannelPreference.objects.filter(user=user, category__in=categories)
+    }
+    return {category: _channels_from(prefs.get(category), category) for category in categories}
+
+
+def _channels_from(pref, category):
     if pref is None:
         return DEFAULT_CHANNELS.get(category, NO_CHANNEL)
     chosen = set()

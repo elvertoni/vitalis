@@ -112,6 +112,10 @@ class MuscleGroupListView(OwnerListView):
     model = MuscleGroup
     template_name = 'treino/muscle_group_list.html'
 
+    def get_queryset(self):
+        # Consulta com GROUP BY ignora o `Meta.ordering`; sem o order_by a paginação embaralha.
+        return super().get_queryset().annotate(exercise_count=Count('exercises')).order_by('name')
+
 
 class MuscleGroupDetailView(OwnerDetailView):
     model = MuscleGroup

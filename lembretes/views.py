@@ -191,8 +191,9 @@ class NotificationPreferenceView(LoginRequiredMixin, View):
         from lembretes import notifications
 
         rows = []
+        chosen = notifications.channels_by_category(user)
         for category in notifications.CONFIGURABLE_CATEGORIES:
-            channels = notifications.channels_for(user, category)
+            channels = chosen[category]
             rows.append({
                 'value': category,
                 'label': Reminder.Category(category).label,
