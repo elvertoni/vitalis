@@ -11,13 +11,22 @@ logger = logging.getLogger(__name__)
 GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
 GEMINI_FALLBACK_MODEL = 'gemini-flash-latest'
 
+# Duas tentativas cabem dentro do `--timeout 60` do gunicorn (entrypoint.sh). Com 45 s cada,
+# um modelo lento seguido do fallback matava o worker antes de a resposta sair.
+REQUEST_TIMEOUT_SECONDS = 25
+
+
+def _number(value):
+    """Decimal without trailing zeros or scientific notation: 53.700 -> 53.7, 100 -> 100."""
+    return format(value.normalize(), 'f')
+
 
 def build_clinical_context(user):
     """
     Assembles a comprehensive, personalized clinical and lifestyle prompt
     based on the user's active records in Vitalis.
     """
-    from saude.models import ClinicalNote, Doctor, Treatment, Exam, Medication
+    from saude.models import ClinicalNote, Doctor, Treatment, Exam, LabResult, Medication
     from nutricao.models import Diet, WeightLog
     from nutricao.plans import bmi_snapshot
     from treino.models import WorkoutRoutine
@@ -101,6 +110,21 @@ def build_clinical_context(user):
         for n in notes:
             parts.append(f"- [{n.get_kind_display()}] {n.title}: {n.body}")
 
+    # 4c. Biomarcadores fora da meta: valor, unidade e a faixa do laboratório que emitiu o
+    # laudo. Sem isso a IA só enxergava o resumo em texto de cada exame.
+    flagged = list(
+        LabResult.objects.filter(user=user)
+        .exclude(status=LabResult.Status.OK)
+        .order_by('status', 'name')
+    )
+    if flagged:
+        parts.append("\n--- BIOMARCADORES FORA DA META OU EM ATENÇÃO ---")
+        for r in flagged:
+            parts.append(
+                f"- {r.name}: {_number(r.value)} {r.unit} "
+                f"(referência {_number(r.ref_low)} a {_number(r.ref_high)}; {r.get_status_display()})"
+            )
+
     # 5. Exames Recentes e Biomarcadores
     exams = Exam.objects.filter(user=user).order_by('-requested_date')[:5]
     if exams.exists():
@@ -158,15 +182,16 @@ def call_gemini_api(api_key, messages_history, system_instruction, attachment_by
     last_error = None
 
     for model_name in models_to_try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+        # A chave vai no cabeçalho, não na URL: URL acaba em log de proxy e em mensagem de erro.
         req = urllib.request.Request(
             url,
             data=data_json,
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json", "x-goog-api-key": api_key}
         )
 
         try:
-            with urllib.request.urlopen(req, timeout=45) as response:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS) as response:
                 res_body = response.read().decode('utf-8')
                 res_data = json.loads(res_body)
                 candidates = res_data.get('candidates', [])
@@ -176,13 +201,14 @@ def call_gemini_api(api_key, messages_history, system_instruction, attachment_by
                         return parts_out[0].get('text', '')
                 return "Não foi possível extrair uma resposta válida do modelo."
         except urllib.error.HTTPError as e:
-            err_msg = e.read().decode('utf-8', errors='ignore')
-            logger.warning(f"Erro na chamada do modelo {model_name}: {e.code} - {err_msg}")
-            last_error = err_msg
+            err_msg = e.read().decode('utf-8', errors='ignore')[:500]
+            logger.warning('Gemini %s respondeu %s: %s', model_name, e.code, err_msg)
+            last_error = f'HTTP {e.code}'
             continue
         except Exception as ex:
-            logger.error(f"Exceção ao chamar {model_name}: {ex}")
-            last_error = str(ex)
+            logger.warning('Gemini %s falhou: %s', model_name, ex)
+            last_error = type(ex).__name__
             continue
 
-    raise RuntimeError(f"Erro ao comunicar com o Google AI Studio: {last_error}")
+    # A mensagem vai para o log do servidor; a pessoa recebe um texto próprio da view.
+    raise RuntimeError(f"Nenhum modelo do Gemini respondeu ({last_error}).")

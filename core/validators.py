@@ -58,5 +58,14 @@ def attachment_upload_path(instance, filename):
     the exam type, and the stored path should not leak either. Access still goes through
     an authenticated view; the random name is the second lock, not the first.
     """
+    return _owned_upload_path('exams', instance, filename)
+
+
+def chat_attachment_upload_path(instance, filename):
+    """Same unguessable layout for files sent to the assistant: they are health documents too."""
+    return _owned_upload_path('assistente', instance, filename)
+
+
+def _owned_upload_path(folder, instance, filename):
     extension = Path(filename).suffix.lower()
-    return f'exams/{instance.user_id}/{uuid.uuid4().hex}{extension}'
+    return f'{folder}/{instance.user_id}/{uuid.uuid4().hex}{extension}'

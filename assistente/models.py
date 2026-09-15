@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from core.models import OwnedModel
+from core.validators import chat_attachment_upload_path, validate_attachment
 
 
 class Conversation(OwnedModel):
@@ -39,10 +40,11 @@ class Message(OwnedModel):
     content = models.TextField('conteúdo')
     attachment = models.FileField(
         'anexo',
-        upload_to='assistente/%Y/%m/',
+        upload_to=chat_attachment_upload_path,
+        validators=[validate_attachment],
         null=True,
         blank=True,
-        help_text='PDF ou imagem de exame, receita ou refeição.',
+        help_text='PDF, JPG ou PNG, até 10 MB.',
     )
     attachment_name = models.CharField('nome do anexo', max_length=255, blank=True)
     created_at = models.DateTimeField('enviada em', auto_now_add=True)
