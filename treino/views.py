@@ -605,7 +605,7 @@ class SessionRunView(LoginRequiredMixin, View):
         # da semana com um treino que não aconteceu.
         if not session.entries.exists():
             session.delete()
-            messages.info(request, 'Nenhuma série registrada — a sessão foi descartada.')
+            messages.info(request, 'Nenhuma série registrada: a sessão foi descartada.')
             if request.POST.get('finish'):
                 return redirect('treino:session_run_pick')
             return redirect('treino:session_run', pk=self.day.pk)

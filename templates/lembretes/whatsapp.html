@@ -114,7 +114,7 @@
                 <div class="mb-8">
                     <span class="text-sm font-medium tracking-widest uppercase text-[#5c5c5a] block mb-2">Seu telefone</span>
                     <p class="text-base {% if profile.phone %}text-[#1a1a1a]{% else %}text-[#5c5c5a]{% endif %}">
-                        {{ profile.phone|default:'Não informado — sem ele, o aviso vai por e-mail.' }}
+                        {{ profile.phone|default:'Não informado. Sem ele, o aviso vai por e-mail.' }}
                     </p>
                 </div>
 

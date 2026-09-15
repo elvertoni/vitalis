@@ -136,7 +136,7 @@ irmao da barra, o menu volta a medir a janela inteira.
             </div>
         </div>
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-8">
-            <p class="text-sm text-[#1a1a1a] max-w-2xl">O Vitalis organiza os seus registros e envia lembretes — não substitui o acompanhamento de um profissional de saúde. Em emergência, procure atendimento médico.</p>
+            <p class="text-sm text-[#1a1a1a] max-w-2xl">O Vitalis organiza os seus registros e envia lembretes. Não substitui o acompanhamento de um profissional de saúde. Em emergência, procure atendimento médico.</p>
             <span class="text-sm text-[#5c5c5a] shrink-0">&copy; {% now "Y" %} Vitalis</span>
         </div>
     </div>
@@ -237,6 +237,7 @@ irmao da barra, o menu volta a medir a janela inteira.
 </script>
 {% block scripts %}{% endblock %}
 
+{% block install_prompt %}
 {# Convite de instalar: some sozinho fora do celular, quando já está instalado ou já foi dispensado. #}
 <div id="install-app" hidden role="dialog" aria-labelledby="install-app-title" aria-describedby="install-app-hint" class="fixed inset-x-4 bottom-4 pb-[env(safe-area-inset-bottom,0px)] z-[60] md:hidden">
     <div class="bg-[#1a1a1a] text-white rounded-[1.5rem] p-5 shadow-xl border border-white/10 flex items-start gap-4">
@@ -253,6 +254,7 @@ irmao da barra, o menu volta a medir a janela inteira.
         </div>
     </div>
 </div>
+{% endblock %}
 
 <script>
     (function () {
