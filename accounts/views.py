@@ -1,5 +1,7 @@
 """Authentication and account views. All class based, all on native Django auth."""
 
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -174,6 +176,8 @@ class ExportUserDataView(LoginRequiredMixin, View):
             Medication,
             Treatment,
         )
+        from django.db.models import Count
+        from assistente.models import Conversation, Message
         from treino.models import WorkoutRoutine, WorkoutSession
         from nutricao.models import Food, Diet, DailyLog, WeightLog
 
@@ -239,7 +243,7 @@ class ExportUserDataView(LoginRequiredMixin, View):
                     'next_return_date': str(a.next_return_date) if a.next_return_date else None,
                     'notes': a.notes,
                 }
-                for a in Appointment.objects.filter(user=user)
+                for a in Appointment.objects.filter(user=user).select_related('doctor')
             ],
             'exams': [
                 {
@@ -251,7 +255,7 @@ class ExportUserDataView(LoginRequiredMixin, View):
                     'result_summary': e.result_summary,
                     'has_attachment': bool(e.attachment),
                 }
-                for e in Exam.objects.filter(user=user)
+                for e in Exam.objects.filter(user=user).select_related('doctor')
             ],
             # Resultados de laboratório: o número medido e a faixa contra a qual ele foi
             # lido. Sem a faixa, o valor exportado não diz se estava dentro ou fora.
@@ -310,9 +314,28 @@ class ExportUserDataView(LoginRequiredMixin, View):
                     'date': str(s.date),
                     'morning_after': s.morning_after,
                     'notes': s.notes,
-                    'total_entries': s.entries.count(),
+                    'total_entries': s.entry_count,
                 }
-                for s in WorkoutSession.objects.filter(user=user).order_by('-date')[:50]
+                for s in WorkoutSession.objects.filter(user=user)
+                .annotate(entry_count=Count('entries'))
+                .order_by('-date')[:50]
+            ],
+            # O que a pessoa perguntou ao Vitalis AI e o que ouviu de volta também é dado dela.
+            'assistant_conversations': [
+                {
+                    'title': conversation.title,
+                    'created_at': conversation.created_at.isoformat(),
+                    'messages': [
+                        {
+                            'role': message.role,
+                            'content': message.content,
+                            'attachment_name': message.attachment_name,
+                            'created_at': message.created_at.isoformat(),
+                        }
+                        for message in conversation.messages.all()
+                    ],
+                }
+                for conversation in Conversation.objects.filter(user=user).prefetch_related('messages')
             ],
         }
 
@@ -321,15 +344,30 @@ class ExportUserDataView(LoginRequiredMixin, View):
             json_data = json.dumps(dossier, indent=2, ensure_ascii=False)
             zf.writestr('prontuario_vitalis.json', json_data)
 
-            for exam in Exam.objects.filter(user=user, attachment__isnull=False):
+            def add_file(field_file, arcname):
+                # Um arquivo que sumiu do disco não derruba a exportação inteira, mas também
+                # não some calado: fica registrado no log de quem cuida do servidor.
                 try:
-                    if exam.attachment and exam.attachment.storage.exists(exam.attachment.name):
-                        ext = Path(exam.attachment.name).suffix or '.pdf'
-                        clean_name = exam.name.replace('/', '_').replace('\\', '_')[:50]
-                        with exam.attachment.open('rb') as f:
-                            zf.writestr(f'laudos/{clean_name}{ext}', f.read())
+                    if field_file and field_file.storage.exists(field_file.name):
+                        with field_file.open('rb') as f:
+                            zf.writestr(arcname, f.read())
                 except Exception:
-                    pass
+                    logging.getLogger(__name__).warning(
+                        'Arquivo %s ficou fora da exportação', field_file.name, exc_info=True
+                    )
+
+            def clean(name):
+                return name.replace('/', '_').replace('\\', '_')[:50]
+
+            # O pk no nome evita que dois exames com o mesmo título se sobrescrevam no zip.
+            for exam in Exam.objects.filter(user=user, attachment__isnull=False):
+                ext = Path(exam.attachment.name).suffix or '.pdf'
+                add_file(exam.attachment, f'laudos/{exam.pk}-{clean(exam.name)}{ext}')
+
+            for message in Message.objects.filter(user=user, attachment__isnull=False).exclude(attachment=''):
+                ext = Path(message.attachment.name).suffix
+                stem = clean(Path(message.attachment_name).stem) or 'anexo'
+                add_file(message.attachment, f'assistente/{message.conversation_id}-{message.pk}-{stem}{ext}')
 
         buf.seek(0)
         filename = f"vitalis_prontuario_{user.pk}_{today:%Y%m%d}.zip"
