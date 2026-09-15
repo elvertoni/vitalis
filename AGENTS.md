@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Vitalis is a Django 6 application. `config/` contains project settings and root URLs; `core/` provides shared models, validators, owner-scoped CRUD views, and mixins. Domain apps are `accounts/`, `saude/`, `treino/`, `nutricao/`, `lembretes/`, and `billing/`. Each app keeps models, forms, views, URLs, admin registration, and migrations together. Shared UI lives in `templates/`; app-specific templates use `templates/<app>/`. Treat `design_system/design-system.html` as the visual source of truth. Consult `PRD-vitalis.md`, `PROMPT-EXEC-vitalis.xml`, and `DECISIONS.md` before changing scope or established architecture.
+Vitalis is a Django 6 application. `config/` contains project settings and root URLs; `core/` provides shared models, validators, owner-scoped CRUD views, and mixins. Domain apps are `accounts/`, `saude/`, `treino/`, `nutricao/`, `lembretes/`, `billing/`, and `assistente/` (Vitalis AI, Gemini copilot). Each app keeps models, forms, views, URLs, admin registration, and migrations together. Shared UI lives in `templates/`; app-specific templates use `templates/<app>/`. Treat `design_system/design-system.html` as the visual source of truth. Consult `PRD-vitalis.md`, `PROMPT-EXEC-vitalis.xml`, and `DECISIONS.md` before changing scope or established architecture.
 
 ## Build, Test, and Development Commands
 
@@ -61,13 +61,14 @@ row, not from matching the drug's name in code.
 
 Any number rendered inside a `style` attribute must go through `|stringformat:'.1f'`:
 `floatformat` localises to a comma in pt-BR, which makes `left: 75,7%` an invalid declaration
-that browsers drop silently.
+that browsers drop silently. The same applies inside `<script>`: a raw `{{ decimal }}` renders
+`85,00` and the whole script dies with `Unexpected number`; use `|stringformat` or `json_script`.
 
 ## Installable on phones (PWA)
 
 `manifest.json` and `sw.js` are routes in `core/urls.py`, not static files: a service worker's
 scope is the directory it was served from, so from `/static/` it would control only static
-assets and the browser would never offer to install (D-062). The worker caches icons only —
+assets and the browser would never offer to install (D-063). The worker caches icons only —
 **never a page**: authenticated responses carry lab reports, weight and medication, and caching
 those on the device undoes the reason attachments are served through an authenticated view.
 Bump the `CACHE` version when changing it. The install banner lives in `templates/base.html`
@@ -78,7 +79,7 @@ sheet instructions because `beforeinstallprompt` never fires there.
 
 `Medication.is_current_on(day)` combines the start/end window, `weekdays` (0-6, Monday = 0;
 **empty means every day**) and the two-phase cycle, so a weekly injection does not raise a
-reminder on the other six days (D-062). Marking weekdays without any `schedule_times` is a
+reminder on the other six days (D-063). Marking weekdays without any `schedule_times` is a
 form error — the generator iterates the times, so the medicine would go silent. The weekday
 chips widget is the only template kept inside an app
 (`saude/templates/saude/widgets/weekday_chips.html`): Django's form renderer uses its own
@@ -109,15 +110,32 @@ protocol typesets without new columns; unstructured text still renders as plain 
 `treino/exercicios/<pk>/evolucao.json` and `nutricao`'s weight-progress route return JSON
 despite subclassing `TemplateView`.
 
+## Vitalis AI (`assistente`) — D-062, D-064, D-065
+
+`/assistente/enviar/` is a POST that returns JSON for the `<script>` in
+`templates/assistente/chat.html`; `nova/` opens a clean screen and writes nothing (the
+conversation is created by the first question). `build_clinical_context(user)` rebuilds the
+system prompt on every message from the owner's rows (profile, latest weight, active
+medication, treatments, active diet, `ClinicalNote`, out-of-range `LabResult`, recent exams);
+the starter questions and the record summary are read from the database too — never literals.
+The model's reply is untrusted text: `renderMarkdown` escapes everything before emitting fixed
+tags, and server-rendered history goes through the same renderer via `data-markdown`. Uploads
+go through `validate_attachment` and `chat_attachment_upload_path`; sending is rate limited
+per user; a Gemini failure deletes the unanswered question and returns 502, so an error never
+becomes a `Message`. The API key travels in the `x-goog-api-key` header, and
+`REQUEST_TIMEOUT_SECONDS` keeps both model attempts inside gunicorn's `--timeout 60`. To test
+sending in a browser without calling Gemini, intercept `**/assistente/enviar/` with Playwright's
+`page.route` — the dev environment has a real key.
+
 ## Commit & Pull Request Guidelines
 
 History uses Conventional Commit prefixes, mainly `feat:` and `chore:`, followed by concise Portuguese summaries (for example, `feat: Vitalis S5 — lembretes + dashboard consolidado`). Keep each commit focused and include migrations with their model changes. Pull requests should explain behavior and architectural impact, list manual checks, link the relevant requirement or issue, and include before/after screenshots for UI changes.
 
 ## Security, Accessibility & Configuration
 
-Never commit `.env`, `db.sqlite3`, uploaded `media/`, collected `staticfiles/`, real health dossiers (`medico-data/`, `medico-seed.json`, `/toni/`), or secrets. Configuration follows fail-closed principles: `DJANGO_DEBUG` defaults to `0`, requiring explicit `DJANGO_SECRET_KEY` in production (raising `RuntimeError` if missing). If `EMAIL_HOST` is unset in production, `dummy.EmailBackend` is used to prevent leaking password reset tokens and clinical data to server logs. Rate limiting is enforced on auth views (`/conta/entrar/`, `/conta/senha/`, `/conta/cadastro/`) via `core.ratelimit`. Attachments validate binary magic bytes before storage. Global WhatsApp management requires `is_superuser` or `lembretes.manage_whatsapp`. Webhooks validate `x-signature` HMAC and enforce idempotency via `ProcessedWebhookEvent`. Subscriptions track active duration via `expires_at` and fallback gracefully to `Free` when expired. CSP is enforced globally via `core.middleware.SecurityHeadersMiddleware`. Serve sensitive attachments only through authenticated, owner-checking views. Forms enforce WCAG AA with programmatic `aria-required`, `aria-invalid` and `aria-describedby` via `StyledFormMixin`. Interface respects vestibular sensitivity via `@media (prefers-reduced-motion: reduce)`.
+Never commit `.env`, `db.sqlite3`, uploaded `media/`, collected `staticfiles/`, real health dossiers (`medico-data/`, `medico-seed.json`, `/toni/`), or secrets. Configuration follows fail-closed principles: `DJANGO_DEBUG` defaults to `0`, requiring explicit `DJANGO_SECRET_KEY` in production (raising `RuntimeError` if missing). If `EMAIL_HOST` is unset in production, `dummy.EmailBackend` is used to prevent leaking password reset tokens and clinical data to server logs. Rate limiting is enforced on auth views (`/conta/entrar/`, `/conta/senha/`, `/conta/cadastro/`) via `core.ratelimit`. Attachments validate binary magic bytes before storage. Global WhatsApp management requires `is_superuser` or `lembretes.manage_whatsapp`. Webhooks validate `x-signature` HMAC and enforce idempotency via `ProcessedWebhookEvent`. Subscriptions track active duration via `expires_at` and fallback gracefully to `Free` when expired. CSP is enforced globally via `core.middleware.SecurityHeadersMiddleware`; an external script needs both its `<script src>` and a `script-src` entry there, or the browser drops it silently (that is how Lucide's `<script>` vanished in `8dbd019` and Chart.js stayed blocked after `d914597`, both with no server error). Serve sensitive attachments only through authenticated, owner-checking views. Forms enforce WCAG AA with programmatic `aria-required`, `aria-invalid` and `aria-describedby` via `StyledFormMixin`. Interface respects vestibular sensitivity via `@media (prefers-reduced-motion: reduce)`, which removes motion but keeps short color and opacity fades so state changes stay visible (D-065).
 
 ## Known Gaps
 
-The S1–S6 roadmap and clinical expansions are delivered. Current pending gaps are: full account deletion (LGPD) is not implemented (data export in `.zip` is delivered in `/conta/exportar-dados/`); the Mercado Pago gateway has never run against a real seller account; there is no reference food catalogue (TACO), no automatic workout reminder, and the production WhatsApp channel requires a connected chip. See the "O que ainda não existe" section of `CLAUDE.md`.
+The S1–S6 roadmap and clinical expansions are delivered. Current pending gaps are: full account deletion (LGPD) is not implemented (data export in `.zip` is delivered in `/conta/exportar-dados/`); the Mercado Pago gateway has never run against a real seller account; there is no reference food catalogue (TACO), no automatic workout reminder, the production WhatsApp channel requires a connected chip, and the Impeccable detector still flags nested cards on `/nutricao/` and `/saude/biomarcadores/` (a layout change left out of D-065). See the "O que ainda não existe" section of `CLAUDE.md`.
 

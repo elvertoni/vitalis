@@ -31,7 +31,10 @@ $env:DJANGO_DEBUG = '1'   # antes de qualquer comando — ver nota abaixo
 `DEBUG=False` o `config/settings.py` levanta
 `RuntimeError: DJANGO_SECRET_KEY é obrigatória quando DEBUG=False.` — o fail-closed é
 proposital, não bug. Vale para `check`, `migrate`, `runserver` e qualquer outro. A variável
-não persiste entre chamadas do Bash tool; no PowerShell ela vive na sessão.
+não persiste entre chamadas do Bash tool; no PowerShell ela vive na sessão. No Bash tool,
+prefixe na mesma linha: `DJANGO_DEBUG=1 .venv/Scripts/python.exe manage.py check`. Com
+`runserver --noreload` (o jeito de rodar em background) o cache de templates não se renova:
+template ou `.py` editado só aparece depois de reiniciar o servidor.
 
 `seed_medico` (em `core/management/commands/`) é **genérico e não contém dado nenhum**: tudo
 vem do JSON de `--source`. É idempotente (`update_or_create` casando por campo natural), roda
@@ -62,7 +65,9 @@ Python 3.12+ · Django 6.0. Dependências extras (`gunicorn`, `psycopg`, `whiten
 `dj-database-url`) são **só de produção** — o dev roda com Django + SQLite. **Tailwind vem
 do CDN** (`cdn.tailwindcss.com` em `templates/base.html`), config inline no `<script>` daquele
 head — **não há npm, nem build de CSS, nem `tailwind.config.js` em arquivo**. `static/` só tem
-o favicon. Lucide também via CDN. Fonte Inter via Google Fonts.
+favicon e ícones do PWA. Lucide (`unpkg.com`) e Chart.js (`cdn.jsdelivr.net`, só nas telas de
+evolução de carga e de peso) também vêm de CDN — e todo script externo depende da CSP (ver
+"Segurança"). Fonte Inter via Google Fonts.
 
 `STORAGES['staticfiles']` é o `CompressedManifestStaticFilesStorage` do WhiteNoise: em
 produção, `{% static %}` apontando pra arquivo que não existe em `staticfiles/` **quebra o
@@ -154,7 +159,7 @@ assistente/  Vitalis AI: copiloto com Gemini, visão multimodal e exames (D-062 
 ### Rotas
 
 `config/urls.py` monta cada app num prefixo pt-BR (`conta/`, `saude/`, `treino/`, `nutricao/`,
-`lembretes/`, `assinatura/`; `core` na raiz). Todo app tem `app_name` — refira URL sempre por
+`lembretes/`, `assinatura/`, `assistente/`; `core` na raiz). Todo app tem `app_name` — refira URL sempre por
 namespace (`accounts:login`, `core:dashboard`). `settings.LOGIN_URL` / `LOGIN_REDIRECT_URL` /
 `LOGOUT_REDIRECT_URL` apontam pra esses nomes. `MEDIA_URL` só é servido pelo Django com `DEBUG`.
 
@@ -205,6 +210,8 @@ original descartado, caminho não adivinhável — e uma view dedicada
 (`ExamAttachmentView` é o exemplo) confere `user=request.user` antes de abrir o arquivo,
 devolvendo **404**, nunca 403, para o que não é do dono ou não existe. `validate_attachment`
 e `attachment_upload_path` são genéricos — reuse em qualquer FileField novo de dado sensível.
+O anexo do chat usa a irmã `chat_attachment_upload_path`; FileField novo ganha uma função
+nomeada igual sobre `_owned_upload_path` (migration serializa função de módulo, não closure).
 
 ### Models base
 
@@ -233,6 +240,8 @@ inicial rodando. Vale a mesma regra: não recrie assinatura na mão em view de c
 ## Templates
 
 `base.html` é a casca pública (nav, mensagens, rodapé, script do Lucide e do menu mobile).
+`lucide.createIcons()` abre o mesmo `<script>` que liga o menu mobile: se o objeto `lucide` não
+existir, o `ReferenceError` derruba o menu junto com os ícones.
 `app_base.html` estende ela com a navegação autenticada — o logout é **POST**, num form.
 `accounts/base_auth.html` é o layout split das telas de autenticação.
 
@@ -321,7 +330,7 @@ o consumidor é o `<script>` da tela, não um template.
 `Medication.is_current_on(day)` responde "tem dose nesse dia?" e junta três filtros: janela
 de início/fim, `weekdays` (lista de 0 a 6, segunda = 0 — **em branco é todo dia**, não nenhum)
 e a fase do ciclo (`takes_on_cycle_day`). É o que faz um injetável semanal não gerar lembrete
-nos outros seis dias (D-062). O gerador de lembretes e o painel usam essa mesma função — não
+nos outros seis dias (D-063). O gerador de lembretes e o painel usam essa mesma função — não
 refaça o filtro na view.
 
 Marcar dia sem horário é erro de formulário: `_medication_reminders` percorre `schedule_times`,
@@ -337,7 +346,7 @@ projeto. Widget novo com template segue esse caminho, senão quebra com `Templat
 `Food.unit_weight_g` + `Food.unit_label` fazem `quantity_display` render `3 ovos (150 g)`;
 sem eles, sai a grama pura. A conversão fica no `Food` porque `MealItem` e `DailyLog` exibem a
 mesma quantidade em telas diferentes. `Food.recipe` guarda o preparo do que é feito em casa e
-aparece na tela do alimento, com atalho a partir da refeição (D-062).
+aparece na tela do alimento, com atalho a partir da refeição (D-063).
 
 Ao formatar número em template ou em Python, lembre que `'150'.rstrip('0')` vira `15`: só corte
 zero à direita depois de confirmar que existe vírgula decimal (`_decimal_text` em
@@ -417,7 +426,7 @@ WhatsApp sai por `lembretes/whatsapp.py` (Evolution API, instância própria `vi
 quando a categoria tem `by_whatsapp`, o gateway está configurado e há telefone.
 
 O pareamento da sessão fica em `/lembretes/whatsapp/`, **só para superusuários ou quem tem
-`lembretes.manage_whatsapp`** (declarada em `Reminder.Meta.permissions`; até D-062 a permissão
+`lembretes.manage_whatsapp`** (declarada em `Reminder.Meta.permissions`; até D-063 a permissão
 era checada mas nunca existiu no banco, então só superusuário passava) e devolvendo 404
 para os demais (D-046): a instância é o remetente do sistema, não o WhatsApp de cada conta —
 derrubar aquela sessão tira o canal de todo mundo. Em produção o `EVOLUTION_API_URL` aponta
@@ -446,7 +455,7 @@ regressão de reenvio.
 `manifest.json` e `sw.js` são **rotas** em `core/urls.py`, servidas por `TemplateView` a partir
 de `templates/`. Não são arquivos estáticos por um motivo só: o escopo de um service worker é
 a pasta de onde ele foi baixado, e de `/static/` ele controlaria apenas o estático — o
-navegador nunca ofereceria instalar (D-062). Passar pelo template também faz os ícones saírem
+navegador nunca ofereceria instalar (D-063). Passar pelo template também faz os ícones saírem
 com o hash do WhiteNoise.
 
 **O worker não guarda página nenhuma.** Só ícone e favicon. Resposta autenticada aqui carrega
@@ -506,7 +515,11 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 - **Content-Security-Policy (CSP):** Injetado por `core.middleware.SecurityHeadersMiddleware`
   em todas as respostas HTTP. A allowlist de `script-src` é fixa no middleware
   (`cdn.tailwindcss.com`, `unpkg.com`, `fonts.googleapis.com`): **CDN novo sem entrada ali é
-  bloqueado pelo navegador sem erro no servidor** — a tela simplesmente perde o script.
+  bloqueado pelo navegador sem erro no servidor** — a tela simplesmente perde o script. Script
+  externo precisa das duas pontas: o `<script src>` no template **e** o host no `script-src`.
+  Faltou uma ponta em cada caso real: em `8dbd019` a linha do `<script>` do Lucide virou outro
+  bloco (sumiram ícones e menu mobile), e desde `d914597` o `cdn.jsdelivr.net` do Chart.js ficou
+  fora da allowlist (sumiram os gráficos) — os dois sem erro no servidor.
 - **Anexos:** `core.validators.validate_attachment` confere extensão, tamanho (10 MB) **e os
   magic bytes** (`%PDF-`, `\xff\xd8\xff`, `\x89PNG`) — renomear `.exe` para `.pdf` não passa
   (D-057). A `ExamAttachmentView` devolve o arquivo preservando a extensão real.
@@ -516,7 +529,7 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 
 ## LGPD e Portabilidade
 
-- **Portabilidade de Dados (Art. 18):** Implementada a rota autenticada `/conta/exportar-dados/` (`ExportUserDataView`) que gera download direto em `.zip` contendo `prontuario_vitalis.json` com o histórico clínico/antropométrico completo e os laudos anexados em PDF na pasta `laudos/` (D-059).
+- **Portabilidade de Dados (Art. 18):** Implementada a rota autenticada `/conta/exportar-dados/` (`ExportUserDataView`) que gera download direto em `.zip` contendo `prontuario_vitalis.json` com o histórico clínico/antropométrico completo e os laudos anexados em PDF na pasta `laudos/` (D-059), mais as conversas com o Vitalis AI e os anexos do chat em `assistente/` (D-065). Arquivo que falha ao entrar no zip vai para o log, não some calado.
 - **Dados Sensíveis:** Anexos de exame são dados de saúde sensíveis. `MEDIA_URL` só é servido pelo Django com `DEBUG=True`; em produção o laudo tem de sair por view autenticada (`ExamAttachmentView`) que confere a titularidade do dono. Dossiês reais vivem fora do git (`medico-data/`, `medico-seed.json`, `/toni/` — D-041, D-058).
 
 ## Módulos Clínicos Recentes
@@ -542,7 +555,7 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
   remédio de uma pessoa;
   agora o esquema é dado, editável no formulário. Remédio contínuo devolve `None` e a tela
   não mostra selo.
-- **Acessibilidade Impeccable (D-060):** Regra global `@media (prefers-reduced-motion: reduce)` em `base.html`, injeção automática de `aria-required`, `aria-invalid` e `aria-describedby` em todos os formulários via `StyledFormMixin`, e touch targets mínimos de 44px em botões de ação e exclusão.
+- **Acessibilidade Impeccable (D-060):** Regra global `@media (prefers-reduced-motion: reduce)` em `base.html` (desde D-065 corta o movimento mas mantém um fade curto de cor e opacidade, para a troca de estado seguir visível), injeção automática de `aria-required`, `aria-invalid` e `aria-describedby` em todos os formulários via `StyledFormMixin`, e touch targets mínimos de 44px em botões de ação e exclusão.
 
 > **Nunca volte a escrever valor clínico no código.** Foi assim que os dois painéis nasceram,
 > e é o motivo do retrabalho de D-061: dado de saúde real versionado no git (contra D-041) e
@@ -554,6 +567,45 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 > o `floatformat` devolve vírgula, e `style="left: 75,7%"` é declaração inválida: o navegador
 > descarta calado e o elemento encosta na origem. Foi o estado das réguas desde D-058 — sem
 > erro no servidor, sem aviso no console, só a tela errada.
+>
+> **Vale igual dentro de `<script>`.** `{{ decimal }}` cru sai `85,00`, e o JS inteiro morre com
+> `Unexpected number` — era o gráfico de peso. Número para JS sai por `|stringformat` ou pelo
+> `json_script`, como os pontos do gráfico já fazem.
+
+## Vitalis AI (`assistente`) — D-062, D-064, D-065
+
+`/assistente/` e `/assistente/<pk>/` renderizam o chat; `nova/` abre a tela limpa **sem gravar
+nada** (a conversa nasce na primeira pergunta); `enviar/` é um POST que devolve **JSON**,
+consumido pelo `<script>` de `templates/assistente/chat.html`.
+
+- **Prontuário no prompt:** `build_clinical_context(user)` (`assistente/services.py`) remonta o
+  system prompt a cada mensagem a partir das linhas do dono — perfil, última `WeightLog` +
+  `bmi_snapshot`, `Medication` ativa com `is_current_on`/`cycle_status`, tratamentos, dieta
+  ativa, `ClinicalNote`, `LabResult` fora da meta (valor e faixa do laboratório) e os 5 exames
+  mais recentes. Dado novo que a IA deve enxergar entra ali, **lendo model, nunca valor
+  literal**. As perguntas sugeridas e o resumo "o que a IA lê" também saem do banco
+  (`_suggestions`, `_record_summary` em `views.py`): cada sugestão só aparece quando o dado
+  por trás dela existe. O prontuário inteiro e o anexo vão ao Google a cada envio, e a tela
+  avisa isso junto do campo.
+- **A resposta do modelo é texto não confiável.** `renderMarkdown`, no template, escapa tudo
+  antes de gerar tags fixas (título, lista, tabela, negrito, código — sem atributo nem link),
+  e o histórico vindo do servidor passa pelo mesmo renderizador via `data-markdown`. O balão
+  da pessoa é montado com `textContent`. Conteúdo do chat nunca entra em `innerHTML` por outro
+  caminho.
+- **Envio:** o anexo passa por `validate_attachment` antes de ser lido e é gravado com
+  `chat_attachment_upload_path`; o MIME enviado ao Gemini sai da extensão validada; teto de
+  `SEND_LIMIT` envios por `SEND_WINDOW_SECONDS` por pessoa, via `core.ratelimit`. Se o Gemini
+  falhar, a pergunta (e a conversa recém-criada) é apagada e a view devolve 502 com texto
+  próprio: **erro nunca vira `Message`**, senão voltaria ao modelo como contexto.
+- **Cliente Gemini:** `urllib` puro, `v1beta`, chave no cabeçalho `x-goog-api-key` (nunca na
+  URL), `GEMINI_PRIMARY_MODEL` e depois `GEMINI_FALLBACK_MODEL`. `REQUEST_TIMEOUT_SECONDS`
+  existe para as duas tentativas caberem no `--timeout 60` do gunicorn: mexeu num, confira o
+  outro.
+- **Sem `GEMINI_API_KEY`** a tela abre com aviso e o campo desabilitado; o POST devolve 503.
+- **Excluir conversa** herda de `OwnerDeleteView` e apaga os arquivos do disco antes do CASCADE.
+- **Teste no navegador sem gastar Gemini:** intercepte `**/assistente/enviar/` com `page.route`
+  no Playwright. A chave existe no ambiente de dev, e um envio de verdade manda o prontuário
+  real ao Google.
 
 ## O que ainda não existe
 
@@ -564,5 +616,6 @@ O roadmap S1–S6 do PRD e as extensões clínicas estão entregues. As lacunas 
 - **Catálogo de alimentos de referência (TACO).** `Food` é cadastro do usuário (D-025).
 - **Lembrete automático de treino.** Decisão explícita de não ter (D-027).
 - **Instância WhatsApp conectada.** A integração Evolution API existe no código, mas o envio ativo em produção requer chip conectado (D-028).
+- **Cartões aninhados em `/nutricao/` e `/saude/biomarcadores/`.** O detector do Impeccable aponta cartão dentro de cartão nas duas telas (e listras em gradiente decorativas nos biomarcadores). Ficou fora de D-065 por ser mudança de layout, não correção.
 
 

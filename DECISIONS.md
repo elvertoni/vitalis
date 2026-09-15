@@ -898,3 +898,42 @@ Agora está declarada em `Reminder.Meta`.
 - **Chips de Dia da Semana (`weekday_chips.html`):** grupo semântico com `role="group" aria-label="Dias da semana"`, rótulos `aria-label` completos em cada checkbox para leitor de tela, e alvos táteis `min-h-[44px]`.
 - **Hub e Lista de Alimentos:** afordância aprimorada nos cards de receitas caseiras, estados de hover com micro-animação de setas e focus rings padrão Soluna.
 - **Prontuário Contextual do Vitalis AI:** enriquecimento de `build_clinical_context` com periodicidade semanal dos medicamentos e sinalizador de dose programada no dia (`is_current_on`), permitindo respostas precisas sobre a rotina diária e semanal do paciente.
+
+### D-065 · Audit técnico: o chat da IA entra na camada de segurança, e as telas param de repetir consulta
+**Contexto:** auditoria de engenharia e do Impeccable sobre o projeto inteiro. Três furos pesavam
+mais que o resto, todos no `assistente`: a resposta do Gemini ia crua para `innerHTML` (um laudo
+em PDF podia fazer o modelo devolver `<img onerror>` e rodar script numa página com dado de
+saúde); o `chat.html` trazia valores clínicos reais de uma pessoa escritos no template
+(hematócrito, meta de proteína, calorias, nome do remédio), mostrados a qualquer conta e
+versionados no git, contra D-041 e D-061; e o anexo do chat não passava por
+`validate_attachment` nem por caminho não adivinhável.
+**Decisão:**
+- **Markdown com escape antes da marcação.** O texto do modelo é tratado como não confiável:
+  escapado primeiro, e só depois ganha tags fixas (título, lista, tabela, negrito, código), sem
+  atributo nem link. O histórico renderizado pelo servidor passa pelo mesmo renderizador, então
+  o Markdown não aparece mais cru ao recarregar.
+- **Sugestões e resumo do prontuário vêm do banco.** Cada pergunta sugerida só aparece quando o
+  dado por trás dela existe na conta (biomarcador fora da meta, dieta com meta de proteína,
+  remédio com ciclo em fases).
+- **Anexo do chat = laudo.** `chat_attachment_upload_path` grava em
+  `assistente/<user_id>/<uuid4>.<ext>`, com `validate_attachment` (extensão, 10 MB, magic bytes)
+  antes de o arquivo ser lido. O tipo enviado ao Gemini sai da extensão validada. Excluir a
+  conversa apaga também os arquivos do disco.
+- **Aviso no lugar do selo "Privacidade Protegida".** Escolha do dono: o selo prometia o que o
+  fluxo não entrega, porque o prontuário e o anexo vão ao Google a cada pergunta. A tela agora
+  diz isso junto do campo de envio.
+- **Sem escrita no GET.** `nova/` abre a tela limpa; a conversa nasce na primeira pergunta.
+- **Limite de 20 envios a cada 10 minutos por pessoa**, pelo mesmo `core.ratelimit` das telas
+  de autenticação.
+- **Falha do Gemini não vira mensagem.** A pergunta sem resposta é apagada e a pessoa recebe o
+  erro na tela, com o texto de volta no campo. Antes o erro era gravado como resposta e voltava
+  ao modelo como contexto na chamada seguinte.
+- **Cliente Gemini:** a chave vai no cabeçalho `x-goog-api-key`, não na URL; 25 s por modelo,
+  para as duas tentativas caberem no `--timeout 60` do gunicorn; biomarcadores fora da meta
+  entram no prompt com valor e faixa do laboratório.
+- **Consultas repetidas.** `Meal.macros` reaproveita o prefetch das views (`/nutricao/` caiu
+  de 50 consultas); grupos musculares contam por `annotate`; a tela de preferências lê os
+  canais numa consulta (`channels_by_category`); a exportação LGPD usa `select_related` e passa
+  a incluir as conversas e os anexos do chat, registrando em log o arquivo que falhar.
+- **`prefers-reduced-motion`** deixa de zerar toda transição: some o movimento, e cor e
+  opacidade seguem com um fade curto, para a troca de estado continuar perceptível.
