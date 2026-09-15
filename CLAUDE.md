@@ -213,6 +213,11 @@ e `attachment_upload_path` são genéricos — reuse em qualquer FileField novo 
 O anexo do chat usa a irmã `chat_attachment_upload_path`; FileField novo ganha uma função
 nomeada igual sobre `_owned_upload_path` (migration serializa função de módulo, não closure).
 
+**O arquivo sai do disco junto com a linha** (D-066). `core/signals.py`, ligado em
+`CoreConfig.ready`, apaga depois do commit o arquivo de toda linha excluída (inclusive por
+CASCADE) e o arquivo trocado ou limpo numa edição. Vale para qualquer `FileField` novo sem
+código extra; não apague arquivo na mão dentro da view.
+
 ### Models base
 
 Em `core/models.py`. `TimeStampedModel` dá `created_at`/`updated_at`; `OwnedModel` herda dele
@@ -251,7 +256,8 @@ e inclui esse partial; não escreva markup de input à mão. Os outros partials 
 `_logo.html` — inclua, não duplique.
 
 As classes de widget vivem em `accounts/forms.py` (`TEXT_INPUT_CLASS`, `SELECT_CLASS`) e são
-aplicadas pelo `StyledFormMixin`. Formulário novo herda dele.
+aplicadas pelo `StyledFormMixin`. Formulário novo herda dele. O mixin também troca o `---------`
+do Django por "Selecione" (campo obrigatório) ou "Não informado" (opcional) em todo select.
 
 ### Tokens do design system
 
@@ -463,7 +469,8 @@ laudo, peso e medicação; cachear isso no aparelho desfaz o cuidado de servir a
 autenticada. Offline, ele devolve um aviso franco — nunca conteúdo de saúde vencido. Ao mexer
 nele, suba a versão em `CACHE` (`vitalis-estatico-vN`), senão o `activate` não limpa o antigo.
 
-O convite de instalar vive em `templates/base.html` e some sozinho quando já foi dispensado
+O convite de instalar vive em `templates/base.html`, dentro de `{% block install_prompt %}` (tela
+com campo fixo no rodapé, como o chat, esvazia o bloco), e some sozinho quando já foi dispensado
 (`localStorage`), quando o app já está instalado (`display-mode: standalone`) ou fora do
 celular. No iPhone o `beforeinstallprompt` não existe: lá o banner vira instrução do
 Compartilhar, e o botão some.
@@ -602,7 +609,7 @@ consumido pelo `<script>` de `templates/assistente/chat.html`.
   existe para as duas tentativas caberem no `--timeout 60` do gunicorn: mexeu num, confira o
   outro.
 - **Sem `GEMINI_API_KEY`** a tela abre com aviso e o campo desabilitado; o POST devolve 503.
-- **Excluir conversa** herda de `OwnerDeleteView` e apaga os arquivos do disco antes do CASCADE.
+- **Excluir conversa** herda de `OwnerDeleteView`; os anexos saem do disco pelo `core.signals`.
 - **Teste no navegador sem gastar Gemini:** intercepte `**/assistente/enviar/` com `page.route`
   no Playwright. A chave existe no ambiente de dev, e um envio de verdade manda o prontuário
   real ao Google.
@@ -616,6 +623,4 @@ O roadmap S1–S6 do PRD e as extensões clínicas estão entregues. As lacunas 
 - **Catálogo de alimentos de referência (TACO).** `Food` é cadastro do usuário (D-025).
 - **Lembrete automático de treino.** Decisão explícita de não ter (D-027).
 - **Instância WhatsApp conectada.** A integração Evolution API existe no código, mas o envio ativo em produção requer chip conectado (D-028).
-- **Cartões aninhados em `/nutricao/` e `/saude/biomarcadores/`.** O detector do Impeccable aponta cartão dentro de cartão nas duas telas (e listras em gradiente decorativas nos biomarcadores). Ficou fora de D-065 por ser mudança de layout, não correção.
-
 

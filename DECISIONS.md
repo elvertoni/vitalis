@@ -937,3 +937,24 @@ versionados no git, contra D-041 e D-061; e o anexo do chat não passava por
   a incluir as conversas e os anexos do chat, registrando em log o arquivo que falhar.
 - **`prefers-reduced-motion`** deixa de zerar toda transição: some o movimento, e cor e
   opacidade seguem com um fade curto, para a troca de estado continuar perceptível.
+
+### D-066 · Arquivo sai do disco com a linha, e as telas param de empilhar cartão
+**Contexto:** pendências deixadas pelo audit de D-065.
+**Decisão:**
+- **Limpeza de arquivo no `core`.** O Django apaga a linha e deixa o arquivo no volume.
+  `core/signals.py` liga, para todo model com `FileField`, um `post_delete` (linha excluída,
+  inclusive por CASCADE: exame, conversa e, quando existir, a conta) e um `pre_save` (arquivo
+  trocado ou limpo numa edição). A remoção roda em `transaction.on_commit`, então um rollback
+  preserva o arquivo. A limpeza manual que D-065 pôs na view do chat saiu.
+- **Selects sem `---------`.** O `StyledFormMixin` troca o rótulo vazio por "Selecione" quando
+  o campo é obrigatório e "Não informado" quando é opcional.
+- **Convite de instalar fora do chat.** O banner passou a morar em `{% block install_prompt %}`;
+  o chat esvazia o bloco, porque no celular o convite cobria o campo de envio.
+- **Menos cartão dentro de cartão.** Em `/nutricao/`, o placar do comparador virou números
+  separados por fio, a linha do tempo virou linhas divididas e as receitas saíram do cartão que
+  as envolvia. Nos biomarcadores, os números do IMC e os alinhamentos seguem o mesmo desenho, e
+  o rastro entre o exame anterior e o atual virou tracejado em `#a0a09e` no lugar do gradiente
+  listrado. `font-bold`, acima do peso 600 do design system, virou `font-semibold`.
+- **Travessão como pausa virou pontuação comum** nas frases da interface. O travessão que marca
+  valor vazio e o que vem de dado cadastrado pela pessoa (nome de exame, dose, protocolo de
+  treino) ficaram como estão.
