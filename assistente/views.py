@@ -128,9 +128,7 @@ class SendMessageView(LoginRequiredMixin, View):
             # A pergunta sem resposta não fica no histórico: ela voltaria ao Gemini na próxima
             # chamada como contexto, e a pessoa veria uma conversa manca ao recarregar.
             logger.exception('Falha ao consultar o Gemini (conversa %s)', conversation.pk)
-            if user_msg.attachment:
-                user_msg.attachment.delete(save=False)
-            user_msg.delete()
+            user_msg.delete()  # o anexo sai do disco junto (core.signals)
             if created:
                 conversation.delete()
             return _error('Não consegui falar com o Gemini agora. Sua pergunta não foi salva; tente de novo em instantes.', 502)
@@ -162,18 +160,11 @@ class SendMessageView(LoginRequiredMixin, View):
 
 
 class DeleteConversationView(OwnerDeleteView):
-    """Deletes a chat conversation, its messages and the files that were sent in it."""
+    """Deletes a chat conversation; its messages and their files go with it (``core.signals``)."""
 
     model = Conversation
     success_url = reverse_lazy('assistente:index')
     success_message = 'Conversa excluída.'
-
-    def form_valid(self, form):
-        # O CASCADE apaga as linhas, mas o arquivo continuaria no disco: é laudo e receita.
-        for message in self.get_object().messages.exclude(attachment=''):
-            if message.attachment:
-                message.attachment.delete(save=False)
-        return super().form_valid(form)
 
 
 def _error(message, status):
