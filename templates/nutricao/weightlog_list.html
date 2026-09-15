@@ -69,7 +69,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
     const points = JSON.parse(document.getElementById('weight-data').textContent);
-    const target = {{ target_weight|default:'null' }};
+    const target = {% if target_weight %}{{ target_weight|stringformat:'.2f' }}{% else %}null{% endif %};
     const datasets = [{
         label: 'Peso (kg)',
         data: points.map(p => p.weight),

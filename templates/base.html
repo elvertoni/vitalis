@@ -19,13 +19,17 @@
         tailwind = { config: { theme: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @media (prefers-reduced-motion: reduce) {
+            /* Sem deslocamento, zoom ou giro. A troca de estado segue visível: cor e opacidade
+               ainda fazem um fade curto, que não provoca enjoo e mostra o que mudou. */
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
                 animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
                 scroll-behavior: auto !important;
+                transition-property: color, background-color, border-color, opacity, outline-color !important;
+                transition-duration: 150ms !important;
             }
         }
     </style>
@@ -60,7 +64,7 @@
                 {% endif %}
             {% endblock %}
         </div>
-        <button class="lg:hidden z-50 p-3 -mr-3 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2" id="mobile-menu-btn" aria-label="Abrir navegação" aria-expanded="false" aria-controls="mobile-menu">
+        <button type="button" class="lg:hidden z-50 p-3 -mr-3 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2" id="mobile-menu-btn" aria-label="Abrir navegação" aria-expanded="false" aria-controls="mobile-menu">
             <i data-lucide="menu" class="w-6 h-6 stroke-[1.5]"></i>
         </button>
     </div>
