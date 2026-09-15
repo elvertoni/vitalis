@@ -1,0 +1,80 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Excluir conta · Vitalis{% endblock %}
+
+{# Decisão irreversível: o convite de instalar não disputa atenção com o resumo do que some. #}
+{% block install_prompt %}{% endblock %}
+
+{% block content %}
+<section class="pt-32 lg:pt-40 pb-24">
+    <div class="max-w-screen-xl mx-auto px-6 md:px-12">
+        <div class="max-w-2xl">
+            <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-4">Conta</span>
+            <h1 class="text-4xl md:text-5xl tracking-tight font-medium text-[#1a1a1a] leading-[1.1] mb-6">Excluir sua conta</h1>
+            <div class="pl-6 border-l-[1.5px] border-[#dcdacd] mb-12">
+                <p class="text-lg text-[#5c5c5a] leading-relaxed">A conta, os registros de saúde, treino e nutrição e os arquivos anexados são apagados de uma vez. Não dá para desfazer.</p>
+            </div>
+
+            {% if is_admin_account %}
+            <div class="bg-[#f2ece5] rounded-[1.5rem] px-6 py-5 mb-8 flex items-start gap-3" role="status">
+                <i data-lucide="shield-alert" class="w-5 h-5 stroke-[1.5] shrink-0 mt-0.5 text-[#96412f]"></i>
+                <p class="text-base text-[#1a1a1a] leading-relaxed">Esta é uma conta de administrador. O painel administrativo e o pareamento do WhatsApp dependem dela, por isso ela não pode ser excluída por esta tela. Passe a administração para outra conta e exclua esta pelo painel administrativo.</p>
+            </div>
+            <a href="{% url 'accounts:profile' %}" class="inline-flex items-center gap-2 min-h-[44px] text-base font-medium text-[#5d674f] hover:text-[#4a523f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4 stroke-[1.5]"></i> Voltar ao perfil
+            </a>
+            {% else %}
+
+            <h2 class="text-2xl tracking-tight font-medium text-[#1a1a1a] mb-4">O que será apagado</h2>
+            <dl class="border-t border-[#dcdacd] mb-12">
+                {% for item in summary %}
+                <div class="flex items-baseline justify-between gap-6 py-4 border-b border-[#dcdacd]">
+                    <dt class="text-base text-[#1a1a1a]">
+                        {{ item.label }}
+                        {% if item.detail %}<span class="block text-sm text-[#5c5c5a]">{{ item.detail }}</span>{% endif %}
+                    </dt>
+                    <dd class="text-base font-medium text-[#1a1a1a] tabular-nums">{{ item.count }}</dd>
+                </div>
+                {% endfor %}
+            </dl>
+
+            <div class="grid sm:grid-cols-2 gap-x-10 gap-y-8 mb-12">
+                <div>
+                    <p class="flex items-center gap-2 text-base font-medium text-[#1a1a1a] mb-2">
+                        <i data-lucide="download" class="w-4 h-4 stroke-[1.5] text-[#5d674f]"></i> Leve uma cópia antes
+                    </p>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed mb-3">O arquivo .zip traz o prontuário completo, os laudos e as conversas com o Vitalis AI.</p>
+                    <a href="{% url 'accounts:export_data' %}" class="inline-flex items-center min-h-[44px] text-sm font-medium text-[#5d674f] hover:text-[#4a523f] underline underline-offset-4 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Exportar prontuário (.zip)</a>
+                </div>
+                <div>
+                    <p class="flex items-center gap-2 text-base font-medium text-[#1a1a1a] mb-2">
+                        <i data-lucide="archive" class="w-4 h-4 stroke-[1.5] text-[#5d674f]"></i> Cópias de segurança
+                    </p>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed">As cópias de segurança do servidor já geradas guardam os dados por até {{ backup_days }} dias e depois são apagadas.</p>
+                </div>
+                {% if paid_subscription %}
+                <div class="sm:col-span-2">
+                    <p class="flex items-center gap-2 text-base font-medium text-[#1a1a1a] mb-2">
+                        <i data-lucide="credit-card" class="w-4 h-4 stroke-[1.5] text-[#5d674f]"></i> Assinatura {{ paid_subscription.plan.name }}
+                    </p>
+                    <p class="text-sm text-[#5c5c5a] leading-relaxed">A cobrança recorrente é cancelada antes da exclusão. Se o cancelamento falhar, a conta continua e você pode tentar de novo.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <form method="post" class="max-w-xl">
+                {% csrf_token %}
+                {% for field in form %}{% include 'partials/_field.html' %}{% endfor %}
+                <div class="flex flex-wrap items-center gap-4 mt-4">
+                    <button type="submit" class="inline-flex bg-[#1a1a1a] text-white px-8 py-5 rounded-full items-center gap-3 hover:bg-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">
+                        <span class="text-base font-normal tracking-wide">Excluir minha conta</span>
+                        <i data-lucide="trash-2" class="w-5 h-5 stroke-[1.5]"></i>
+                    </button>
+                    <a href="{% url 'accounts:profile' %}" class="inline-flex items-center min-h-[44px] text-base text-[#5c5c5a] hover:text-[#1a1a1a] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors">Cancelar</a>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

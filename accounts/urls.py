@@ -11,6 +11,7 @@ urlpatterns = [
     path('perfil/', views.ProfileView.as_view(), name='profile'),
     path('perfil/editar/', views.ProfileUpdateView.as_view(), name='profile_edit'),
     path('exportar-dados/', views.ExportUserDataView.as_view(), name='export_data'),
+    path('excluir/', views.AccountDeleteView.as_view(), name='delete_account'),
     path('acesso/editar/', views.AccountUpdateView.as_view(), name='account_edit'),
     path('senha/', views.VitalisPasswordResetView.as_view(), name='password_reset'),
     path('senha/enviada/', views.VitalisPasswordResetDoneView.as_view(), name='password_reset_done'),

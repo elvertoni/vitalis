@@ -1,0 +1,10 @@
+{% autoescape off %}Olá{% if name %}, {{ name }}{% endif %}.
+
+Sua conta no Vitalis foi excluída em {{ deleted_at|date:'d/m/Y' }} às {{ deleted_at|date:'H:i' }}.
+
+Os registros de saúde, treino e nutrição e os arquivos anexados foram apagados. As cópias de segurança do servidor que ainda contêm esses dados são apagadas em até {{ backup_days }} dias.
+
+Se não foi você quem pediu a exclusão, alguém entrou com a sua senha: troque-a nos outros serviços em que você usa a mesma.
+
+— Vitalis
+{% endautoescape %}

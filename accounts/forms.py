@@ -81,6 +81,39 @@ class StyledFormMixin:
                     widget.attrs['aria-describedby'] = f'{auto_id}_error {existing_desc}'.strip()
 
 
+class AccountDeleteForm(StyledFormMixin, forms.Form):
+    """Second lock before deleting the account: the current password and a typed word."""
+
+    CONFIRMATION_WORD = 'EXCLUIR'
+
+    password = forms.CharField(
+        label='Sua senha atual',
+        strip=False,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'}),
+    )
+    confirmation = forms.CharField(
+        label='Para confirmar, digite EXCLUIR',
+        widget=forms.TextInput(attrs={'autocomplete': 'off', 'autocapitalize': 'characters', 'spellcheck': 'false'}),
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data['password']
+        if not self.user.check_password(password):
+            raise forms.ValidationError('Senha incorreta.', code='wrong_password')
+        return password
+
+    def clean_confirmation(self):
+        word = self.cleaned_data['confirmation'].strip()
+        # Maiúscula ou minúscula tanto faz: o que importa é a pessoa ter escrito a palavra.
+        if word.upper() != self.CONFIRMATION_WORD:
+            raise forms.ValidationError('Digite a palavra EXCLUIR para confirmar.', code='wrong_confirmation')
+        return word
+
+
 class SignupForm(StyledFormMixin, BaseUserCreationForm):
     """Account creation: email, name and password."""
 
