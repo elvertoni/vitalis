@@ -958,3 +958,26 @@ versionados no git, contra D-041 e D-061; e o anexo do chat não passava por
 - **Travessão como pausa virou pontuação comum** nas frases da interface. O travessão que marca
   valor vazio e o que vem de dado cadastrado pela pessoa (nome de exame, dose, protocolo de
   treino) ficaram como estão.
+
+### D-067 · A pessoa exclui a própria conta
+**Contexto:** direito de eliminação da LGPD (Art. 18), previsto no PRD e no PROMPT-EXEC. A
+exportação existia desde D-059; a exclusão, não.
+**Decisão:**
+- **`/conta/excluir/` (`AccountDeleteView`).** A tela mostra, por área, quantos registros somem,
+  oferece a exportação antes e diz o prazo das cópias de segurança já geradas (30 dias,
+  `scripts/backup.sh`).
+- **Duas travas.** Senha atual e a palavra EXCLUIR (maiúscula ou minúscula), com 5 tentativas a
+  cada 15 minutos por conta, pelo `core.ratelimit`.
+- **Uma operação só.** `user.delete()` numa transação: o CASCADE de D-021 leva os registros e
+  `core.signals` (D-066) apaga laudos e anexos depois do commit. A conta de dev com o dossiê
+  completo levou 345 linhas de 26 models, sem nenhum `PROTECT` no caminho.
+- **Cobrança antes da conta.** Assinatura com cobrança recorrente no gateway é cancelada antes;
+  se o cancelamento falhar, a conta continua. Apagar deixaria alguém sendo cobrado sem conta de
+  onde reclamar.
+- **Superusuário fica de fora.** O painel administrativo e o pareamento do WhatsApp dependem
+  dele; a tela explica e manda passar a administração antes de excluir pelo admin.
+- **Depois da exclusão:** logout, aviso na tela inicial e e-mail com data, hora e prazo dos
+  backups. Falha de SMTP só vai para o log, porque a conta já não existe. Sessões abertas em
+  outros aparelhos caem sozinhas: o Django não encontra o usuário e trata como anônimo.
+- **Texto corrigido:** o cartão de privacidade do perfil dizia "Seus dados são criptografados".
+  Não há criptografia de dado ou de anexo no código, então a frase saiu.

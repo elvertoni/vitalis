@@ -195,7 +195,7 @@ dentro de dieta.
 **Nunca `on_delete=PROTECT` entre dois models do mesmo dono.** O `Collector` do Django avalia
 `PROTECT` por FK isolada, sem saber que a linha "protegida" está sendo apagada na mesma
 operação por outro caminho (`user` → `CASCADE`) — trava a exclusão em cascata do próprio
-dono, inclusive a futura exclusão de conta (LGPD, Sprint 6), com um 500 cru. Caso real em
+dono, inclusive a exclusão de conta (`/conta/excluir/`, D-067), com um 500 cru. Caso real em
 D-021 (`DECISIONS.md`). `PROTECT` só faz sentido para catálogo **compartilhado** entre
 usuários, que esta base ainda não tem. `OwnerDeleteView` aceita `delete_warning` para avisar
 na tela de confirmação quando a exclusão arrasta histórico junto (ex.: excluir exercício
@@ -537,6 +537,13 @@ UI) ativa a assinatura sem cobrança — não confunda com pagamento real funcio
 ## LGPD e Portabilidade
 
 - **Portabilidade de Dados (Art. 18):** Implementada a rota autenticada `/conta/exportar-dados/` (`ExportUserDataView`) que gera download direto em `.zip` contendo `prontuario_vitalis.json` com o histórico clínico/antropométrico completo e os laudos anexados em PDF na pasta `laudos/` (D-059), mais as conversas com o Vitalis AI e os anexos do chat em `assistente/` (D-065). Arquivo que falha ao entrar no zip vai para o log, não some calado.
+- **Exclusão da conta (Art. 18):** `/conta/excluir/` (`AccountDeleteView`, D-067). Senha atual +
+  a palavra EXCLUIR, 5 tentativas a cada 15 min por conta. Cancela no gateway a cobrança
+  recorrente **antes** de apagar e desiste se falhar; recusa superusuário (admin e WhatsApp
+  dependem dele); depois `user.delete()` numa transação, logout, aviso e e-mail. Model novo com
+  dado do dono entra na cascata sozinho pelo `OwnedModel` — mas precisa aparecer em
+  `_account_summary`, senão a tela promete apagar menos do que apaga. Não há criptografia de
+  dado ou anexo: não escreva isso em tela.
 - **Dados Sensíveis:** Anexos de exame são dados de saúde sensíveis. `MEDIA_URL` só é servido pelo Django com `DEBUG=True`; em produção o laudo tem de sair por view autenticada (`ExamAttachmentView`) que confere a titularidade do dono. Dossiês reais vivem fora do git (`medico-data/`, `medico-seed.json`, `/toni/` — D-041, D-058).
 
 ## Módulos Clínicos Recentes
@@ -617,8 +624,6 @@ consumido pelo `<script>` de `templates/assistente/chat.html`.
 ## O que ainda não existe
 
 O roadmap S1–S6 do PRD e as extensões clínicas estão entregues. As lacunas conhecidas remanescentes são:
-
-- **Exclusão completa da conta (LGPD).** A exportação está entregue (`/conta/exportar-dados/`), mas a exclusão irreversível da conta (`delete_account`) ainda não foi implementada. Ao construir: a exclusão cai em `user.delete()` com CASCADE por toda a base (D-021).
 - **Pagamento real.** O `MercadoPagoGateway` nunca rodou contra o Mercado Pago de vendedor real; opera com checkout simulado.
 - **Catálogo de alimentos de referência (TACO).** `Food` é cadastro do usuário (D-025).
 - **Lembrete automático de treino.** Decisão explícita de não ter (D-027).
