@@ -72,14 +72,14 @@
 
         {# Receitas do próprio cadastro: o que é preparado em casa e se consulta na hora #}
         {% if recipes %}
-        <div class="bg-[#e8eae4] rounded-[2rem] p-8 border border-[#dcdacd] mt-8">
+        <section class="mt-16" aria-labelledby="receitas-titulo">
             <div class="flex items-center justify-between gap-4 mb-6">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-full bg-white/80 border border-[#dcdacd] flex items-center justify-center text-[#5d674f] shrink-0">
                         <i data-lucide="chef-hat" class="w-5 h-5 stroke-[1.5]"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a]">Receitas</h2>
+                        <h2 id="receitas-titulo" class="text-2xl font-medium tracking-tight text-[#1a1a1a]">Receitas</h2>
                         <span class="text-xs text-[#5c5c5a] block">Preparo dos alimentos caseiros cadastrados</span>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                 </a>
                 {% endfor %}
             </div>
-        </div>
+        </section>
         {% endif %}
 
         {# Comparador de cardápios: a dieta ativa contra a anterior, tudo lido das dietas do dono #}
@@ -111,7 +111,7 @@
                     <h2 class="text-2xl font-medium tracking-tight text-[#1a1a1a]">Linha do tempo e comparativo de cardápio</h2>
                 </div>
                 {# Seletor de cardápio #}
-                <div class="inline-flex p-1 bg-[#f5f4f0] rounded-full border border-[#dcdacd] self-start sm:self-auto" role="group" aria-label="Escolher cardápio">
+                <div class="inline-flex p-1 bg-[#f5f4f0] rounded-full self-start sm:self-auto" role="group" aria-label="Escolher cardápio">
                     <button type="button" id="btn-plano-atual" class="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all bg-[#5d674f] text-white shadow-sm min-h-[44px]">
                         {{ plan_comparison.current.name }}
                     </button>
@@ -121,23 +121,23 @@
                 </div>
             </div>
 
-            {# Placar de macronutrientes e déficit #}
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+            {# Placar de macronutrientes e déficit: números lado a lado, separados por fio, sem caixa dentro do cartão #}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 lg:gap-x-0 mb-10 lg:divide-x lg:divide-[#dcdacd]">
+                <div class="lg:pr-6">
                     <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Calorias por dia</span>
-                    <span id="placar-kcal" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    <span id="placar-kcal" class="text-2xl font-semibold text-[#1a1a1a] mt-1 block tabular-nums"></span>
                     {% if plan_comparison.maintenance_kcal %}
                     <span class="text-xs text-[#5c5c5a] mt-1 block">Gasto estimado: {{ plan_comparison.maintenance_kcal }} kcal</span>
                     {% endif %}
                 </div>
-                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+                <div class="lg:px-6">
                     <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Proteína diária</span>
-                    <span id="placar-prot" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    <span id="placar-prot" class="text-2xl font-semibold text-[#1a1a1a] mt-1 block tabular-nums"></span>
                     <span id="placar-prot-nota" class="text-xs text-[#5c5c5a] mt-1 block"></span>
                 </div>
-                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+                <div class="lg:px-6">
                     <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Proteína por kg</span>
-                    <span id="placar-gkg" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    <span id="placar-gkg" class="text-2xl font-semibold text-[#1a1a1a] mt-1 block tabular-nums"></span>
                     <span class="text-xs text-[#5c5c5a] mt-1 block">
                         Referência usual: 1,2 a 1,6 g/kg
                         {% if plan_comparison.reference_weight_kg %}
@@ -145,15 +145,15 @@
                         {% endif %}
                     </span>
                 </div>
-                <div class="p-4 bg-[#f5f4f0] rounded-2xl border border-[#dcdacd]">
+                <div class="lg:pl-6">
                     <span class="text-xs text-[#5c5c5a] uppercase tracking-wider block">Déficit estimado</span>
-                    <span id="placar-deficit" class="text-2xl font-bold text-[#1a1a1a] mt-1 block"></span>
+                    <span id="placar-deficit" class="text-2xl font-semibold text-[#1a1a1a] mt-1 block tabular-nums"></span>
                     <span id="placar-deficit-tag" class="text-xs mt-1 block"></span>
                 </div>
             </div>
 
             {# Linha do tempo das refeições — preenchida pelo script abaixo #}
-            <div class="space-y-4" id="timeline-refeicoes"></div>
+            <div class="border-t border-[#dcdacd]" id="timeline-refeicoes"></div>
         </div>
 
         {{ plan_comparison|json_script:"planos-data" }}
@@ -213,7 +213,7 @@
                     }
 
                     timeline.innerHTML = plano.meals.map(refeicao => `
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-[#f5f4f0] border border-[#dcdacd] gap-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between py-5 border-b border-[#dcdacd] last:border-b-0 gap-4">
                             <div class="flex items-start gap-4">
                                 <span class="px-3 py-1.5 rounded-full bg-white border border-[#dcdacd] text-xs font-mono font-semibold text-[#1a1a1a] shrink-0 mt-0.5">
                                     ${escapar(refeicao.time || '--:--')}
