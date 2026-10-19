@@ -1029,3 +1029,23 @@ com ações de treino e refeição e não mostrava peso nenhum.
   de D-068 (estavam só no banco) e a lista de pesagens mostra `WeightLog.composition_display`.
 - "Registrar aplicação" entrou em "Mais registros", que é o caminho de quem ainda não tem a
   primeira aplicação e, por isso, não tem cartão.
+
+### D-070 · Primeiro acesso em uma tela
+**Contexto:** o cadastro levava direto a um painel vazio. Com D-069, o painel só tem o que mostrar
+depois que existe pesagem ou aplicação.
+**Decisão:**
+- **`/tratamento/comecar/` (`OnboardingView` + `OnboardingForm`)**, destino do cadastro. Duas
+  seções num POST: "Sobre você" (altura e peso obrigatórios; meta, nascimento e sexo opcionais) e
+  "Seu tratamento" (opcional: em branco, só o peso entra). Escreve `Profile`, a `WeightLog` de hoje,
+  um `saude.Medication` semanal (`weekdays=[dia]`, `schedule_times=[horário]`, `dosage` "2,5 mg")
+  e, se informada a última aplicação, a primeira `Injection`, que é o que faz o cartão do painel
+  existir. Tudo numa transação. Não é `ModelForm` porque escreve quatro models; não lê PK do
+  formulário, então não precisa do `OwnerFormMixin`.
+- **Reaproveita o lembrete existente:** o injetável vira `Medication` com dia e horário, e
+  `_medication_reminders` já gera o lembrete só no dia certo (D-063). Nenhuma categoria nova.
+- **Pode ser refeito:** abre preenchido com o perfil e a última pesagem; refazer no mesmo dia
+  corrige a pesagem de hoje (uma por dia). Medicamento novo a cada envio com nome preenchido.
+- **Um aviso por vez no painel:** sem nada registrado aparece só "Configure o seu acompanhamento";
+  "Complete seu perfil" volta depois disso.
+- **Pendente (decisão de produto):** o plano Free tem `auto_reminders: False`, então o lembrete da
+  aplicação não sai para quem não assina.

@@ -6,6 +6,7 @@ app_name = 'tratamento'
 
 urlpatterns = [
     path('', views.TreatmentIndexView.as_view(), name='index'),
+    path('comecar/', views.OnboardingView.as_view(), name='onboarding'),
 
     path('aplicacoes/nova/', views.InjectionCreateView.as_view(), name='injection_create'),
     path('aplicacoes/<int:pk>/editar/', views.InjectionUpdateView.as_view(), name='injection_update'),

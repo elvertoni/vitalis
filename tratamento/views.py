@@ -5,7 +5,11 @@ Every view inherits from the owner-scoped bases in ``core.views``; none of them 
 by user on its own.
 """
 
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.views.generic import FormView
 from django.utils import timezone
 
 from core.views import (
@@ -16,7 +20,7 @@ from core.views import (
 )
 from saude.models import Medication
 
-from .forms import InjectionForm, SideEffectForm
+from .forms import InjectionForm, OnboardingForm, SideEffectForm
 from .models import Injection, SideEffect, missed_due_date, next_due_date, suggested_site
 
 
@@ -156,3 +160,37 @@ class SideEffectDeleteView(OwnerDeleteView):
     model = SideEffect
     success_url = reverse_lazy('tratamento:sideeffect_list')
     success_message = 'Efeito excluído.'
+
+
+class OnboardingView(LoginRequiredMixin, FormView):
+    """
+    First access: profile, first weighing and, optionally, the injectable, in one POST.
+
+    It writes rows owned by ``request.user`` only and never reads a primary key from the
+    form, so there is no related field to narrow — that is why it does not need the
+    ``OwnerFormMixin``. Can be revisited later: it pre-fills from what is on file.
+    """
+
+    form_class = OnboardingForm
+    template_name = 'tratamento/onboarding.html'
+
+    def get_initial(self):
+        from nutricao.plans import latest_weight
+
+        profile = self.request.user.profile
+        return {
+            'height_cm': profile.height_cm,
+            'target_weight_kg': profile.target_weight_kg,
+            'birth_date': profile.birth_date,
+            'sex': profile.sex,
+            'current_weight_kg': latest_weight(self.request.user),
+            'reminder_time': '08:00',
+        }
+
+    def form_valid(self, form):
+        medication = form.save(self.request.user)
+        if medication:
+            messages.success(self.request, f'Tudo pronto. {medication.name} entrou no seu acompanhamento.')
+        else:
+            messages.success(self.request, 'Tudo pronto. Seu peso entrou no histórico.')
+        return redirect('core:dashboard')

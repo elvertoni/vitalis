@@ -41,11 +41,11 @@ BACKUP_RETENTION_DAYS = 30
 
 
 class SignupView(CreateView):
-    """Creates the account and logs the person straight in, landing on the dashboard."""
+    """Creates the account and logs the person straight in, landing on the first-access screen (D-070)."""
 
     form_class = SignupForm
     template_name = 'accounts/signup.html'
-    success_url = reverse_lazy('core:dashboard')
+    success_url = reverse_lazy('tratamento:onboarding')
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -65,7 +65,7 @@ class SignupView(CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         login(self.request, self.object)
-        messages.success(self.request, 'Conta criada. Complete seu perfil quando quiser.')
+        messages.success(self.request, 'Conta criada. Agora, três minutos para configurar o seu acompanhamento.')
         return response
 
 
