@@ -37,7 +37,7 @@ MCP: base64 the payload locally, write it into the container in ~8 KB chunks, de
 (health data on disk). `seed_medico` accepts a partial payload — every JSON section is
 optional — so send only the sections that are missing. Verify with row counts before and after.
 
-The `vitalis-backup` service runs daily via `scripts/backup.sh`, creating verified (`gzip -t`) dumps of PostgreSQL and `/app/media` attachments. Backups are retained locally for 30 days and synchronized externally to the owner's Google Drive (`backup-vitalis` folder) using rclone with OAuth 2.0 Desktop credentials (DECISIONS.md D-055, D-056).
+The `vitalis-backup` service runs daily via `scripts/backup.sh`, creating verified dumps of PostgreSQL and `/app/media` attachments: `gzip -t` on every file, and the database dump must end with `PostgreSQL database dump complete`, otherwise a failed `pg_dump` leaves an empty gzip that still passes `gzip -t` (D-072). Backups are retained locally for 30 days and synchronized externally to the owner's Google Drive (`backup-vitalis` folder) using rclone with OAuth 2.0 Desktop credentials (DECISIONS.md D-055, D-056).
 
 ## Reminders: the channel is chosen per category (D-054)
 

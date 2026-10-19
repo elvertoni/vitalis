@@ -1069,3 +1069,22 @@ pelo resto.
   injectable_only=True)`, passando pelo mesmo `_drop_already_handled` (sem reenvio; conferido
   rodando `send_due_reminders` duas vezes: 2 e-mails, depois 0). Premium segue gerando tudo.
 - Landing, tela de assinatura e PRD 10.2 passam a dizer "Lembrete do dia da aplicação" no Free.
+
+### D-072 · Backup exige dump completo, e produção recomeça do zero
+**Contexto:** a VPS do EasyPanel foi formatada e o Vitalis precisa ser publicado de novo. Ao
+conferir a pasta `backup-vitalis` no Drive, o arquivo mais novo era
+`vitalis-db-20260929-164730.sql.gz`, com **20 bytes**: um gzip vazio. O `scripts/backup.sh`
+roda `pg_dump | gzip` sem `pipefail`, então um `pg_dump` que falha deixa um gzip válido e
+vazio, que passa no `gzip -t` de D-055 e ainda é enviado para fora como se fosse backup.
+**Decisão:**
+- **Dump só vale se terminou.** Além do `gzip -t`, o script exige nas últimas linhas do dump
+  descomprimido o comentário `PostgreSQL database dump complete`, que o `pg_dump` escreve só ao
+  terminar. Sem ele, o arquivo é apagado e o script sai com erro antes do `rclone`. Pega dump
+  vazio e dump cortado no meio. Conferido com um `pg_dump` falso nos três casos: falha, dump
+  cortado e dump completo.
+- **Versão do cliente:** o `pg_dump` recusa servidor mais novo que ele. O Postgres do EasyPanel
+  não pode ser de versão maior que o `postgresql-client` da imagem (`pg_dump --version` no
+  contêiner).
+- **Produção recomeça vazia** (decisão do dono, 2026-10-19): não havia dado importante, então
+  os dumps de setembro não são restaurados. O `migrate` do `entrypoint.sh` cria o schema e
+  `billing.0002` semeia os planos. Conferido aplicando todas as migrations num banco novo.

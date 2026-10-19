@@ -33,8 +33,12 @@ pg_dump --dbname="$DATABASE_URL" --format=plain --no-owner --no-privileges \
     | gzip -9 > "$DB_FILE"
 
 # Um dump que não abre não é backup. Testa a integridade do gzip antes de confiar nele.
-if ! gzip -t "$DB_FILE"; then
-    echo "ERRO: dump corrompido, removendo $DB_FILE" >&2
+# gzip -t sozinho não basta: sem pipefail (o sh POSIX não garante), um pg_dump que falha
+# deixa um gzip vazio e válido, de 20 bytes. Por isso também se exige a linha que o pg_dump
+# só escreve ao terminar — pega dump vazio e dump cortado no meio (D-072).
+if ! gzip -t "$DB_FILE" \
+    || ! gzip -dc "$DB_FILE" | tail -n 20 | grep -q 'PostgreSQL database dump complete'; then
+    echo "ERRO: dump incompleto ou corrompido, removendo $DB_FILE" >&2
     rm -f "$DB_FILE"
     exit 1
 fi
