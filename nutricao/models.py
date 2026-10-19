@@ -8,7 +8,7 @@ child models carry their own ``user`` column instead of relying only on the pare
 
 from decimal import Decimal
 
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -291,10 +291,48 @@ class DailyLog(OwnedModel):
 
 
 class WeightLog(OwnedModel):
-    """One body-weight reading. The line the evolution chart plots."""
+    """
+    One body-weight reading. The line the evolution chart plots.
+
+    The body-composition columns are optional and ride on the same row (D-068): the
+    weekly check-in is a single reading from the scale, and a bioimpedance scale gives
+    weight and composition at once.
+    """
 
     date = models.DateField('data', default=timezone.localdate)
     weight_kg = models.DecimalField('peso (kg)', max_digits=5, decimal_places=2)
+    body_fat_pct = models.DecimalField(
+        'gordura corporal (%)',
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('1')), MaxValueValidator(Decimal('80'))],
+    )
+    lean_mass_kg = models.DecimalField(
+        'massa magra (kg)',
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('1'))],
+    )
+    body_water_l = models.DecimalField(
+        'água corporal (L)',
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('1'))],
+    )
+    waist_cm = models.DecimalField(
+        'cintura (cm)',
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('40')), MaxValueValidator(Decimal('250'))],
+    )
     notes = models.CharField('observação', max_length=200, blank=True)
 
     class Meta:

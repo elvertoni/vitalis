@@ -981,3 +981,21 @@ exportação existia desde D-059; a exclusão, não.
   outros aparelhos caem sozinhas: o Django não encontra o usuário e trata como anônimo.
 - **Texto corrigido:** o cartão de privacidade do perfil dizia "Seus dados são criptografados".
   Não há criptografia de dado ou de anexo no código, então a frase saiu.
+
+### D-068 · Tratamento injetável: aplicação, efeito colateral e composição corporal
+**Contexto:** redesenho do Vitalis com o acompanhamento de tratamento injetável (canetas GLP-1)
+como porta de entrada. `saude.Medication` já sabia *quando* há dose (D-063), mas nada guardava
+*que* a dose foi aplicada, em qual dose e onde.
+**Decisão:**
+- **App novo `tratamento`** com `Injection` (medicamento, data/hora, `dose_mg`, local) e
+  `SideEffect` (sintoma, intensidade 1–3, aplicação opcional). FK para `saude.Medication` com
+  `CASCADE`, nunca `PROTECT` (D-021).
+- **Dose em cada aplicação**, não só no `Medication.dosage`: a titulação sobe a dose ao longo do
+  tempo e um campo único apagaria o histórico.
+- **Composição corporal no `WeightLog`** (`body_fat_pct`, `lean_mass_kg`, `body_water_l`,
+  `waist_cm`, todos opcionais): o check-in semanal é uma leitura só da balança.
+- **`next_due_date` e `suggested_site`** em `tratamento/models.py`: a próxima aplicação reusa
+  `Medication.is_current_on`; o local sugerido é o usado há mais tempo (rodízio). Sugestão na
+  tela, nunca gravada sozinha.
+- **Pendente:** incluir os models novos em `_account_summary` (D-067), na exportação LGPD (D-059)
+  e no contexto do `assistente` (D-062).
