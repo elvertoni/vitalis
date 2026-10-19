@@ -167,26 +167,38 @@ class OnboardingForm(StyledFormMixin, forms.Form):
         medication = None
         if data.get('medication_name'):
             dose = data['dose_mg']
-            medication = Medication.objects.create(
-                user=user,
-                name=data['medication_name'],
-                dosage=f'{dose_text(dose)} mg',
-                frequency='1x por semana',
-                start_date=data.get('last_applied_on') or today,
-                schedule_times=[data['reminder_time'].strftime('%H:%M')],
-                weekdays=[data['weekday']],
-                is_active=True,
-                is_injectable=True,
+            # Refazer o primeiro acesso corrige o injetável que já existe: dois Medication com
+            # o mesmo nome rendiam dois lembretes no dia da aplicação (D-073).
+            medication = (
+                Medication.objects.filter(user=user, is_injectable=True, name__iexact=data['medication_name'])
+                .order_by('-created_at').first()
+                or Medication(user=user, start_date=data.get('last_applied_on') or today)
             )
+            medication.name = data['medication_name']
+            medication.dosage = f'{dose_text(dose)} mg'
+            medication.frequency = '1x por semana'
+            medication.schedule_times = [data['reminder_time'].strftime('%H:%M')]
+            medication.weekdays = [data['weekday']]
+            medication.is_active = True
+            medication.is_injectable = True
+            medication.save()
             if data.get('last_applied_on'):
-                applied_at = timezone.make_aware(
-                    datetime.combine(data['last_applied_on'], data['reminder_time'])
-                )
-                Injection.objects.create(
-                    user=user,
-                    medication=medication,
-                    applied_at=min(applied_at, timezone.now()),
-                    dose_mg=dose,
-                    site=data.get('last_site') or Injection.Site.ABDOMEN_LEFT,
-                )
+                site = data.get('last_site') or Injection.Site.ABDOMEN_LEFT
+                # A mesma data enviada de novo é a mesma aplicação, não uma segunda.
+                injection = medication.injections.filter(applied_at__date=data['last_applied_on']).first()
+                if injection:
+                    injection.dose_mg = dose
+                    injection.site = site
+                    injection.save()
+                else:
+                    applied_at = timezone.make_aware(
+                        datetime.combine(data['last_applied_on'], data['reminder_time'])
+                    )
+                    Injection.objects.create(
+                        user=user,
+                        medication=medication,
+                        applied_at=min(applied_at, timezone.now()),
+                        dose_mg=dose,
+                        site=site,
+                    )
         return medication

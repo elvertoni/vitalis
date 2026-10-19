@@ -1044,7 +1044,8 @@ depois que existe pesagem ou aplicação.
 - **Reaproveita o lembrete existente:** o injetável vira `Medication` com dia e horário, e
   `_medication_reminders` já gera o lembrete só no dia certo (D-063). Nenhuma categoria nova.
 - **Pode ser refeito:** abre preenchido com o perfil e a última pesagem; refazer no mesmo dia
-  corrige a pesagem de hoje (uma por dia). Medicamento novo a cada envio com nome preenchido.
+  corrige a pesagem de hoje (uma por dia). Refazer corrige o injetável de mesmo nome em vez
+  de criar outro (D-073).
 - **Um aviso por vez no painel:** sem nada registrado aparece só "Configure o seu acompanhamento";
   "Complete seu perfil" volta depois disso.
 - **Pendente (decisão de produto):** o plano Free tem `auto_reminders: False`, então o lembrete da
@@ -1088,3 +1089,21 @@ vazio, que passa no `gzip -t` de D-055 e ainda é enviado para fora como se foss
 - **Produção recomeça vazia** (decisão do dono, 2026-10-19): não havia dado importante, então
   os dumps de setembro não são restaurados. O `migrate` do `entrypoint.sh` cria o schema e
   `billing.0002` semeia os planos. Conferido aplicando todas as migrations num banco novo.
+
+### D-073 · Refazer o primeiro acesso não duplica o injetável
+**Contexto:** D-070 criava um `Medication` novo a cada envio de `/tratamento/comecar/`. Na
+primeira conta de produção depois da formatação da VPS, o primeiro acesso feito duas vezes deixou
+dois medicamentos iguais e, com eles, dois lembretes de aplicação.
+**Decisão:**
+- **O envio procura antes de criar:** um `Medication` injetável do dono com o mesmo nome
+  (sem diferenciar maiúscula) é atualizado: dose, dia, horário e volta a ficar ativo. A data de
+  início original é mantida. Só sem nome igual nasce um medicamento novo.
+- **A mesma data é a mesma aplicação:** se já existe `Injection` daquele medicamento na data de
+  "Última aplicação", ela recebe a dose e o local novos em vez de ganhar uma irmã.
+- **A tela refeita abre preenchida** com o injetável ativo mais recente: nome, dose (da última
+  aplicação, senão do texto de `dosage`), dia e horário. Nome preenchido igual é o que faz o
+  envio cair na atualização.
+- Conferido com o test client num banco novo: três envios, o último com o nome em minúsculas e
+  outra dose, dão um medicamento e uma aplicação.
+- **Dois lembretes nem sempre são duplicata:** a janela de `sync_reminders` vai de hoje a hoje
+  + 7, então um injetável cujo dia é hoje tem o lembrete de hoje e o da semana que vem.

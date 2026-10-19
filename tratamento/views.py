@@ -5,6 +5,8 @@ Every view inherits from the owner-scoped bases in ``core.views``; none of them 
 by user on its own.
 """
 
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
@@ -165,6 +167,14 @@ class SideEffectDeleteView(OwnerDeleteView):
     success_message = 'Efeito excluído.'
 
 
+def _dose_from_text(dosage):
+    """``'2,5 mg'`` → ``Decimal('2.5')``; ``None`` when the text does not start with a number."""
+    try:
+        return Decimal(dosage.split()[0].replace(',', '.'))
+    except (IndexError, InvalidOperation):
+        return None
+
+
 class OnboardingView(LoginRequiredMixin, FormView):
     """
     First access: profile, first weighing and, optionally, the injectable, in one POST.
@@ -181,7 +191,7 @@ class OnboardingView(LoginRequiredMixin, FormView):
         from nutricao.plans import latest_weight
 
         profile = self.request.user.profile
-        return {
+        initial = {
             'height_cm': profile.height_cm,
             'target_weight_kg': profile.target_weight_kg,
             'birth_date': profile.birth_date,
@@ -189,6 +199,21 @@ class OnboardingView(LoginRequiredMixin, FormView):
             'current_weight_kg': latest_weight(self.request.user),
             'reminder_time': '08:00',
         }
+        # Refeito, abre com o injetável que já existe: nome igual é o que faz o envio
+        # corrigir esse medicamento em vez de criar outro (D-073).
+        medication = (
+            Medication.objects.filter(user=self.request.user, is_active=True, is_injectable=True)
+            .order_by('-created_at').first()
+        )
+        if medication:
+            last = medication.injections.order_by('-applied_at').first()
+            initial.update({
+                'medication_name': medication.name,
+                'dose_mg': last.dose_mg if last else _dose_from_text(medication.dosage),
+                'weekday': medication.weekdays[0] if medication.weekdays else None,
+                'reminder_time': medication.schedule_times[0] if medication.schedule_times else '08:00',
+            })
+        return initial
 
     def form_valid(self, form):
         medication = form.save(self.request.user)
