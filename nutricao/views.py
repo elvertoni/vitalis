@@ -301,6 +301,12 @@ class WeightLogCreateView(OwnerCreateView):
     success_message = 'Peso registrado.'
     extra_context = {'page_kicker': 'Peso', 'page_title': 'Registrar peso'}
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # Dono no instance antes da validação: o WeightLogForm confere "uma pesagem por dia".
+        kwargs['instance'] = WeightLog(user=self.request.user)
+        return kwargs
+
 
 class WeightLogUpdateView(OwnerUpdateView):
     model = WeightLog

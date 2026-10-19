@@ -75,3 +75,13 @@ class WeightLogForm(StyledFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['weight_kg'].widget.attrs['placeholder'] = 'Ex.: 78.5'
+
+    def clean_date(self):
+        date = self.cleaned_data['date']
+        # A constraint um_peso_por_dia inclui `user`, que não está no formulário: o ModelForm
+        # pula a checagem e a segunda pesagem do dia estourava IntegrityError (500). A view de
+        # criação entrega o instance já com o dono para esta conferência.
+        taken = WeightLog.objects.filter(user_id=self.instance.user_id, date=date).exclude(pk=self.instance.pk)
+        if taken.exists():
+            raise forms.ValidationError('Já existe uma pesagem nesse dia. Para corrigir, edite a do histórico.')
+        return date
