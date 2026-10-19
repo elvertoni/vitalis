@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Vitalis is a Django 6 application. `config/` contains project settings and root URLs; `core/` provides shared models, validators, owner-scoped CRUD views, and mixins. Domain apps are `accounts/`, `saude/`, `treino/`, `nutricao/`, `lembretes/`, `billing/`, and `assistente/` (Vitalis AI, Gemini copilot). Each app keeps models, forms, views, URLs, admin registration, and migrations together. Shared UI lives in `templates/`; app-specific templates use `templates/<app>/`. Treat `design_system/design-system.html` as the visual source of truth. Consult `PRD-vitalis.md`, `PROMPT-EXEC-vitalis.xml`, and `DECISIONS.md` before changing scope or established architecture.
+Vitalis is a Django 6 application. `config/` contains project settings and root URLs; `core/` provides shared models, validators, owner-scoped CRUD views, and mixins. Domain apps are `accounts/`, `saude/`, `treino/`, `nutricao/`, `lembretes/`, `billing/`, `assistente/` (Vitalis AI, Gemini copilot), and `tratamento/` (injectable shots, side effects, next dose — D-068). Each app keeps models, forms, views, URLs, admin registration, and migrations together. Shared UI lives in `templates/`; app-specific templates use `templates/<app>/`. Treat `design_system/design-system.html` as the visual source of truth. Consult `PRD-vitalis.md`, `PROMPT-EXEC-vitalis.xml`, and `DECISIONS.md` before changing scope or established architecture.
 
 ## Build, Test, and Development Commands
 
