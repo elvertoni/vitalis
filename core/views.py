@@ -70,6 +70,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         horizon = today + timedelta(days=30)
 
         context['profile'] = user.profile
+
+        # ── Tratamento e peso no topo (D-069) ─────────────────────────────
+        #
+        # Os cartões são os mesmos de /tratamento/ (`schedule_cards`), para o painel e a tela
+        # do app nunca discordarem sobre o dia da aplicação.
+        from nutricao.plans import weight_progress
+        from tratamento.views import schedule_cards
+
+        context['treatment_cards'] = schedule_cards(user, today)
+        context['weight'] = weight_progress(user, user.profile)
+
         context['upcoming_appointments'] = (
             Appointment.objects.filter(
                 user=user, next_return_date__gte=today, next_return_date__lte=horizon

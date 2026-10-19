@@ -67,8 +67,10 @@ class DailyLogForm(StyledFormMixin, forms.ModelForm):
 class WeightLogForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = WeightLog
-        fields = ['date', 'weight_kg', 'notes']
+        # Composição corporal é opcional e vem da mesma balança de bioimpedância (D-068).
+        fields = ['date', 'weight_kg', 'body_fat_pct', 'lean_mass_kg', 'body_water_l', 'waist_cm', 'notes']
         widgets = {'date': DateInput()}
+        help_texts = {'body_fat_pct': 'Opcional. Os quatro campos de composição vêm da balança de bioimpedância ou da fita.'}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

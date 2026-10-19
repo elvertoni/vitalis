@@ -40,6 +40,7 @@
             <div class="flex items-center justify-between py-4">
                 <div>
                     <span class="text-base font-medium text-[#1a1a1a] block">{{ entry.date|date:'d/m/Y' }}</span>
+                    {% if entry.composition_display %}<span class="text-sm text-[#5c5c5a] block">{{ entry.composition_display }}</span>{% endif %}
                     {% if entry.notes %}<span class="text-sm text-[#5c5c5a]">{{ entry.notes }}</span>{% endif %}
                 </div>
                 <div class="flex items-center gap-4">

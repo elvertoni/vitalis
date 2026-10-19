@@ -69,6 +69,39 @@ def latest_weight(user):
     return log.weight_kg if log else None
 
 
+def weight_progress(user, profile=None):
+    """
+    Where the person stands between the first weighing and the target weight.
+
+    The starting point is the first ``WeightLog`` on file, not a profile field: the history
+    is the source (D-047). ``percent`` is clamped to 0–100 so the bar never runs off either
+    end; ``lost_kg`` keeps its sign, so a gain shows as a gain. Returns ``None`` without any
+    weighing; ``percent`` is ``None`` without a target or with only one weighing.
+    """
+    logs = WeightLog.objects.filter(user=user)
+    first = logs.order_by('date').first()
+    if first is None:
+        return None
+    current = logs.order_by('-date').first()
+    profile = profile or getattr(user, 'profile', None)
+    target = profile.target_weight_kg if profile else None
+
+    percent = None
+    if target is not None and first.pk != current.pk and first.weight_kg != target:
+        done = float(first.weight_kg - current.weight_kg) / float(first.weight_kg - target)
+        percent = max(0.0, min(100.0, done * 100.0))
+
+    return {
+        'start': first,
+        'current': current,
+        'target_kg': target,
+        'lost_kg': first.weight_kg - current.weight_kg,
+        'change_abs_kg': abs(first.weight_kg - current.weight_kg),
+        'to_go_kg': (current.weight_kg - target) if target is not None else None,
+        'percent': percent,
+    }
+
+
 def _plan_summary(diet, reference_weight_kg, maintenance_kcal):
     """
     One side of the comparator: what the plan adds up to, and what that means.

@@ -1011,3 +1011,21 @@ como porta de entrada. `saude.Medication` já sabia *quando* há dose (D-063), m
   O prompt ganhou uma diretriz: sobre injetável, explicar e organizar, nunca sugerir mudar dose,
   pular ou antecipar aplicação. A sugestão "Lidar com <sintoma>" aparece só com efeito
   registrado nos últimos 14 dias.
+
+### D-069 · Painel com tratamento e peso no topo
+**Contexto:** redesenho com o tratamento injetável como porta de entrada (D-068). O painel abria
+com ações de treino e refeição e não mostrava peso nenhum.
+**Decisão:**
+- **Bloco novo acima de "Comece por aqui"**, em duas colunas: a próxima aplicação e o peso. Os
+  cartões são os mesmos de `/tratamento/` (`tratamento.views.schedule_cards`), para as duas telas
+  nunca discordarem do dia. O bloco some inteiro sem aplicação nem pesagem; só com peso, o cartão
+  ocupa a largura toda.
+- **`nutricao.plans.weight_progress`:** ponto de partida é a **primeira** `WeightLog`, não um
+  campo do perfil (D-047). A porcentagem fica entre 0 e 100 (sem barra vazando); ganho de peso
+  aparece como `+X kg`, nunca escondido. Sem meta, o cartão oferece "Definir peso-meta"; com
+  uma pesagem só, pede outra antes de mostrar progresso. Largura da barra sai por
+  `|stringformat:'.1f'`, pela regra da vírgula em CSS.
+- **Composição corporal chega à interface:** o `WeightLogForm` ganhou os quatro campos opcionais
+  de D-068 (estavam só no banco) e a lista de pesagens mostra `WeightLog.composition_display`.
+- "Registrar aplicação" entrou em "Mais registros", que é o caminho de quem ainda não tem a
+  primeira aplicação e, por isso, não tem cartão.

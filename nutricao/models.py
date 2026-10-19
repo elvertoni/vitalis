@@ -346,6 +346,21 @@ class WeightLog(OwnedModel):
     def __str__(self):
         return f'{self.weight_kg} kg · {self.date:%d/%m/%Y}'
 
+    @property
+    def composition_display(self):
+        """``gordura 31,5% · cintura 104 cm`` — only what was measured, empty when nothing was."""
+        parts = [
+            f'{label} {_decimal_text(value)}{unit}'
+            for label, value, unit in (
+                ('gordura', self.body_fat_pct, '%'),
+                ('massa magra', self.lean_mass_kg, ' kg'),
+                ('água', self.body_water_l, ' L'),
+                ('cintura', self.waist_cm, ' cm'),
+            )
+            if value is not None
+        ]
+        return ' · '.join(parts)
+
 
 def daily_totals(user, date):
     """Sum of macros logged by ``user`` on ``date`` — the actual side of 'consumido x planejado'."""
