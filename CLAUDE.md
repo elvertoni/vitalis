@@ -113,6 +113,7 @@ O serviço **`vitalis-backup`** no EasyPanel roda com `SERVICE_MODE=backup` a ca
 - Gera dump do banco PostgreSQL (`vitalis-db-*.sql.gz`) e arquivo com os laudos de exame (`vitalis-media-*.tar.gz`).
 - Testa integridade de cada arquivo com `gzip -t` antes de aceitar, e exige no dump a linha final `PostgreSQL database dump complete` — sem ela, `pg_dump` falhou e o gzip vazio passaria no `gzip -t` (D-072). `pg_dump` da imagem precisa ser da mesma versão do servidor Postgres ou mais nova.
 - Mantém retenção de 30 dias no volume `/backups`.
+- Lê os anexos por **bind** em `/var/lib/docker/volumes/work_vitalis_vitalis-media/_data` → `/app/media`. Volume do EasyPanel é por serviço (`work_<serviço>_<nome>`): repetir o nome `vitalis-media` no backup cria outro volume, vazio, e o tar sai sem laudo nenhum.
 - Envia cópia externa para o Google Drive (`RCLONE_REMOTE=gdrive:`) na pasta `backup-vitalis` (`1iXaGZs_lHAbOC_lpxEe3hXLZYigatsPC`) autenticado via OAuth 2.0 com a conta pessoal do dono (D-055, D-056).
 
 ### Configuração — só `os.environ`, sem loader de `.env`
