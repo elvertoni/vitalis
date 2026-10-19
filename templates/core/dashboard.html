@@ -56,7 +56,7 @@
                         {% elif card.days_until == 1 %}Amanhã
                         {% else %}{{ card.next_due|date:'l, d/m' }}{% endif %}
                     </p>
-                    <p class="text-sm text-[#5c5c5a]">{% if card.last %}Última dose {{ card.last.dose_mg|floatformat:'-2' }} mg{% else %}{{ card.medication.dosage|default:'Dose a definir' }}{% endif %} · local sugerido: {{ card.suggested_site|lower }}</p>
+                    <p class="text-sm text-[#5c5c5a]">{% if card.last %}Última dose {{ card.last.dose_display }}{% else %}{{ card.medication.dosage|default:'Dose a definir' }}{% endif %} · local sugerido: {{ card.suggested_site|lower }}</p>
                 </div>
                 {% endfor %}
                 <div class="mt-auto pt-8">
@@ -89,7 +89,7 @@
                         <div class="h-full rounded-full bg-[#5d674f]" style="width: {{ weight.percent|stringformat:'.1f' }}%"></div>
                     </div>
                     {% endif %}
-                    <div class="flex items-center justify-between gap-4 mt-3 text-sm text-[#5c5c5a]">
+                    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 mt-3 text-sm text-[#5c5c5a]">
                         <span>{% if weight.percent is not None %}{{ weight.percent|stringformat:'.0f' }}% do caminho{% else %}Registre outra pesagem para ver o progresso{% endif %}</span>
                         <span>Meta {{ weight.target_kg|floatformat:'-1' }} kg{% if weight.to_go_kg > 0 %} · faltam {{ weight.to_go_kg|floatformat:'-1' }} kg{% endif %}</span>
                     </div>
@@ -263,17 +263,17 @@
                         <i data-lucide="bell" class="w-5 h-5 stroke-[1.5] text-[#1a1a1a]"></i>
                         <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a]">Lembretes das próximas 48h</h2>
                     </div>
-                    <a href="{% url 'lembretes:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors">Ver central</a>
+                    <a href="{% url 'lembretes:index' %}" class="text-sm font-medium text-[#5d674f] hover:text-[#4a523f] transition-colors whitespace-nowrap">Ver central</a>
                 </div>
                 {% if reminders_48h %}
                 <div class="flex flex-col divide-y divide-[#dcdacd]">
                     {% for reminder in reminders_48h %}
-                    <div class="flex items-center justify-between py-3">
+                    <div class="flex items-center justify-between gap-4 py-3">
                         <div class="flex items-center gap-3">
                             <i data-lucide="{% if reminder.category == 'aplicacao' %}syringe{% elif reminder.category == 'remedio' %}pill{% elif reminder.category == 'exame' %}flask-conical{% elif reminder.category == 'retorno' %}calendar-clock{% elif reminder.category == 'nutricao' %}notebook-pen{% else %}bell{% endif %}" class="w-4 h-4 stroke-[1.5] text-[#5d674f] shrink-0"></i>
                             <span class="text-base text-[#1a1a1a]">{{ reminder.title }}</span>
                         </div>
-                        <span class="text-sm text-[#5c5c5a]">{{ reminder.remind_at|date:'d/m H:i' }}</span>
+                        <span class="text-sm text-[#5c5c5a] whitespace-nowrap shrink-0">{{ reminder.remind_at|date:'d/m H:i' }}</span>
                     </div>
                     {% endfor %}
                 </div>

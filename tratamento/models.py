@@ -58,10 +58,14 @@ class Injection(OwnedModel):
         indexes = [models.Index(fields=['user', '-applied_at'])]
 
     def __str__(self):
-        return f'{self.medication.name} · {self.dose_mg} mg · {timezone.localtime(self.applied_at):%d/%m/%Y}'
+        return f'{self.medication.name} · {self.dose_display} · {timezone.localtime(self.applied_at):%d/%m/%Y}'
 
     def get_absolute_url(self):
         return reverse('tratamento:injection_update', args=[self.pk])
+
+    @property
+    def dose_display(self):
+        return f'{dose_text(self.dose_mg)} mg'
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -121,6 +125,12 @@ class SideEffect(OwnedModel):
 
     def get_absolute_url(self):
         return reverse('tratamento:sideeffect_update', args=[self.pk])
+
+
+def dose_text(value):
+    """``2.50`` → ``2,5``; ``5.00`` → ``5``. The dose as written on the pen."""
+    text = format(value.normalize(), 'f')
+    return text.replace('.', ',')
 
 
 def next_due_date(medication, today=None, horizon_days=14):

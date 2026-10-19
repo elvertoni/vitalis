@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django import forms
 from django.db import transaction
+from django.db.models import BLANK_CHOICE_DASH
 from django.utils import timezone
 
 from accounts.forms import TEXT_INPUT_CLASS, StyledFormMixin
@@ -13,7 +14,7 @@ from nutricao.models import WeightLog
 from saude.forms import DateInput
 from saude.models import WEEKDAY_CHOICES, Medication
 
-from .models import Injection, SideEffect
+from .models import Injection, SideEffect, dose_text
 
 
 class DateTimeInput(forms.DateTimeInput):
@@ -83,7 +84,7 @@ class OnboardingForm(StyledFormMixin, forms.Form):
         help_text='Opcional. Combine a meta com quem acompanha o seu tratamento.',
     )
     birth_date = forms.DateField(label='Data de nascimento', required=False, widget=DateInput())
-    sex = forms.ChoiceField(label='Sexo', required=False, choices=[('', '')] + list(Profile.Sex.choices))
+    sex = forms.ChoiceField(label='Sexo', required=False, choices=BLANK_CHOICE_DASH + list(Profile.Sex.choices))
 
     # ── Seu tratamento ───────────────────────────────────────────────────
     medication_name = forms.CharField(
@@ -98,7 +99,7 @@ class OnboardingForm(StyledFormMixin, forms.Form):
     )
     weekday = forms.TypedChoiceField(
         label='Dia da aplicação', required=False, coerce=int, empty_value=None,
-        choices=[('', '')] + WEEKDAY_CHOICES,
+        choices=BLANK_CHOICE_DASH + WEEKDAY_CHOICES,
     )
     reminder_time = forms.TimeField(
         label='Horário do lembrete', required=False, initial='08:00',
@@ -110,7 +111,7 @@ class OnboardingForm(StyledFormMixin, forms.Form):
     )
     last_site = forms.ChoiceField(
         label='Local da última aplicação', required=False,
-        choices=[('', '')] + list(Injection.Site.choices),
+        choices=BLANK_CHOICE_DASH + list(Injection.Site.choices),
     )
 
     ABOUT_FIELDS = ['height_cm', 'current_weight_kg', 'target_weight_kg', 'birth_date', 'sex']
@@ -169,7 +170,7 @@ class OnboardingForm(StyledFormMixin, forms.Form):
             medication = Medication.objects.create(
                 user=user,
                 name=data['medication_name'],
-                dosage=f'{_dose_text(dose)} mg',
+                dosage=f'{dose_text(dose)} mg',
                 frequency='1x por semana',
                 start_date=data.get('last_applied_on') or today,
                 schedule_times=[data['reminder_time'].strftime('%H:%M')],
@@ -189,9 +190,3 @@ class OnboardingForm(StyledFormMixin, forms.Form):
                     site=data.get('last_site') or Injection.Site.ABDOMEN_LEFT,
                 )
         return medication
-
-
-def _dose_text(value):
-    """``2.50`` → ``2,5``; ``5.00`` → ``5``. The dose as written on the pen."""
-    text = format(value.normalize(), 'f')
-    return text.replace('.', ',')

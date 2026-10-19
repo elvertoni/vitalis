@@ -37,20 +37,21 @@
         {% if object_list %}
         <div class="flex flex-col divide-y divide-[#dcdacd] bg-white rounded-[2rem] border border-[#dcdacd] px-4 md:px-8">
             {% for entry in object_list %}
-            <div class="flex items-center justify-between py-4">
-                <div>
-                    <span class="text-base font-medium text-[#1a1a1a] block">{{ entry.date|date:'d/m/Y' }}</span>
-                    {% if entry.composition_display %}<span class="text-sm text-[#5c5c5a] block">{{ entry.composition_display }}</span>{% endif %}
-                    {% if entry.notes %}<span class="text-sm text-[#5c5c5a]">{{ entry.notes }}</span>{% endif %}
+            {# Composição e observação ficam abaixo da linha, na largura toda: ao lado do peso, no celular, espremiam até o "kg" quebrar. #}
+            <div class="py-4">
+                <div class="flex items-center justify-between gap-4">
+                    <span class="text-base font-medium text-[#1a1a1a]">{{ entry.date|date:'d/m/Y' }}</span>
+                    <div class="flex items-center gap-4 shrink-0">
+                        <span class="text-base font-medium text-[#1a1a1a] whitespace-nowrap">{{ entry.weight_kg }} kg</span>
+                        <a href="{% url 'nutricao:weightlog_update' entry.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Editar</a>
+                        <form method="post" action="{% url 'nutricao:weightlog_delete' entry.pk %}" onsubmit="return confirm('Excluir este registro de peso?')">
+                            {% csrf_token %}
+                            <button type="submit" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Excluir</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-base font-medium text-[#1a1a1a]">{{ entry.weight_kg }} kg</span>
-                    <a href="{% url 'nutricao:weightlog_update' entry.pk %}" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Editar</a>
-                    <form method="post" action="{% url 'nutricao:weightlog_delete' entry.pk %}" onsubmit="return confirm('Excluir este registro de peso?')">
-                        {% csrf_token %}
-                        <button type="submit" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Excluir</button>
-                    </form>
-                </div>
+                {% if entry.composition_display %}<span class="text-sm text-[#5c5c5a] block mt-1">{{ entry.composition_display }}</span>{% endif %}
+                {% if entry.notes %}<span class="text-sm text-[#5c5c5a] block mt-1">{{ entry.notes }}</span>{% endif %}
             </div>
             {% endfor %}
         </div>

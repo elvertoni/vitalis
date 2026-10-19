@@ -5,7 +5,8 @@
     </label>
     {{ field }}
     {% if field.help_text %}
-        <p id="{{ field.auto_id }}_help" class="text-sm text-[#5c5c5a] mt-2">{{ field.help_text }}</p>
+        {# div, não p: o help da senha vem do Django como <ul>, e lista dentro de <p> quebra o parágrafo. #}
+        <div id="{{ field.auto_id }}_help" class="text-sm text-[#5c5c5a] mt-2 [&_li+li]:mt-1">{{ field.help_text }}</div>
     {% endif %}
     {% for error in field.errors %}
         <p id="{% if forloop.first %}{{ field.auto_id }}_error{% else %}{{ field.auto_id }}_error_{{ forloop.counter }}{% endif %}" class="text-sm text-red-700 font-medium mt-2 flex items-center gap-2" role="alert">

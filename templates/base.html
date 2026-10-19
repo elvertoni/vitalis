@@ -15,10 +15,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind = { config: { theme: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Depois do CDN: ele recria window.tailwind ao carregar e descartaria uma config anterior.
+        tailwind.config = { theme: { fontFamily: { sans: ['Inter', 'sans-serif'] } } };
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @media (prefers-reduced-motion: reduce) {
