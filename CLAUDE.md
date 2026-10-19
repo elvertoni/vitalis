@@ -154,12 +154,13 @@ nutricao/    alimentos, dietas, refeições, registro diário, peso     (Sprint 
 lembretes/   central de lembretes + command agendado                 (Sprint 5 — pronta)
 billing/     planos, assinatura, gateway                             (Sprint 6 — pronta)
 assistente/  Vitalis AI: copiloto com Gemini, visão multimodal e exames (D-062 — pronta)
+tratamento/  aplicações de injetável, efeitos colaterais, próxima dose (D-068)
 ```
 
 ### Rotas
 
 `config/urls.py` monta cada app num prefixo pt-BR (`conta/`, `saude/`, `treino/`, `nutricao/`,
-`lembretes/`, `assinatura/`, `assistente/`; `core` na raiz). Todo app tem `app_name` — refira URL sempre por
+`lembretes/`, `assinatura/`, `assistente/`, `tratamento/`; `core` na raiz). Todo app tem `app_name` — refira URL sempre por
 namespace (`accounts:login`, `core:dashboard`). `settings.LOGIN_URL` / `LOGIN_REDIRECT_URL` /
 `LOGOUT_REDIRECT_URL` apontam pra esses nomes. `MEDIA_URL` só é servido pelo Django com `DEBUG`.
 

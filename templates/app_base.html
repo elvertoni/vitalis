@@ -10,6 +10,7 @@
     </a>
     <span class="w-px h-4 bg-[#dcdacd]" aria-hidden="true"></span>
     {# As quatro áreas — o conjunto primário da navegação. #}
+    <a href="{% url 'tratamento:index' %}" {% if namespace == 'tratamento' %}aria-current="page"{% endif %} class="text-sm hover:text-[#5d674f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4 transition-colors {% if namespace == 'tratamento' %}text-[#5d674f] font-medium underline underline-offset-8 decoration-2{% else %}text-[#1a1a1a] font-normal{% endif %}">Tratamento</a>
     <a href="{% url 'saude:index' %}" {% if namespace == 'saude' %}aria-current="page"{% endif %} class="text-sm hover:text-[#5d674f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4 transition-colors {% if namespace == 'saude' %}text-[#5d674f] font-medium underline underline-offset-8 decoration-2{% else %}text-[#1a1a1a] font-normal{% endif %}">Saúde</a>
     <a href="{% url 'treino:index' %}" {% if namespace == 'treino' %}aria-current="page"{% endif %} class="text-sm hover:text-[#5d674f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4 transition-colors {% if namespace == 'treino' %}text-[#5d674f] font-medium underline underline-offset-8 decoration-2{% else %}text-[#1a1a1a] font-normal{% endif %}">Treino</a>
     <a href="{% url 'nutricao:index' %}" {% if namespace == 'nutricao' %}aria-current="page"{% endif %} class="text-sm hover:text-[#5d674f] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-4 transition-colors {% if namespace == 'nutricao' %}text-[#5d674f] font-medium underline underline-offset-8 decoration-2{% else %}text-[#1a1a1a] font-normal{% endif %}">Nutrição</a>
@@ -41,6 +42,13 @@
             <span class="flex items-center gap-2.5"><i data-lucide="home" class="w-5 h-5 stroke-[1.5]"></i> Painel</span>
             <span class="flex items-center gap-3">
                 {% if namespace == 'core' and url_name == 'dashboard' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
+                <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
+            </span>
+        </a>
+        <a href="{% url 'tratamento:index' %}" {% if namespace == 'tratamento' %}aria-current="page"{% endif %} class="mobile-link w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[3.5rem] text-xl font-medium tracking-tight border-b border-[#dcdacd] hover:bg-[#e8eae4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5d674f] transition-colors {% if namespace == 'tratamento' %}text-[#5d674f]{% else %}text-[#1a1a1a]{% endif %}">
+            <span class="flex items-center gap-2.5">Tratamento</span>
+            <span class="flex items-center gap-3">
+                {% if namespace == 'tratamento' %}<span class="w-2 h-2 rounded-full bg-[#5d674f]" aria-hidden="true"></span>{% endif %}
                 <i data-lucide="chevron-right" class="w-5 h-5 stroke-[1.5] text-[#a0a09e]"></i>
             </span>
         </a>

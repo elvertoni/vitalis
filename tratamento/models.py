@@ -61,7 +61,7 @@ class Injection(OwnedModel):
         return f'{self.medication.name} · {self.dose_mg} mg · {timezone.localtime(self.applied_at):%d/%m/%Y}'
 
     def get_absolute_url(self):
-        return reverse('tratamento:injection_detail', args=[self.pk])
+        return reverse('tratamento:injection_update', args=[self.pk])
 
 
 class SideEffect(OwnedModel):
@@ -111,6 +111,9 @@ class SideEffect(OwnedModel):
     def __str__(self):
         return f'{self.get_kind_display()} · {self.get_intensity_display()} · {self.date:%d/%m/%Y}'
 
+    def get_absolute_url(self):
+        return reverse('tratamento:sideeffect_update', args=[self.pk])
+
 
 def next_due_date(medication, today=None, horizon_days=14):
     """
@@ -124,6 +127,25 @@ def next_due_date(medication, today=None, horizon_days=14):
         day = today + timedelta(days=offset)
         if medication.is_current_on(day):
             return day
+    return None
+
+
+def missed_due_date(medication, today=None, lookback_days=14):
+    """
+    The most recent past dose day with no shot recorded on or after it, or ``None``.
+
+    "On or after" because a shot given a day late still covers that week: Tuesday's dose
+    applied on Wednesday must not leave Tuesday flagged as missed. Only days after the
+    medication's start count, so a course begun yesterday never starts out late.
+    """
+    today = today or timezone.localdate()
+    for offset in range(1, lookback_days + 1):
+        day = today - timedelta(days=offset)
+        if medication.is_current_on(day):
+            covered = Injection.objects.filter(
+                user=medication.user, medication=medication, applied_at__date__gte=day
+            ).exists()
+            return None if covered else day
     return None
 
 

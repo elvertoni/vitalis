@@ -997,5 +997,11 @@ como porta de entrada. `saude.Medication` já sabia *quando* há dose (D-063), m
 - **`next_due_date` e `suggested_site`** em `tratamento/models.py`: a próxima aplicação reusa
   `Medication.is_current_on`; o local sugerido é o usado há mais tempo (rodízio). Sugestão na
   tela, nunca gravada sozinha.
+- **Telas em `/tratamento/`:** índice com um cartão por medicamento que já tem aplicação
+  registrada (próxima dose, local sugerido, selo "pendente desde" via `missed_due_date`) e o
+  histórico; CRUD de aplicação e de efeito colateral nas bases `Owner*`. O medicamento só ganha
+  cartão depois da primeira aplicação: nada no `Medication` diz que é injetável, e um cartão por
+  comprimido enterraria o que importa. A aplicação nova vem preenchida com o último
+  medicamento, a última dose e o próximo local do rodízio. Data no futuro é erro de formulário.
 - **Pendente:** incluir os models novos em `_account_summary` (D-067), na exportação LGPD (D-059)
   e no contexto do `assistente` (D-062).
