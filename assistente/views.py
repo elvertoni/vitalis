@@ -185,6 +185,7 @@ def _record_summary(user):
     """What the assistant reads from the record, counted from the person's own rows."""
     from nutricao.models import Diet, WeightLog
     from saude.models import Exam, LabResult, Medication
+    from tratamento.models import Injection, SideEffect
 
     return {
         'weight': WeightLog.objects.filter(user=user).order_by('-date').first(),
@@ -192,6 +193,8 @@ def _record_summary(user):
         'medications': Medication.objects.filter(user=user, is_active=True).count(),
         'exams': Exam.objects.filter(user=user).count(),
         'lab_results': LabResult.objects.filter(user=user).count(),
+        'injections': Injection.objects.filter(user=user).count(),
+        'side_effects': SideEffect.objects.filter(user=user).count(),
     }
 
 
@@ -238,6 +241,25 @@ def _suggestions(user):
             'icon': 'pill',
             'title': f'Fases do {cycled.name}',
             'prompt': f'Como conduzir a fase atual do esquema do {cycled.name}?',
+        })
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from tratamento.models import SideEffect
+
+    recent_effect = (
+        SideEffect.objects.filter(user=user, date__gte=timezone.localdate() - timedelta(days=14))
+        .order_by('-intensity', '-date')
+        .first()
+    )
+    if recent_effect:
+        kind = recent_effect.get_kind_display().lower()
+        suggestions.append({
+            'icon': 'activity',
+            'title': f'Lidar com {kind}',
+            'prompt': f'O que pode ajudar com {kind} nos dias depois da aplicação, e quando devo avisar o médico?',
         })
 
     suggestions.append({

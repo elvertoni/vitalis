@@ -3,6 +3,8 @@ import json
 import logging
 import urllib.error
 import urllib.request
+from datetime import timedelta
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -40,6 +42,7 @@ def build_clinical_context(user):
         "- Responda sempre em Português do Brasil (pt-BR).",
         "- Você possui acesso somente-leitura aos dados reais do prontuário do paciente (listados abaixo). Use-os ativamente para respostas personalizadas.",
         "- Sempre lembre que você é um copiloto de suporte e que ajustes de prescrição formal devem ser confirmados com o médico responsável.",
+        "- Sobre medicamento injetável (dose, titulação, dia ou horário de aplicação), explique e organize, mas nunca sugira mudar dose, pular ou antecipar aplicação: isso se decide com o médico.",
         "\n--- DADOS CLÍNICOS E ANTROPOMÉTRICOS DO PACIENTE ---",
     ]
 
@@ -59,6 +62,18 @@ def build_clinical_context(user):
     latest_weight = WeightLog.objects.filter(user=user).order_by('-date').first()
     if latest_weight:
         parts.append(f"Peso mais recente registrado: {latest_weight.weight_kg} kg (em {latest_weight.date.strftime('%d/%m/%Y')})")
+        composition = [
+            f'{label}: {_number(value)}{unit}'
+            for label, value, unit in (
+                ('gordura corporal', latest_weight.body_fat_pct, '%'),
+                ('massa magra', latest_weight.lean_mass_kg, ' kg'),
+                ('água corporal', latest_weight.body_water_l, ' L'),
+                ('cintura', latest_weight.waist_cm, ' cm'),
+            )
+            if value is not None
+        ]
+        if composition:
+            parts.append(f"Composição na mesma pesagem: {', '.join(composition)}")
         imc = bmi_snapshot(profile, latest_weight.weight_kg)
         if imc:
             parts.append(f"IMC atual: {imc['value']:.1f} kg/m² (Faixa: {imc['label']})")
@@ -79,6 +94,39 @@ def build_clinical_context(user):
             cycle = f" [{m.cycle_status['text']}]" if m.cycle_status else ""
             hoje_toma = " (Hoje: dose programada)" if m.is_current_on(today) else " (Hoje: sem dose programada)"
             parts.append(f"- {m.name} ({m.dosage}) · {m.frequency}{times_str}{weekdays_str}{cycle}{hoje_toma}")
+
+    # 2b. Aplicações de injetável e efeitos colaterais (app `tratamento`, D-068). A dose de
+    # cada aplicação mostra a titulação; os efeitos dos últimos 30 dias permitem cruzar
+    # sintoma com a semana da dose.
+    from tratamento.models import Injection, SideEffect, missed_due_date, next_due_date
+
+    injections = list(
+        Injection.objects.filter(user=user).select_related('medication').order_by('-applied_at')[:8]
+    )
+    if injections:
+        today = timezone.localdate()
+        parts.append("\n--- APLICAÇÕES DE MEDICAMENTO INJETÁVEL (mais recentes primeiro) ---")
+        for i in injections:
+            applied = timezone.localtime(i.applied_at)
+            parts.append(
+                f"- {applied.strftime('%d/%m/%Y')}: {i.medication.name} {_number(i.dose_mg)} mg · {i.get_site_display()}"
+            )
+        for medication in {i.medication for i in injections if i.medication.is_active}:
+            due = next_due_date(medication, today)
+            missed = missed_due_date(medication, today)
+            line = f"Próxima aplicação de {medication.name}: {due.strftime('%d/%m/%Y') if due else 'sem data programada'}"
+            if missed:
+                line += f" (aplicação de {missed.strftime('%d/%m/%Y')} não registrada)"
+            parts.append(line)
+
+    effects = SideEffect.objects.filter(
+        user=user, date__gte=timezone.localdate() - timedelta(days=30)
+    ).order_by('-date')
+    if effects.exists():
+        parts.append("\n--- EFEITOS COLATERAIS REGISTRADOS (30 dias) ---")
+        for e in effects:
+            note = f" · {e.notes}" if e.notes else ""
+            parts.append(f"- {e.date.strftime('%d/%m/%Y')}: {e.get_kind_display()} ({e.get_intensity_display().lower()}){note}")
 
     # 3. Tratamentos e Médicos
     treatments = Treatment.objects.filter(user=user, status__in=[Treatment.Status.ONGOING, Treatment.Status.PAUSED])

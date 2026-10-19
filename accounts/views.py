@@ -216,6 +216,7 @@ def _account_summary(user):
     from lembretes.models import Reminder
     from nutricao.models import DailyLog, Diet, Food, WeightLog
     from saude.models import Appointment, Exam, Medication, Treatment
+    from tratamento.models import Injection, SideEffect
     from treino.models import WorkoutRoutine, WorkoutSession
 
     exams = Exam.objects.filter(user=user)
@@ -224,12 +225,17 @@ def _account_summary(user):
         {'label': 'Exames', 'count': exams.count(), 'detail': f'{with_report} com laudo anexado' if with_report else ''},
         {'label': 'Consultas e tratamentos', 'count': Appointment.objects.filter(user=user).count() + Treatment.objects.filter(user=user).count(), 'detail': ''},
         {'label': 'Medicamentos', 'count': Medication.objects.filter(user=user).count(), 'detail': ''},
+        {'label': 'Aplicações e efeitos colaterais', 'count': Injection.objects.filter(user=user).count() + SideEffect.objects.filter(user=user).count(), 'detail': ''},
         {'label': 'Fichas e sessões de treino', 'count': WorkoutRoutine.objects.filter(user=user).count() + WorkoutSession.objects.filter(user=user).count(), 'detail': ''},
         {'label': 'Dietas, alimentos e registros de refeição', 'count': Diet.objects.filter(user=user).count() + Food.objects.filter(user=user).count() + DailyLog.objects.filter(user=user).count(), 'detail': ''},
         {'label': 'Pesagens', 'count': WeightLog.objects.filter(user=user).count(), 'detail': ''},
         {'label': 'Lembretes', 'count': Reminder.objects.filter(user=user).count(), 'detail': ''},
         {'label': 'Conversas com o Vitalis AI', 'count': Conversation.objects.filter(user=user).count(), 'detail': ''},
     ]
+
+
+def _optional_float(value):
+    return float(value) if value is not None else None
 
 
 def _send_deletion_notice(email, name):
@@ -304,6 +310,7 @@ class ExportUserDataView(LoginRequiredMixin, View):
         from assistente.models import Conversation, Message
         from treino.models import WorkoutRoutine, WorkoutSession
         from nutricao.models import Food, Diet, DailyLog, WeightLog
+        from tratamento.models import Injection, SideEffect
 
         user = request.user
         today = timezone.localdate()
@@ -416,8 +423,36 @@ class ExportUserDataView(LoginRequiredMixin, View):
                 for n in ClinicalNote.objects.filter(user=user)
             ],
             'weight_logs': [
-                {'date': str(w.date), 'weight_kg': float(w.weight_kg), 'notes': w.notes}
+                {
+                    'date': str(w.date),
+                    'weight_kg': float(w.weight_kg),
+                    'body_fat_pct': _optional_float(w.body_fat_pct),
+                    'lean_mass_kg': _optional_float(w.lean_mass_kg),
+                    'body_water_l': _optional_float(w.body_water_l),
+                    'waist_cm': _optional_float(w.waist_cm),
+                    'notes': w.notes,
+                }
                 for w in WeightLog.objects.filter(user=user).order_by('date')
+            ],
+            'injections': [
+                {
+                    'medication': i.medication.name,
+                    'applied_at': i.applied_at.isoformat(),
+                    'dose_mg': float(i.dose_mg),
+                    'site': i.get_site_display(),
+                    'notes': i.notes,
+                }
+                for i in Injection.objects.filter(user=user).select_related('medication').order_by('applied_at')
+            ],
+            'side_effects': [
+                {
+                    'date': str(e.date),
+                    'kind': e.get_kind_display(),
+                    'intensity': e.get_intensity_display(),
+                    'injection_applied_at': e.injection.applied_at.isoformat() if e.injection else None,
+                    'notes': e.notes,
+                }
+                for e in SideEffect.objects.filter(user=user).select_related('injection').order_by('date')
             ],
             'diets': [
                 {

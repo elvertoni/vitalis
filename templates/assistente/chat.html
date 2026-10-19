@@ -78,6 +78,7 @@
                     <li>{% if record_summary.diet %}Dieta ativa{% if record_summary.diet.daily_calorie_target %}, {{ record_summary.diet.daily_calorie_target }} kcal{% endif %}{% else %}Nenhuma dieta ativa{% endif %}</li>
                     <li>{{ record_summary.medications }} medicamento{{ record_summary.medications|pluralize }} em uso</li>
                     <li>{{ record_summary.exams }} exame{{ record_summary.exams|pluralize }} e {{ record_summary.lab_results }} resultado{{ record_summary.lab_results|pluralize }} de laboratório</li>
+                    {% if record_summary.injections or record_summary.side_effects %}<li>{{ record_summary.injections }} {{ record_summary.injections|pluralize:'aplicação,aplicações' }} e {{ record_summary.side_effects }} {{ record_summary.side_effects|pluralize:'efeito colateral,efeitos colaterais' }}</li>{% endif %}
                 </ul>
             </div>
         </aside>

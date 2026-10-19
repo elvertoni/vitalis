@@ -1003,5 +1003,11 @@ como porta de entrada. `saude.Medication` já sabia *quando* há dose (D-063), m
   cartão depois da primeira aplicação: nada no `Medication` diz que é injetável, e um cartão por
   comprimido enterraria o que importa. A aplicação nova vem preenchida com o último
   medicamento, a última dose e o próximo local do rodízio. Data no futuro é erro de formulário.
-- **Pendente:** incluir os models novos em `_account_summary` (D-067), na exportação LGPD (D-059)
-  e no contexto do `assistente` (D-062).
+- **Privacidade e IA no mesmo passo:** a tela de exclusão de conta conta aplicações e efeitos
+  (`_account_summary`, D-067); a exportação LGPD leva `injections`, `side_effects` e as colunas
+  de composição do `weight_logs` (D-059); o `build_clinical_context` passa à Vitalis AI as 8
+  aplicações mais recentes (dose mostra a titulação), a próxima data, a aplicação não registrada
+  e os efeitos dos últimos 30 dias, e o resumo "o que a IA lê" do chat cita as contagens (D-062).
+  O prompt ganhou uma diretriz: sobre injetável, explicar e organizar, nunca sugerir mudar dose,
+  pular ou antecipar aplicação. A sugestão "Lidar com <sintoma>" aparece só com efeito
+  registrado nos últimos 14 dias.
