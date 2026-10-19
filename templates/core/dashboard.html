@@ -56,7 +56,7 @@
                         {% elif card.days_until == 1 %}Amanhã
                         {% else %}{{ card.next_due|date:'l, d/m' }}{% endif %}
                     </p>
-                    <p class="text-sm text-[#5c5c5a]">Última dose {{ card.last.dose_mg|floatformat:'-2' }} mg · local sugerido: {{ card.suggested_site|lower }}</p>
+                    <p class="text-sm text-[#5c5c5a]">{% if card.last %}Última dose {{ card.last.dose_mg|floatformat:'-2' }} mg{% else %}{{ card.medication.dosage|default:'Dose a definir' }}{% endif %} · local sugerido: {{ card.suggested_site|lower }}</p>
                 </div>
                 {% endfor %}
                 <div class="mt-auto pt-8">
@@ -270,7 +270,7 @@
                     {% for reminder in reminders_48h %}
                     <div class="flex items-center justify-between py-3">
                         <div class="flex items-center gap-3">
-                            <i data-lucide="{% if reminder.category == 'remedio' %}pill{% elif reminder.category == 'exame' %}flask-conical{% elif reminder.category == 'retorno' %}calendar-clock{% elif reminder.category == 'nutricao' %}notebook-pen{% else %}bell{% endif %}" class="w-4 h-4 stroke-[1.5] text-[#5d674f] shrink-0"></i>
+                            <i data-lucide="{% if reminder.category == 'aplicacao' %}syringe{% elif reminder.category == 'remedio' %}pill{% elif reminder.category == 'exame' %}flask-conical{% elif reminder.category == 'retorno' %}calendar-clock{% elif reminder.category == 'nutricao' %}notebook-pen{% else %}bell{% endif %}" class="w-4 h-4 stroke-[1.5] text-[#5d674f] shrink-0"></i>
                             <span class="text-base text-[#1a1a1a]">{{ reminder.title }}</span>
                         </div>
                         <span class="text-sm text-[#5c5c5a]">{{ reminder.remind_at|date:'d/m H:i' }}</span>

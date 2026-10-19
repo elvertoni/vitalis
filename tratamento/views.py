@@ -26,19 +26,15 @@ from .models import Injection, SideEffect, missed_due_date, next_due_date, sugge
 
 def schedule_cards(user, today=None):
     """
-    One card per medication that already has a shot on record: next dose day, the dose
-    and site to suggest, and a late flag. Read by the treatment index and, later, the Home.
+    One card per active injectable medication: next dose day, the dose and site to
+    suggest, and a late flag. Read by the treatment index and by the dashboard (D-069).
 
-    A medication enters only after its first shot is logged. Until then nothing says it
-    is an injectable, and a card for every pill in the cabinet would bury the one that
-    matters.
+    ``Medication.is_injectable`` decides who gets a card (D-071) — set by the first-access
+    screen, by the medication form or by logging a shot. ``last`` is ``None`` until the
+    first shot is logged; the templates show the prescribed dose instead.
     """
     today = today or timezone.localdate()
-    medications = (
-        Medication.objects.filter(user=user, is_active=True, injections__isnull=False)
-        .distinct()
-        .order_by('name')
-    )
+    medications = Medication.objects.filter(user=user, is_active=True, is_injectable=True).order_by('name')
     cards = []
     for medication in medications:
         last = medication.injections.order_by('-applied_at').first()
@@ -48,7 +44,7 @@ def schedule_cards(user, today=None):
             'last': last,
             'next_due': due,
             'days_until': (due - today).days if due else None,
-            'applied_today': timezone.localtime(last.applied_at).date() == today,
+            'applied_today': bool(last) and timezone.localtime(last.applied_at).date() == today,
             'missed': missed_due_date(medication, today),
             'suggested_site': Injection.Site(suggested_site(user, medication)).label,
         })
@@ -97,6 +93,13 @@ class InjectionCreateView(OwnerCreateView):
             initial['medication'] = last.medication
             initial['dose_mg'] = last.dose_mg
             initial['site'] = suggested_site(self.request.user, last.medication)
+        else:
+            # Primeira aplicação: o injetável cadastrado no primeiro acesso já vem escolhido.
+            first = Medication.objects.filter(
+                user=self.request.user, is_active=True, is_injectable=True
+            ).order_by('name').first()
+            if first:
+                initial['medication'] = first
         return initial
 
 

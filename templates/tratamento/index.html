@@ -37,7 +37,7 @@
                     {% endif %}
                 </div>
                 <h2 class="text-xl tracking-tight font-medium text-[#1a1a1a] mb-1">{{ card.medication.name }}</h2>
-                <p class="text-sm text-[#5c5c5a] mb-6">Última: {{ card.last.dose_mg|floatformat:'-2' }} mg em {{ card.last.applied_at|date:'d/m/Y' }} · {{ card.last.get_site_display }}</p>
+                <p class="text-sm text-[#5c5c5a] mb-6">{% if card.last %}Última: {{ card.last.dose_mg|floatformat:'-2' }} mg em {{ card.last.applied_at|date:'d/m/Y' }} · {{ card.last.get_site_display }}{% else %}{{ card.medication.dosage|default:'Dose a definir' }} · nenhuma aplicação registrada ainda{% endif %}</p>
 
                 <dl class="grid grid-cols-2 gap-6 pt-6 border-t border-[#dcdacd]">
                     <div>

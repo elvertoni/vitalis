@@ -63,6 +63,14 @@ class Injection(OwnedModel):
     def get_absolute_url(self):
         return reverse('tratamento:injection_update', args=[self.pk])
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Registrar uma aplicação é a prova de que o medicamento é injetável: marca a flag
+        # que decide o cartão do painel e a categoria do lembrete (D-071).
+        if not self.medication.is_injectable:
+            Medication.objects.filter(pk=self.medication_id).update(is_injectable=True)
+            self.medication.is_injectable = True
+
 
 class SideEffect(OwnedModel):
     """

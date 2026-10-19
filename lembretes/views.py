@@ -237,6 +237,7 @@ class NotificationPreferenceView(LoginRequiredMixin, View):
 # ('Retorno médico') não diz se dispara uma vez ou todo dia — que é o que decide se a pessoa
 # quer aquilo no WhatsApp.
 CATEGORY_HELP = {
+    Reminder.Category.INJECTION: 'No dia da aplicação do medicamento injetável, no horário cadastrado. Uma vez por semana. Incluído no plano Free.',
     Reminder.Category.SCHEDULING: 'Ligar para marcar algo que ainda não tem data: retorno pedido pelo médico, exame solicitado, tratamento sem acompanhamento agendado.',
     Reminder.Category.RETURN: 'Consulta já marcada se aproximando: 6, 4 e 2 dias antes, e na véspera.',
     Reminder.Category.MEDICATION: 'Cada horário de dose. Um remédio de uso contínuo dispara todos os dias.',

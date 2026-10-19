@@ -1049,3 +1049,23 @@ depois que existe pesagem ou aplicação.
   "Complete seu perfil" volta depois disso.
 - **Pendente (decisão de produto):** o plano Free tem `auto_reminders: False`, então o lembrete da
   aplicação não sai para quem não assina.
+
+### D-071 · Lembrete da aplicação no plano Free
+**Contexto:** D-070 deixou pendente que o Free (`auto_reminders: False`) não gerava lembrete
+nenhum, nem o da caneta. Decisão do dono do produto: seguir o modelo do mercado de apps de
+acompanhamento de GLP-1, em que o lembrete básico da aplicação é gratuito e a assinatura cobra
+pelo resto.
+**Decisão:**
+- **`saude.Medication.is_injectable`** (padrão `False`). Marcado pelo primeiro acesso, pelo
+  formulário do medicamento ou automaticamente no `Injection.save()`. A migration
+  `tratamento.0002` marca quem já tinha aplicação. A flag passa a decidir quem tem cartão
+  (`schedule_cards`), então o cartão aparece logo depois do primeiro acesso, mesmo sem
+  aplicação registrada (aí ele mostra a dose prescrita).
+- **Categoria `aplicacao` ("Aplicação")** em `Reminder.Category`, com título "Dia de aplicação:
+  <nome>", **e-mail por padrão** em `DEFAULT_CHANNELS` (exceção a D-044: é semanal, e esquecer
+  custa uma semana) e link direto para registrar a aplicação. Configurável na tela de
+  preferências como as outras.
+- **Free:** `sync_reminders` limpa os derivados e gera só `_medication_reminders(...,
+  injectable_only=True)`, passando pelo mesmo `_drop_already_handled` (sem reenvio; conferido
+  rodando `send_due_reminders` duas vezes: 2 e-mails, depois 0). Premium segue gerando tudo.
+- Landing, tela de assinatura e PRD 10.2 passam a dizer "Lembrete do dia da aplicação" no Free.

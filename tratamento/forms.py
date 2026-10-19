@@ -175,6 +175,7 @@ class OnboardingForm(StyledFormMixin, forms.Form):
                 schedule_times=[data['reminder_time'].strftime('%H:%M')],
                 weekdays=[data['weekday']],
                 is_active=True,
+                is_injectable=True,
             )
             if data.get('last_applied_on'):
                 applied_at = timezone.make_aware(

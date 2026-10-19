@@ -35,6 +35,7 @@ WHATSAPP = 'whatsapp'
 # refeição e treino são rotina que a pessoa já vive — ficam na central e no painel, e só saem
 # por mensagem se ela pedir na tela de preferências (D-054).
 DEFAULT_CHANNELS = {
+    Reminder.Category.INJECTION: frozenset({EMAIL}),
     Reminder.Category.SCHEDULING: frozenset({EMAIL}),
     Reminder.Category.RETURN: frozenset({EMAIL}),
 }
@@ -42,6 +43,7 @@ NO_CHANNEL = frozenset()
 
 # Categorias oferecidas na tela de preferências, na ordem em que aparecem.
 CONFIGURABLE_CATEGORIES = (
+    Reminder.Category.INJECTION,
     Reminder.Category.SCHEDULING,
     Reminder.Category.RETURN,
     Reminder.Category.MEDICATION,
@@ -96,6 +98,9 @@ def should_notify(reminder):
 def _absolute_url(reminder):
     """Link to the record that generated the reminder, or to the central as a fallback."""
     source = reminder.source
+    if reminder.category == Reminder.Category.INJECTION:
+        # O lembrete da aplicação abre direto no registro dela, já preenchido (D-071).
+        return f"{settings.SITE_URL}{reverse('tratamento:injection_create')}"
     path = (
         source.get_absolute_url()
         if source is not None and hasattr(source, 'get_absolute_url')

@@ -413,13 +413,20 @@ em `CONFIGURABLE_CATEGORIES`.
 Duas regras que não podem ser quebradas ao mexer aí:
 
 - **Ausência de linha não é "desligado"** — significa "nunca decidiu", e cai em
-  `DEFAULT_CHANNELS` (hoje: e-mail para `agendar` e `retorno`, nada para o resto). É isso que
+  `DEFAULT_CHANNELS` (hoje: e-mail para `aplicacao`, `agendar` e `retorno`, nada para o resto). É isso que
   impede que salvar preferências hoje silencie para sempre uma categoria criada amanhã.
 - **Falha de gateway não vaza para e-mail.** Se o WhatsApp cair e a categoria não tiver e-mail
   marcado, `send_reminder` devolve `None` e o comando **não** marca como enviado — o lembrete
   segue pendente para a próxima rodada. Mandar por e-mail o que a pessoa tirou do e-mail
   desfaz a escolha que a tela existe para fazer. (O fallback cego para e-mail era o
   comportamento antigo; foi removido.)
+
+**Injetável é categoria própria (D-071).** `Medication.is_injectable` (marcado no primeiro
+acesso, no formulário do medicamento ou sozinho ao registrar a primeira `Injection`) faz
+`_medication_reminders` gerar `Category.INJECTION` ("Dia de aplicação: …"), com e-mail por
+padrão e link direto para `/tratamento/aplicacoes/nova/`. No plano Free, `sync_reminders` limpa
+os derivados e gera **só** essa categoria; o resto do automático continua sendo da assinatura.
+A mesma flag decide quem tem cartão em `tratamento.views.schedule_cards`.
 
 O motivo de D-044 continua valendo — remédio, refeição e treino são rotina que a pessoa já
 vive e não saem por mensagem até ela pedir; o que mudou é que agora ela *pode* pedir.

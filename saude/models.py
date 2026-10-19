@@ -295,6 +295,11 @@ class Medication(OwnedModel):
         help_text='Em branco, todo dia. Marque os dias para remédio semanal.',
     )
     is_active = models.BooleanField('em uso', default=True)
+    is_injectable = models.BooleanField(
+        'injetável',
+        default=False,
+        help_text='Caneta ou injeção. Ganha cartão de próxima aplicação e lembrete próprio, também no plano Free.',
+    )
     cycle_daily_days = models.PositiveSmallIntegerField(
         'dias da fase diária',
         null=True,

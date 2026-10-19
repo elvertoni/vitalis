@@ -404,7 +404,7 @@ Central unificada que consolida gatilhos das três áreas:
 
 | Plano | Preço | Limites |
 |---|---|---|
-| **Free** | R$ 0 | 1 dieta ativa, treino ilimitado, sem lembretes automáticos, sem IA |
+| **Free** | R$ 0 | 1 dieta ativa, treino ilimitado, só o lembrete automático da aplicação do injetável (D-071), sem IA |
 | **Premium** | ⚠️ definir | tudo ilimitado + lembretes + IA (fase futura) |
 
 ### 10.3 Gateway ⚠️

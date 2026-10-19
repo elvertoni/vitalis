@@ -20,6 +20,9 @@ from core.models import OwnedModel
 class Reminder(OwnedModel):
     class Category(models.TextChoices):
         MEDICATION = 'remedio', 'Remédio'
+        # Medicamento injetável (D-071): categoria própria porque é semanal, sai também no
+        # plano Free e vai por e-mail por padrão — esquecer a caneta custa uma semana.
+        INJECTION = 'aplicacao', 'Aplicação'
         EXAM = 'exame', 'Exame'
         RETURN = 'retorno', 'Retorno médico'
         # Marcar algo que ainda não tem data: o único grupo que sai por e-mail (D-044).

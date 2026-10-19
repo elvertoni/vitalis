@@ -53,14 +53,17 @@ def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
     """
     Rebuilds every derived, still-pending reminder for ``user`` within the next days.
 
-    Free plan (PRD 10.2, "sem lembretes automáticos"): this clears any derived reminder
-    instead of generating new ones. Manual reminders are untouched either way — the limit
-    is specifically on the *automatic* kind.
+    Free plan (PRD 10.2, revised in D-071): clears every derived reminder and regenerates
+    only the injectable's shot reminders. Manual reminders are untouched either way — the
+    limit is specifically on the *automatic* kind.
     """
     from billing.gating import auto_reminders_enabled
 
-    if not auto_reminders_enabled(user):
-        return clear_derived_reminders(user)
+    # Free (D-071): só o lembrete da aplicação do injetável, como no lembrete básico gratuito
+    # do mercado. Todo o resto do automático continua sendo da assinatura.
+    full_plan = auto_reminders_enabled(user)
+    if not full_plan:
+        clear_derived_reminders(user)
 
     today = timezone.localdate()
     horizon = today + timedelta(days=horizon_days)
@@ -72,8 +75,12 @@ def sync_reminders(user, horizon_days=LOOKAHEAD_DAYS):
         remind_at__gte=window_start, remind_at__lte=window_end,
     ).delete()
 
-    batch = []
-    batch += _medication_reminders(user, today, horizon)
+    batch = _medication_reminders(user, today, horizon, injectable_only=not full_plan)
+    if not full_plan:
+        batch = _drop_already_handled(user, batch, window_start, window_end)
+        Reminder.objects.bulk_create(batch)
+        return len(batch)
+
     batch += _exam_reminders(user, today, horizon)
     batch += _appointment_reminders(user, today, horizon)
     batch += _appointment_countdown_reminders(user, today, horizon)
@@ -121,18 +128,22 @@ def clear_derived_reminders(user):
     return deleted
 
 
-def _medication_reminders(user, today, horizon):
+def _medication_reminders(user, today, horizon, injectable_only=False):
     content_type = ContentType.objects.get_for_model(Medication)
     reminders = []
-    for medication in Medication.objects.filter(user=user, is_active=True):
+    medications = Medication.objects.filter(user=user, is_active=True)
+    if injectable_only:
+        medications = medications.filter(is_injectable=True)
+    for medication in medications:
+        category = Reminder.Category.INJECTION if medication.is_injectable else Reminder.Category.MEDICATION
         day = today
         while day <= horizon:
             if medication.is_current_on(day):
                 for time_str in medication.schedule_times:
                     hh, mm = (int(part) for part in time_str.split(':'))
                     reminders.append(Reminder(
-                        user=user, category=Reminder.Category.MEDICATION,
-                        title=medication.name,
+                        user=user, category=category,
+                        title=f'Dia de aplicação: {medication.name}' if medication.is_injectable else medication.name,
                         description=f'{medication.dosage} · {medication.frequency}'.strip(' ·'),
                         remind_at=_aware(day, time(hh, mm)),
                         is_recurring=True, recurrence_rule=medication.frequency or 'diário',
