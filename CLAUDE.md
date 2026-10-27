@@ -39,7 +39,9 @@ template ou `.py` editado só aparece depois de reiniciar o servidor.
 `seed_medico` (em `core/management/commands/`) é **genérico e não contém dado nenhum**: tudo
 vem do JSON de `--source`. É idempotente (`update_or_create` casando por campo natural), roda
 numa transação e importa perfil, médicos, tratamentos, medicamentos, exames (com anexo, se
-`--attachments-dir` apontar pros PDFs), consultas, alimentos, dietas e pesagens. A forma do
+`--attachments-dir` apontar pros PDFs), consultas, alimentos, dietas, pesagens e treino (grupos,
+exercícios, fichas com divisões e prescrições, sessões com séries — D-074). Remédio com o
+mesmo nome de um injetável já cadastrado é pulado, para não dobrar o lembrete. A forma do
 JSON está em `medico-seed.example.json` (versionado, sem dado). Dossiê real vive em
 `medico-data/` e em `medico-seed.json` — **ambos no `.gitignore`** por serem dado sensível de
 saúde (D-041). Nunca commite nem cole conteúdo desses arquivos.

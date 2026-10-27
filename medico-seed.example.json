@@ -1,6 +1,5 @@
 {
   "_comment": "Estrutura lida por `python manage.py seed_medico`. Sem dados reais — o arquivo com dados fica fora do git (ver DECISIONS.md D-041). Datas em AAAA-MM-DD, horários em HH:MM, decimais como string.",
-
   "profile": {
     "birth_date": "1980-01-01",
     "sex": "M",
@@ -9,7 +8,6 @@
     "notification_channel": "email",
     "phone": ""
   },
-
   "doctors": [
     {
       "name": "Dr. Fulano de Tal",
@@ -21,7 +19,6 @@
       "email": ""
     }
   ],
-
   "treatments": [
     {
       "name": "Nome do tratamento (CID se houver)",
@@ -33,7 +30,6 @@
       "notes": ""
     }
   ],
-
   "medications": [
     {
       "name": "Nome comercial",
@@ -41,7 +37,9 @@
       "frequency": "1x ao dia",
       "start_date": "2026-01-01",
       "end_date": null,
-      "schedule_times": ["08:00"],
+      "schedule_times": [
+        "08:00"
+      ],
       "weekdays": [],
       "cycle_daily_days": null,
       "cycle_alternates_after": false,
@@ -49,7 +47,6 @@
       "treatment": "Nome do tratamento (CID se houver)"
     }
   ],
-
   "exams": [
     {
       "name": "Hemograma",
@@ -63,7 +60,6 @@
       "attachment_file": "subpasta/arquivo.pdf"
     }
   ],
-
   "lab_panels": [
     {
       "title": "Hemograma completo",
@@ -91,7 +87,6 @@
       ]
     }
   ],
-
   "clinical_notes": [
     {
       "kind": "alert",
@@ -109,7 +104,6 @@
       "order": 1
     }
   ],
-
   "appointments": [
     {
       "doctor": "Dr. Fulano de Tal",
@@ -120,7 +114,6 @@
       "next_return_date": "2026-02-05"
     }
   ],
-
   "foods": [
     {
       "name": "Arroz branco cozido",
@@ -134,7 +127,6 @@
       "recipe": ""
     }
   ],
-
   "diets": [
     {
       "name": "Plano alimentar",
@@ -152,14 +144,101 @@
           "change_note": "O que mudou em relação ao plano anterior.",
           "order": 1,
           "items": [
-            { "food": "Arroz branco cozido", "quantity_g": "100" }
+            {
+              "food": "Arroz branco cozido",
+              "quantity_g": "100"
+            }
           ]
         }
       ]
     }
   ],
-
   "weight_logs": [
-    { "date": "2026-01-01", "weight_kg": "90.00", "notes": "" }
+    {
+      "date": "2026-01-01",
+      "weight_kg": "90.00",
+      "notes": ""
+    }
+  ],
+  "muscle_groups": [
+    "Peito",
+    "Pernas"
+  ],
+  "exercises": [
+    {
+      "name": "Supino máquina",
+      "muscle_group": "Peito",
+      "type": "strength",
+      "notes": ""
+    },
+    {
+      "name": "Leg press 45°",
+      "muscle_group": "Pernas",
+      "type": "strength",
+      "notes": ""
+    }
+  ],
+  "routines": [
+    {
+      "name": "Ficha academia",
+      "description": "",
+      "is_active": true,
+      "days": [
+        {
+          "label": "A",
+          "order": 1,
+          "muscle_groups": [
+            "Peito",
+            "Pernas"
+          ],
+          "targets": [
+            {
+              "exercise": "Supino máquina",
+              "target_sets": 3,
+              "target_reps": "8-12",
+              "rest_seconds": 90,
+              "order": 1
+            },
+            {
+              "exercise": "Leg press 45°",
+              "target_sets": 3,
+              "target_reps": "10-12",
+              "rest_seconds": 120,
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "workout_sessions": [
+    {
+      "date": "2026-01-06",
+      "routine": "Ficha academia",
+      "day": "A",
+      "duration_minutes": 50,
+      "morning_after": "ok",
+      "notes": "",
+      "entries": [
+        {
+          "exercise": "Supino máquina",
+          "rest_seconds": 90,
+          "notes": "",
+          "order": 1,
+          "sets": [
+            {
+              "set_number": 1,
+              "reps": 12,
+              "weight": "30"
+            },
+            {
+              "set_number": 2,
+              "reps": 10,
+              "weight": "35"
+            }
+          ]
+        }
+      ]
+    }
   ]
 }

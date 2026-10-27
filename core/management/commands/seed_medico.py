@@ -25,6 +25,16 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from nutricao.models import Diet, Food, Meal, MealItem, WeightLog
+from treino.models import (
+    Exercise,
+    MuscleGroup,
+    RoutineDay,
+    RoutineExerciseTarget,
+    SessionEntry,
+    SetLog,
+    WorkoutRoutine,
+    WorkoutSession,
+)
 from saude.models import (
     Appointment,
     ClinicalNote,
@@ -97,6 +107,10 @@ class Command(BaseCommand):
             foods = self._foods(user, data.get('foods', []))
             self._diets(user, data.get('diets', []), foods)
             self._weight_logs(user, data.get('weight_logs', []))
+            groups = self._muscle_groups(user, data.get('muscle_groups', []))
+            exercises = self._exercises(user, data.get('exercises', []), groups)
+            days = self._routines(user, data.get('routines', []), groups, exercises)
+            self._workout_sessions(user, data.get('workout_sessions', []), days, exercises)
 
         self.stdout.write(self.style.SUCCESS('Ingestão concluída.'))
 
@@ -163,6 +177,11 @@ class Command(BaseCommand):
     def _medications(self, user, items, treatments):
         count = 0
         for item in items:
+            # O injetável cadastrado no primeiro acesso já tem dia e horário certos. Outra
+            # linha com o mesmo nome renderia lembrete em dobro (D-073), então ele fica.
+            if Medication.objects.filter(user=user, is_injectable=True, name__iexact=item['name']).exists():
+                self.stdout.write(f'    {item["name"]}: injetável já cadastrado, mantido')
+                continue
             Medication.objects.update_or_create(
                 user=user,
                 name=item['name'],
@@ -381,3 +400,121 @@ class Command(BaseCommand):
             )
             count += 1
         self.stdout.write(f'  {count} registro(s) de peso')
+
+    # -- treino -----------------------------------------------------------
+
+    def _muscle_groups(self, user, names):
+        result = {}
+        for name in names:
+            group, _ = MuscleGroup.objects.get_or_create(user=user, name=name)
+            result[name] = group
+        self.stdout.write(f'  {len(result)} grupo(s) muscular(es)')
+        return result
+
+    def _exercises(self, user, items, groups):
+        result = {}
+        for item in items:
+            group = groups.get(item['muscle_group'])
+            if not group:
+                raise CommandError(
+                    f'Exercício {item["name"]!r} usa grupo inexistente: {item["muscle_group"]!r}'
+                )
+            exercise, _ = Exercise.objects.update_or_create(
+                user=user,
+                name=item['name'],
+                defaults={
+                    'muscle_group': group,
+                    'type': item.get('type', Exercise.Type.STRENGTH),
+                    'notes': item.get('notes', ''),
+                },
+            )
+            result[item['name']] = exercise
+        self.stdout.write(f'  {len(result)} exercício(s)')
+        return result
+
+    def _routines(self, user, items, groups, exercises):
+        """
+        Fichas, divisões e prescrições. Devolve as divisões por ``(ficha, rótulo)``, a
+        chave com que as sessões apontam para a divisão seguida.
+
+        As prescrições são recriadas a cada rodada, como os itens de refeição.
+        """
+        days = {}
+        for item in items:
+            routine, _ = WorkoutRoutine.objects.update_or_create(
+                user=user,
+                name=item['name'],
+                defaults={
+                    'description': item.get('description', ''),
+                    'is_active': item.get('is_active', True),
+                },
+            )
+            for day_data in item.get('days', []):
+                day, _ = RoutineDay.objects.update_or_create(
+                    user=user,
+                    routine=routine,
+                    label=day_data['label'],
+                    defaults={'order': day_data.get('order', 1)},
+                )
+                day.muscle_groups.set([groups[name] for name in day_data.get('muscle_groups', [])])
+                day.exercise_targets.all().delete()
+                for order, target in enumerate(day_data.get('targets', []), start=1):
+                    exercise = exercises.get(target['exercise'])
+                    if not exercise:
+                        raise CommandError(
+                            f'Divisão {day_data["label"]!r} usa exercício inexistente: '
+                            f'{target["exercise"]!r}'
+                        )
+                    RoutineExerciseTarget.objects.create(
+                        user=user,
+                        routine_day=day,
+                        exercise=exercise,
+                        target_sets=target.get('target_sets', 3),
+                        target_reps=target.get('target_reps', '10'),
+                        rest_seconds=target.get('rest_seconds'),
+                        order=target.get('order', order),
+                    )
+                days[(item['name'], day_data['label'])] = day
+        self.stdout.write(f'  {len(items)} ficha(s), {len(days)} divisão(ões)')
+        return days
+
+    def _workout_sessions(self, user, items, days, exercises):
+        """Treinos já feitos. A sessão casa por data e divisão; as séries são recriadas."""
+        sets = 0
+        for item in items:
+            day = days.get((item.get('routine'), item.get('day')))
+            session, _ = WorkoutSession.objects.update_or_create(
+                user=user,
+                date=_date(item['date']),
+                routine_day=day,
+                defaults={
+                    'duration_minutes': item.get('duration_minutes'),
+                    'morning_after': item.get('morning_after', ''),
+                    'notes': item.get('notes', ''),
+                },
+            )
+            session.entries.all().delete()
+            for order, entry_data in enumerate(item.get('entries', []), start=1):
+                exercise = exercises.get(entry_data['exercise'])
+                if not exercise:
+                    raise CommandError(
+                        f'Treino de {item["date"]} usa exercício inexistente: {entry_data["exercise"]!r}'
+                    )
+                entry = SessionEntry.objects.create(
+                    user=user,
+                    session=session,
+                    exercise=exercise,
+                    rest_seconds=entry_data.get('rest_seconds'),
+                    notes=entry_data.get('notes', ''),
+                    order=entry_data.get('order', order),
+                )
+                for set_data in entry_data.get('sets', []):
+                    SetLog.objects.create(
+                        user=user,
+                        entry=entry,
+                        set_number=set_data['set_number'],
+                        reps=set_data['reps'],
+                        weight=_decimal(set_data.get('weight', 0)) or Decimal('0'),
+                    )
+                    sets += 1
+        self.stdout.write(f'  {len(items)} treino(s), {sets} série(s)')

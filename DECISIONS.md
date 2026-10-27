@@ -1107,3 +1107,19 @@ dois medicamentos iguais e, com eles, dois lembretes de aplicação.
   outra dose, dão um medicamento e uma aplicação.
 - **Dois lembretes nem sempre são duplicata:** a janela de `sync_reminders` vai de hoje a hoje
   + 7, então um injetável cujo dia é hoje tem o lembrete de hoje e o da semana que vem.
+
+### D-074 · Seed importa treino, e o dossiê volta do backup antigo
+**Contexto:** produção recomeçou vazia (D-072), mas o dono pediu de volta o que tinha antes. O
+dump de setembro no Drive tinha exames, painéis, notas, dieta e uma ficha de treino. Restaurar o
+dump inteiro não serve: as chaves primárias colidem com a conta nova e trariam outras contas junto.
+**Decisão:**
+- **O dump vira payload do `seed_medico`.** Restaurado num Postgres descartável, só as linhas do
+  dono são lidas e montadas no formato de `medico-seed.example.json`. O perfil fica de fora: o
+  primeiro acesso refeito em outubro é mais novo que o de setembro.
+- **`seed_medico` ganha as seções de treino:** `muscle_groups`, `exercises`, `routines` (com
+  divisões e prescrições) e `workout_sessions` (com exercícios e séries). Ficha casa por nome,
+  divisão por ficha + rótulo, sessão por data + divisão. Prescrições e séries são recriadas a cada
+  rodada, como os itens de refeição.
+- **Injetável do primeiro acesso não é sobrescrito:** medicamento do payload com o nome de um
+  injetável que o dono já tem é pulado. Outra linha com o mesmo nome dobraria o lembrete (D-073).
+- Conferido num SQLite novo: duas rodadas seguidas dão as mesmas contagens do dump.
