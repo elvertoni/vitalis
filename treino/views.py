@@ -43,6 +43,7 @@ from .forms import (
 )
 from .models import (
     Exercise,
+    ExerciseGuide,
     MuscleGroup,
     RoutineDay,
     RoutineExerciseTarget,
@@ -181,6 +182,22 @@ def _load_progress(exercise):
         .order_by('session__date')
     )
     return [{'date': entry.session.date.isoformat(), 'weight': float(entry.heaviest_set)} for entry in entries]
+
+
+class ExerciseGuideView(LoginRequiredMixin, TemplateView):
+    """Body of the "Ver execução correta" modal, fetched when the modal opens (D-079).
+
+    The guide is global catalog (D-075), so there is no owner to check — only login. It is a
+    fragment, not a page: the 70 KB muscle map would weigh on every screen that lists many
+    exercises if it were rendered up front.
+    """
+
+    template_name = 'treino/partials/_guide_body.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['guide'] = get_object_or_404(ExerciseGuide, pk=kwargs['pk'])
+        return context
 
 
 class ExerciseCreateView(OwnerCreateView):

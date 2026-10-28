@@ -1,0 +1,32 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Barbell bench press (Supino reto com barra). EQUIPMENT: flat bench and Olympic
+barbell with plates (no rack uprights needed).
+CAMERA: strict side view, character's head on the left end of the bench.
+LEFT PANEL — START: lying on the back on the flat bench, feet flat on the floor, knees bent about
+90 degrees, buttocks and upper back on the bench. The barbell rests ON THE LOWER PART OF THE
+BREASTBONE: measured along the torso, the bar sits about halfway between the shoulder joint and
+the bottom of the ribcage, directly above the elbows. Forearms perfectly vertical under the bar,
+elbows below the bench line and about 45 degrees from the torso, wrists straight, hands visibly
+gripping the bar.
+RIGHT PANEL — END: same body position, arms fully extended straight up, barbell directly above
+the shoulder joints, wrists straight, elbows not hyperextended.
+MUST BE VISIBLE: in the left panel the bar is clearly lower than the armpit line, over the lower
+chest; forearms vertical; buttocks on the bench; feet flat on the floor.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, bar
+over the neck or collarbones, bar over the shoulder joint at the start, hips lifted off the bench.

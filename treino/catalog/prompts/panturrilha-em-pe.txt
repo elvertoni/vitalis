@@ -1,0 +1,23 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Standing calf raise (Panturrilha em pé). EQUIPMENT: low step block on the floor, hands on a wall for balance.
+CAMERA: strict side view, character facing right.
+LEFT PANEL — START: standing with the balls of the feet on the edge of the step, heels hanging slightly below the step, knees straight but not locked, body upright.
+RIGHT PANEL — END: same position, rising high onto the balls of the feet, heels well above the step, knees still straight.
+MUST BE VISIBLE: balls of the feet on the step edge in both panels; knees straight; heels below the step at the start.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, bent knees, flat feet on top of the step.

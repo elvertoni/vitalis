@@ -30,11 +30,12 @@
             {% if routineday.exercise_targets.all %}
             <div class="flex flex-col divide-y divide-[#dcdacd]">
                 {% for target in routineday.exercise_targets.all %}
-                <div class="flex items-center justify-between py-4">
-                    <div>
+                <div class="flex flex-wrap items-center justify-between gap-3 py-4">
+                    <div class="flex-1 min-w-0">
                         <a href="{{ target.exercise.get_absolute_url }}" class="text-base font-medium text-[#1a1a1a] hover:text-[#5d674f] transition-colors">{{ target.exercise.name }}</a>
                         <span class="text-sm text-[#5c5c5a] block">{{ target.target_sets }} séries de {{ target.target_reps }}</span>
                     </div>
+                    {% include 'treino/partials/_guide_button.html' with exercise=target.exercise %}
                     <form method="post" action="{% url 'treino:routine_exercise_delete' target.pk %}" onsubmit="return confirm('Remover {{ target.exercise.name|escapejs }} desta divisão?')">
                         {% csrf_token %}
                         <button type="submit" class="text-sm text-[#5c5c5a] hover:text-[#1a1a1a] transition-colors">Remover</button>
@@ -49,4 +50,5 @@
 
     </div>
 </section>
+{% include 'treino/partials/_guide_modal.html' %}
 {% endblock %}

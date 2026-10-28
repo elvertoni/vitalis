@@ -67,6 +67,9 @@
                                 </span>
                                 {% endif %}
                             </div>
+                            {% if row.target.exercise.guide_id %}
+                            <div class="mt-3">{% include 'treino/partials/_guide_button.html' with exercise=row.target.exercise %}</div>
+                            {% endif %}
                         </div>
                     </header>
 
@@ -258,4 +261,5 @@ prescrição de 45s a 120s ficava só no papel.
     }
 })();
 </script>
+{% include 'treino/partials/_guide_modal.html' %}
 {% endblock %}

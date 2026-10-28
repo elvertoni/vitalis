@@ -1,0 +1,23 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Barbell hip thrust (Elevação pélvica). EQUIPMENT: Olympic barbell with plates and a flat bench.
+CAMERA: strict side view, bench on the left.
+LEFT PANEL — START: upper back resting on the edge of the bench, barbell across the hips held with both hands, feet flat hip-width, knees bent, hips low near the floor.
+RIGHT PANEL — END: hips driven up until the torso and thighs form one straight line, shins vertical, upper back still on the bench, chin slightly tucked.
+MUST BE VISIBLE: straight line from shoulders to knees at the top; shins vertical at the top; feet flat.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, hyperextended lower back at the top, feet far from the hips.

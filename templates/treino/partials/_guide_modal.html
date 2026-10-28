@@ -1,0 +1,94 @@
+{% comment %}
+Modal "Ver execução correta" (D-079). Incluído uma vez em cada tela que tem
+treino/partials/_guide_button.html. O conteúdo vem do servidor quando o modal abre, porque o
+mapa muscular pesa ~70 KB e a tela de registro lista muitos exercícios. <dialog> com
+showModal() deixa o resto da página inerte e fecha no Esc; o laço de Tab abaixo prende o foco
+também contra a barra do navegador, e o foco volta ao botão que abriu.
+{% endcomment %}
+<dialog id="guide-modal" aria-labelledby="guide-title"
+        class="guide-modal w-[calc(100%-2rem)] max-w-4xl max-h-[calc(100dvh-2rem)] m-auto p-0 rounded-[2rem] bg-white text-[#1a1a1a] backdrop:bg-[#1a1a1a]/50">
+    <div class="overflow-y-auto max-h-[calc(100dvh-2rem)] px-6 pb-6 md:px-10 md:pb-10">
+        {# Fixo ao rolar: no celular não há Esc, e o guia é mais alto que a tela #}
+        <div class="sticky top-0 z-10 flex justify-end pt-4 -mr-2 -mb-11 md:pt-6 pointer-events-none">
+            <button type="button" data-guide-close aria-label="Fechar"
+                    class="pointer-events-auto w-11 h-11 rounded-full flex items-center justify-center bg-white/90 text-[#1a1a1a] hover:bg-[#f5f4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] transition-colors">
+                <i data-lucide="x" class="w-5 h-5 stroke-[1.5]" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div data-guide-body class="pt-4 md:pt-6"></div>
+    </div>
+</dialog>
+<script>
+(function () {
+    const dialog = document.getElementById('guide-modal');
+    if (!dialog || typeof dialog.showModal !== 'function') {
+        return;
+    }
+    const body = dialog.querySelector('[data-guide-body]');
+    const closeBtn = dialog.querySelector('[data-guide-close]');
+    let opener = null;
+
+    function placeholder(text) {
+        body.innerHTML = '<h2 id="guide-title" class="pr-12 text-2xl tracking-tight font-medium"></h2>';
+        body.firstChild.textContent = text;
+    }
+
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-guide-url]');
+        if (!button) {
+            return;
+        }
+        opener = button;
+        placeholder('Carregando guia…');
+        document.documentElement.classList.add('overflow-hidden');
+        dialog.showModal();
+        closeBtn.focus();
+        fetch(button.dataset.guideUrl, { credentials: 'same-origin' })
+            .then(function (response) {
+                // Sessão vencida redireciona para o login com 200: não injete a página inteira.
+                if (!response.ok || response.redirected) {
+                    throw new Error(response.status);
+                }
+                return response.text();
+            })
+            .then(function (html) {
+                body.innerHTML = html;
+                lucide.createIcons();
+            })
+            .catch(function () {
+                placeholder('Não foi possível carregar o guia. Tente de novo.');
+            });
+    });
+
+    closeBtn.addEventListener('click', function () {
+        dialog.close();
+    });
+    // Clique no fundo escurecido: o alvo é o próprio <dialog>, fora do conteúdo.
+    dialog.addEventListener('click', function (event) {
+        if (event.target === dialog) {
+            dialog.close();
+        }
+    });
+    dialog.addEventListener('close', function () {
+        document.documentElement.classList.remove('overflow-hidden');
+        if (opener) {
+            opener.focus();
+        }
+    });
+    dialog.addEventListener('keydown', function (event) {
+        if (event.key !== 'Tab') {
+            return;
+        }
+        const focusable = dialog.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    });
+})();
+</script>

@@ -92,6 +92,9 @@
                                     {% if target.exercise.notes %}
                                     <span class="block text-sm text-[#5c5c5a] mt-1 max-w-prose leading-relaxed">{{ target.exercise.notes }}</span>
                                     {% endif %}
+                                    {% if target.exercise.guide_id %}
+                                    <span class="block mt-3">{% include 'treino/partials/_guide_button.html' with exercise=target.exercise %}</span>
+                                    {% endif %}
                                 </td>
                                 <td class="hidden md:table-cell py-4 pr-3 text-base text-[#1a1a1a] tabular-nums whitespace-nowrap">
                                     {{ target.target_sets }} &times; {{ target.target_reps }}
@@ -157,4 +160,5 @@
 
     </div>
 </section>
+{% include 'treino/partials/_guide_modal.html' %}
 {% endblock %}

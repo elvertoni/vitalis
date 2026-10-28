@@ -1,0 +1,12 @@
+{% comment %}
+Botão "Ver execução correta" (D-079). Uso: {% include 'treino/partials/_guide_button.html' with exercise=... %}
+Só aparece com guia vinculado; lê guide_id, então não exige select_related. A tela que o usa
+também inclui treino/partials/_guide_modal.html uma vez.
+{% endcomment %}
+{% if exercise.guide_id %}
+<button type="button" data-guide-url="{% url 'treino:exercise_guide' exercise.guide_id %}" aria-haspopup="dialog"
+        class="inline-flex items-center gap-2 min-h-[44px] px-4 rounded-full border border-[#dcdacd] bg-white text-sm font-medium text-[#1a1a1a] hover:border-[#5d674f] hover:text-[#5d674f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5d674f] focus-visible:ring-offset-2 transition-colors shrink-0">
+    <i data-lucide="book-open" class="w-4 h-4 stroke-[1.5]" aria-hidden="true"></i>
+    Ver execução correta
+</button>
+{% endif %}

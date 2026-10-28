@@ -1,0 +1,35 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Cable Pallof press (Pallof press na polia). EQUIPMENT: cable tower with the pulley
+set at chest height and a single handle.
+CAMERA: front view, the character facing the viewer; the cable tower stands at the LEFT edge of
+each panel and the cable runs horizontally from the tower to the character's hands.
+LEFT PANEL — START: standing side-on to the tower (the tower is at the character's right side),
+feet shoulder-width, knees slightly bent, both hands holding the handle against the middle of the
+chest, cable taut and horizontal.
+RIGHT PANEL — END: same stance, both arms pressed straight out TOWARD THE VIEWER, hands still in
+front of the middle of the chest (the arms are seen foreshortened, pointing at the camera), cable
+taut and horizontal from the tower to the hands, torso square to the viewer, not turned toward the
+tower.
+ARROWS: none in either panel (exception to the arrow rule above: the press goes straight at
+the camera, and any arrow would read as a sideways or downward move).
+MUST BE VISIBLE: cable perpendicular to the arms in the right panel; torso square to the viewer in
+both panels; hands centred in front of the chest in both panels.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, arms
+pointing sideways, torso rotated toward the tower, a different face or hairstyle from the
+reference, any arrow.

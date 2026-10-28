@@ -1,0 +1,23 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: 45-degree back extension (Hiperextensão lombar). EQUIPMENT: 45-degree Roman chair (back extension bench).
+CAMERA: strict side view.
+LEFT PANEL — START: hips on the pad, ankles locked under the foot rollers, arms crossed on the chest, torso hinged down at the hips toward the floor, spine neutral.
+RIGHT PANEL — END: torso raised until the body forms one straight line from heels to head along the bench angle, arms still crossed.
+MUST BE VISIBLE: top position is a straight line, not arched beyond it; neutral spine in both panels; pad under the hips, not the belly.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, arching back beyond the straight line, pad too high blocking the hip hinge.

@@ -1,0 +1,35 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Bent-over barbell row (Remada curvada com barra). EQUIPMENT: Olympic barbell
+with plates.
+CAMERA: 3/4 view from front-left and slightly above, so the flat back and the bar under the
+torso are both visible.
+LEFT PANEL — START: feet hip-width, knees slightly bent, hips pushed far back, torso hinged forward
+until it is almost parallel to the floor (about 20 degrees above horizontal). The whole back, from hips to the base of the neck,
+is ONE STRAIGHT FLAT LINE like a tabletop, chest up, neck in line with the spine. Arms hang
+straight down from the shoulders holding the barbell with an overhand grip; the bar hangs just
+below the knees.
+RIGHT PANEL — END: exactly the same legs, hips and flat torso angle as the left panel. Only the
+arms move: elbows driven up and back past the torso, the barbell pulled straight up until it
+touches the belly at the navel; because the torso is almost horizontal, the bar is far above the
+knees and clearly away from the thighs, and the elbows rise above the line of the back. Back still one straight
+flat line.
+MUST BE VISIBLE: tabletop-flat back in both panels with no hump between the shoulder blades; same
+torso angle in both panels; bar touching the belly at the navel in the right panel.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back,
+hunched upper back, torso rising, bar resting on the thighs or hips.

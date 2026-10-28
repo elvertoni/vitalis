@@ -1,0 +1,23 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Machine shoulder press (Desenvolvimento na máquina). EQUIPMENT: selectorized shoulder press machine with handles.
+CAMERA: strict side view, character facing right.
+LEFT PANEL — START: seated with back against the backrest, feet flat on the floor, hands on the handles at shoulder height, elbows bent under the hands.
+RIGHT PANEL — END: same seated position, arms extended overhead pushing the handles up, elbows almost straight, back still on the backrest.
+MUST BE VISIBLE: back on the backrest in both panels; handles at shoulder height at the start; shoulders not shrugged.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, back leaving the backrest, shrugged shoulders, locked elbows.

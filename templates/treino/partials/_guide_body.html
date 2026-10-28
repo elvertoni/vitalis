@@ -1,0 +1,60 @@
+{% load static %}
+{% comment %}
+Corpo do modal do guia (D-079), servido por treino:exercise_guide e injetado pelo script de
+_guide_modal.html. Sem ilustração aprovada, a figura some: has_illustration já confere o PNG,
+e {% static %} de arquivo ausente quebra o render no WhiteNoise.
+{% endcomment %}
+<div class="pr-12 mb-8">
+    <span class="text-sm font-medium tracking-widest uppercase text-[#5d674f] block mb-3">Execução correta</span>
+    <h2 id="guide-title" class="text-2xl md:text-3xl tracking-tight font-medium text-[#1a1a1a] leading-tight">{{ guide.name }}</h2>
+    {% if guide.equipment %}<p class="text-sm text-[#5c5c5a] mt-2">{{ guide.equipment }}</p>{% endif %}
+</div>
+
+{% if guide.has_illustration %}
+<figure class="mb-10">
+    <img src="{% static guide.illustration_path %}" width="1536" height="1024" loading="lazy" alt="{{ guide.illustration_alt }}"
+         class="w-full h-auto rounded-[1.5rem] border border-[#dcdacd] bg-[#f5f4f0]">
+    <figcaption class="grid grid-cols-2 mt-3 text-xs font-medium tracking-widest uppercase text-[#5c5c5a] text-center">
+        <span>Início</span>
+        <span>Fim</span>
+    </figcaption>
+</figure>
+{% endif %}
+
+<div class="grid gap-10 md:grid-cols-[1fr_minmax(0,20rem)]">
+    <div class="flex flex-col gap-8 min-w-0">
+        <section>
+            <h3 class="text-lg tracking-tight font-medium text-[#1a1a1a] mb-4">Passo a passo</h3>
+            <ol class="flex flex-col gap-3">
+                {% for step in guide.execution_steps %}
+                <li class="flex gap-3 text-base text-[#1a1a1a] leading-relaxed">
+                    <span class="flex-none w-7 h-7 rounded-full bg-[#e8eae4] text-[#5d674f] flex items-center justify-center text-sm font-medium tabular-nums" aria-hidden="true">{{ forloop.counter }}</span>
+                    <span class="pt-0.5">{{ step }}</span>
+                </li>
+                {% endfor %}
+            </ol>
+        </section>
+        {% if guide.common_mistakes %}
+        <section>
+            <h3 class="text-lg tracking-tight font-medium text-[#1a1a1a] mb-4">Erros comuns</h3>
+            <ul class="flex flex-col gap-3">
+                {% for mistake in guide.common_mistakes %}
+                <li class="flex gap-3 text-base text-[#1a1a1a] leading-relaxed">
+                    <i data-lucide="x" class="flex-none w-5 h-5 mt-0.5 stroke-[1.5] text-[#5c5c5a]" aria-hidden="true"></i>
+                    <span>{{ mistake }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+    </div>
+    <section class="min-w-0">
+        <h3 class="text-lg tracking-tight font-medium text-[#1a1a1a] mb-4">Músculos trabalhados</h3>
+        {% include 'treino/partials/_muscle_map.html' with map=guide.muscle_map %}
+    </section>
+</div>
+
+<p class="flex items-start gap-3 mt-10 pt-6 border-t border-[#dcdacd] text-sm text-[#5c5c5a]">
+    <i data-lucide="info" class="flex-none w-4 h-4 mt-0.5 stroke-[1.5]" aria-hidden="true"></i>
+    Referência geral de execução. Ajuste a técnica com seu profissional.
+</p>

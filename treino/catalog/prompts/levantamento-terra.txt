@@ -1,0 +1,24 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Conventional deadlift (Levantamento terra). EQUIPMENT: Olympic barbell with plates on the floor.
+CAMERA: strict side view.
+LEFT PANEL — START: feet hip-width, barbell RESTING ON THE FLOOR (the bottom of the plates touches the floor at
+the same level as the soles), bar over mid-foot touching the shins, hips higher than the knees, shoulders slightly in front of the bar, arms straight gripping the bar just outside the legs, neutral flat back, chest up.
+RIGHT PANEL — END: standing tall, hips and knees fully extended, barbell against the thighs, shoulders over the hips, neutral spine without leaning back.
+MUST BE VISIBLE: flat neutral back at the start; bar touching the legs; bar over mid-foot; no lean back at the top.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, bar far from the legs, hyperextended back at the top, hips as low as a squat.

@@ -1,0 +1,23 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Alternating dumbbell curl (Rosca alternada). EQUIPMENT: two dumbbells.
+CAMERA: front view.
+LEFT PANEL — START: standing tall, dumbbells at the sides, palms facing the thighs, elbows at the sides.
+RIGHT PANEL — END: one arm curled with the dumbbell at shoulder height and palm turned up toward the shoulder, elbow still at the side; the other arm hanging straight down.
+MUST BE VISIBLE: working elbow stays at the side of the torso; palm turned up at the top; torso upright.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, both arms curling together, elbow drifting forward, torso swinging.

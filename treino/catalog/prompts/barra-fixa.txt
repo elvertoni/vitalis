@@ -1,0 +1,24 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Pull-up (Barra fixa). EQUIPMENT: fixed pull-up bar.
+CAMERA: front view in BOTH panels: the character faces the viewer, the bar runs left to right
+across the panel, and both hands are seen on the bar. Identical camera in the left and right panels.
+LEFT PANEL — START: hanging from the bar with an overhand grip a bit wider than the shoulders, arms fully extended, legs straight or slightly bent together, body still, core braced.
+RIGHT PANEL — END: body pulled up until the chin is above the bar, elbows pointing down, chest close to the bar, legs in the same position.
+MUST BE VISIBLE: arms fully extended at the start; chin above the bar at the end; body not swinging.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, kipping or swinging, half range of motion, feet touching the floor.

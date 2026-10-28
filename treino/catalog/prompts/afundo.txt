@@ -1,0 +1,23 @@
+- Flat vector illustration, clean uniform outlines, no gradients, no shadows, no texture.
+- Plain flat background color #F5F4F0, edge to edge. No scenery, floor line only if needed
+  for the exercise.
+- Same character in every image: adult, medium athletic build, gender-neutral appearance,
+  plain mid-grey t-shirt, black shorts, dark grey sneakers, no logos, neutral face.
+- Figure in neutral greys (#5C5C5A body tones, #1A1A1A outlines). Single accent color
+  #5D674F, used ONLY for the motion arrows.
+- Two side-by-side panels of equal size, separated by a thin vertical gap: LEFT = start
+  position, RIGHT = end position. Same camera angle, scale and equipment in both.
+- Camera: strict side view, or 3/4 view only when the side view hides the key joint
+  alignment.
+- One or two thin curved arrows per panel showing the direction of movement.
+- No text, letters, numbers, labels or watermarks anywhere. No muscle highlighting (the
+  muscle map is a separate SVG).
+- Equipment drawn accurately and to scale (barbell with plates, dumbbells, flat or incline
+  bench, cable machine, pull-up bar).
+
+EXERCISE: Dumbbell split squat (Afundo). EQUIPMENT: two dumbbells.
+CAMERA: strict side view, character facing right.
+LEFT PANEL — START: split stance, one foot well in front of the other, both legs nearly straight, torso upright, dumbbells at the sides.
+RIGHT PANEL — END: both knees bent, back knee just above the floor, front knee over the front foot, front heel flat, torso upright.
+MUST BE VISIBLE: upright torso in both panels; front knee over the foot; back knee close to the floor.
+AVOID: text, logos, extra people, extra limbs, deformed hands or fingers, rounded lower back, front knee far past the toes, torso leaning forward, short stance.
