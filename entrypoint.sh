@@ -1,5 +1,6 @@
 #!/bin/sh
-# Boot do container: aplica migrations (idempotente, 1 réplica) e sobe o gunicorn.
+# Boot do container: aplica migrations (idempotente, 1 réplica), sincroniza o catálogo de
+# guias de exercício e sobe o gunicorn.
 # billing/migrations/0002_seed_plans.py semeia os planos Free/Premium sozinho.
 # SERVICE_MODE=cron roda send_due_reminders a cada 15 min em vez do gunicorn.
 # SERVICE_MODE=backup roda scripts/backup.sh uma vez por dia.
@@ -24,6 +25,10 @@ elif [ "$SERVICE_MODE" = "cron" ]; then
     done
 else
     python manage.py migrate --noinput
+    # O catálogo de guias mora em treino/catalog/exercises.json; deploy leva código, nunca
+    # linha, então o boot sincroniza o banco com o arquivo (idempotente — D-077). Catálogo
+    # com erro não derruba o site: o comando não grava nada e o app sobe com o anterior.
+    python manage.py sync_exercise_guides || echo "[web] ERRO ao sincronizar o catálogo de guias"
 
     exec gunicorn config.wsgi:application \
         --bind 0.0.0.0:8000 \

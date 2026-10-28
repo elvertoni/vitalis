@@ -27,6 +27,7 @@ from django.db import transaction
 from nutricao.models import Diet, Food, Meal, MealItem, WeightLog
 from treino.models import (
     Exercise,
+    ExerciseGuide,
     MuscleGroup,
     RoutineDay,
     RoutineExerciseTarget,
@@ -419,14 +420,24 @@ class Command(BaseCommand):
                 raise CommandError(
                     f'Exercício {item["name"]!r} usa grupo inexistente: {item["muscle_group"]!r}'
                 )
+            defaults = {
+                'muscle_group': group,
+                'type': item.get('type', Exercise.Type.STRENGTH),
+                'notes': item.get('notes', ''),
+            }
+            # O vínculo com o guia de catálogo é por slug e só entra quando vem no payload:
+            # sem a chave, a escolha feita na tela continua valendo.
+            if 'guide' in item:
+                guide = None
+                if item['guide']:
+                    guide = ExerciseGuide.objects.filter(slug=item['guide']).first()
+                    if guide is None:
+                        raise CommandError(
+                            f'Exercício {item["name"]!r} aponta para guia inexistente: {item["guide"]!r}'
+                        )
+                defaults['guide'] = guide
             exercise, _ = Exercise.objects.update_or_create(
-                user=user,
-                name=item['name'],
-                defaults={
-                    'muscle_group': group,
-                    'type': item.get('type', Exercise.Type.STRENGTH),
-                    'notes': item.get('notes', ''),
-                },
+                user=user, name=item['name'], defaults=defaults,
             )
             result[item['name']] = exercise
         self.stdout.write(f'  {len(result)} exercício(s)')

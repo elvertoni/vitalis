@@ -10,12 +10,14 @@ pattern ``_legado_vida`` used for ``Resultado.paciente``.
 
 from datetime import timedelta
 
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 
-from core.models import OwnedModel
+from core.models import OwnedModel, TimeStampedModel
 
 
 class MuscleGroup(OwnedModel):
@@ -36,6 +38,87 @@ class MuscleGroup(OwnedModel):
 
     def get_absolute_url(self):
         return reverse('treino:muscle_group_detail', args=[self.pk])
+
+
+class Muscle(models.TextChoices):
+    """
+    Lista controlada do mapa muscular (D-076). Não é o ``MuscleGroup`` pessoal: aquele
+    organiza as fichas; esta pinta o desenho do corpo, e cada chave tem os seus ``path``
+    no partial do SVG — músculo novo aqui exige o desenho correspondente lá.
+    """
+
+    CHEST = 'chest', 'Peitoral'
+    FRONT_DELT = 'front_delt', 'Deltoide anterior'
+    SIDE_DELT = 'side_delt', 'Deltoide lateral'
+    REAR_DELT = 'rear_delt', 'Deltoide posterior'
+    TRAPS = 'traps', 'Trapézio'
+    LATS = 'lats', 'Dorsal'
+    LOWER_BACK = 'lower_back', 'Lombar'
+    BICEPS = 'biceps', 'Bíceps'
+    TRICEPS = 'triceps', 'Tríceps'
+    FOREARM = 'forearm', 'Antebraço'
+    ABS = 'abs', 'Abdômen'
+    OBLIQUES = 'obliques', 'Oblíquos'
+    GLUTES = 'glutes', 'Glúteos'
+    QUADS = 'quads', 'Quadríceps'
+    HAMSTRINGS = 'hamstrings', 'Isquiotibiais'
+    ADDUCTORS = 'adductors', 'Adutores'
+    CALVES = 'calves', 'Panturrilha'
+
+
+class ExerciseGuide(TimeStampedModel):
+    """
+    Guia de execução de catálogo: passos, erros comuns, músculos e ilustração.
+
+    É catálogo **global**, como ``billing.Plan`` — sem dono, igual para todo mundo (D-075).
+    O ``Exercise`` pessoal aponta para cá, então dez pessoas com "Supino reto" veem a mesma
+    ilustração. A fonte é ``treino/catalog/exercises.json``, carregado por
+    ``sync_exercise_guides``; editar a linha no banco seria desfeito no próximo deploy.
+    """
+
+    slug = models.SlugField('identificador', unique=True)
+    name = models.CharField('nome', max_length=140)
+    equipment = models.CharField('equipamento', max_length=140, blank=True)
+    primary_muscles = models.JSONField('músculos primários', default=list)
+    secondary_muscles = models.JSONField('músculos secundários', default=list, blank=True)
+    execution_steps = models.JSONField('passos da execução', default=list)
+    common_mistakes = models.JSONField('erros comuns', default=list, blank=True)
+    illustration_alt = models.CharField('descrição da ilustração', max_length=300, blank=True)
+    # Verdadeiro só com a ilustração aprovada no catálogo **e** o PNG presente em
+    # static/treino/exercicios/ — sem isso o {% static %} quebraria o render em produção.
+    has_illustration = models.BooleanField('tem ilustração', default=False)
+
+    class Meta:
+        verbose_name = 'guia de execução'
+        verbose_name_plural = 'guias de execução'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        valid = set(Muscle.values)
+        primary = self.primary_muscles or []
+        secondary = self.secondary_muscles or []
+        unknown = [m for m in [*primary, *secondary] if m not in valid]
+        if unknown:
+            raise ValidationError(f'Músculo fora da lista controlada: {", ".join(unknown)}.')
+        if not primary:
+            raise ValidationError('O guia precisa de ao menos um músculo primário.')
+        both = set(primary) & set(secondary)
+        if both:
+            raise ValidationError(f'Músculo primário e secundário ao mesmo tempo: {", ".join(sorted(both))}.')
+
+    @property
+    def illustration_path(self):
+        return f'treino/exercicios/{self.slug}.png'
+
+    @cached_property
+    def muscle_map(self):
+        """Estado de cada região do desenho do corpo, para o partial ``_muscle_map.html``."""
+        from . import muscle_map
+
+        return muscle_map.build(self.primary_muscles or [], self.secondary_muscles or [])
 
 
 class Exercise(OwnedModel):
@@ -59,6 +142,12 @@ class Exercise(OwnedModel):
     name = models.CharField('nome', max_length=140)
     type = models.CharField('tipo', max_length=12, choices=Type.choices, default=Type.STRENGTH)
     notes = models.TextField('observações', blank=True)
+    # SET_NULL: o guia é catálogo de todos; sair do catálogo não apaga o exercício de ninguém.
+    guide = models.ForeignKey(
+        ExerciseGuide, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='exercises', verbose_name='guia de execução',
+        help_text='Mostra a execução correta e os músculos trabalhados.',
+    )
 
     class Meta:
         verbose_name = 'exercício'

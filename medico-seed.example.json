@@ -169,7 +169,8 @@
       "name": "Supino máquina",
       "muscle_group": "Peito",
       "type": "strength",
-      "notes": ""
+      "notes": "",
+      "guide": "supino-maquina"
     },
     {
       "name": "Leg press 45°",

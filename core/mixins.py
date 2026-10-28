@@ -10,7 +10,7 @@ field choices, so a crafted POST cannot attach someone else's object.
 """
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import models
+from django.core.exceptions import FieldDoesNotExist
 
 
 class OwnerQuerySetMixin(LoginRequiredMixin):
@@ -53,7 +53,7 @@ class OwnerFormMixin:
             model = queryset.model
             try:
                 model._meta.get_field(self.owner_field)
-            except models.FieldDoesNotExist:
+            except FieldDoesNotExist:
                 continue
             field.queryset = queryset.filter(**{self.owner_field: self.request.user})
         return form

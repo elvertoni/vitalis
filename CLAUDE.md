@@ -25,6 +25,7 @@ $env:DJANGO_DEBUG = '1'   # antes de qualquer comando — ver nota abaixo
 .\.venv\Scripts\python.exe manage.py check          # validação de config — o mais perto de "lint" que existe
 .\.venv\Scripts\python.exe manage.py send_due_reminders  # sincroniza e envia lembretes vencidos
 .\.venv\Scripts\python.exe manage.py seed_medico --email <e-mail> --source <dossiê.json> [--attachments-dir <pasta>]
+.\.venv\Scripts\python.exe manage.py sync_exercise_guides  # carrega treino/catalog/exercises.json (D-075)
 ```
 
 **Sem `DJANGO_DEBUG=1` no shell, todo comando morre antes de subir**: o default é `0`, e com
@@ -40,7 +41,8 @@ template ou `.py` editado só aparece depois de reiniciar o servidor.
 vem do JSON de `--source`. É idempotente (`update_or_create` casando por campo natural), roda
 numa transação e importa perfil, médicos, tratamentos, medicamentos, exames (com anexo, se
 `--attachments-dir` apontar pros PDFs), consultas, alimentos, dietas, pesagens e treino (grupos,
-exercícios, fichas com divisões e prescrições, sessões com séries — D-074). Remédio com o
+exercícios, fichas com divisões e prescrições, sessões com séries — D-074; exercício aceita
+`guide` com o slug do guia de catálogo). Remédio com o
 mesmo nome de um injetável já cadastrado é pulado, para não dobrar o lembrete. A forma do
 JSON está em `medico-seed.example.json` (versionado, sem dado). Dossiê real vive em
 `medico-data/` e em `medico-seed.json` — **ambos no `.gitignore`** por serem dado sensível de
@@ -67,7 +69,7 @@ Python 3.12+ · Django 6.0. Dependências extras (`gunicorn`, `psycopg`, `whiten
 `dj-database-url`) são **só de produção** — o dev roda com Django + SQLite. **Tailwind vem
 do CDN** (`cdn.tailwindcss.com` em `templates/base.html`), config inline no `<script>` daquele
 head — **não há npm, nem build de CSS, nem `tailwind.config.js` em arquivo**. `static/` só tem
-favicon e ícones do PWA. Lucide (`unpkg.com`) e Chart.js (`cdn.jsdelivr.net`, só nas telas de
+favicon, ícones do PWA e as ilustrações dos guias (`static/treino/exercicios/`, D-079). Lucide (`unpkg.com`) e Chart.js (`cdn.jsdelivr.net`, só nas telas de
 evolução de carga e de peso) também vêm de CDN — e todo script externo depende da CSP (ver
 "Segurança"). Fonte Inter via Google Fonts.
 
@@ -79,7 +81,8 @@ recolhe no build — não referencie caminho que só existe na sua máquina.
 ### Produção (EasyPanel) — ver `DECISIONS.md` D-040
 
 `Dockerfile` builda com `python:3.12-slim`, roda `collectstatic` no build, e o
-`entrypoint.sh` aplica `migrate` e sobe `gunicorn config.wsgi`. WhiteNoise serve o estático
+`entrypoint.sh` aplica `migrate`, roda `sync_exercise_guides` (D-077) e sobe
+`gunicorn config.wsgi`. WhiteNoise serve o estático
 (sem nginx na frente). Postgres entra via `DATABASE_URL` — **é o único switch**: sem essa
 env, `config/settings.py` cai no SQLite de sempre. Anexos de exame vivem num volume montado
 em `/app/media` (dado sensível, LGPD — não pode sumir num redeploy). App publicado em
@@ -87,7 +90,7 @@ em `/app/media` (dado sensível, LGPD — não pode sumir num redeploy). App pub
 
 **Deploy leva código, nunca dado — e a tela quebra em silêncio.** O EasyPanel builda a partir
 do GitHub e o `entrypoint.sh` roda `migrate`, então schema novo chega sozinho; **linha nenhuma
-chega**. Sempre que um recurso deixar de ser literal no código e passar a ler do banco (foi o
+chega** — a exceção é o catálogo de guias, que o boot sincroniza do JSON versionado (D-077). Sempre que um recurso deixar de ser literal no código e passar a ler do banco (foi o
 caso de D-061), o deploy sozinho deixa a tela **vazia**, não com erro: a view encontra zero
 linhas e cai no estado vazio, e `manage.py check` continua passando. Aconteceu com o painel de
 biomarcadores, que ficou em branco em produção até a semeadura.
@@ -334,6 +337,32 @@ Duas rotas do `treino` devolvem **JSON, não HTML**, apesar de herdarem `Templat
 `exercicios/<pk>/evolucao.json` (`ExerciseProgressDataView`, alimenta o gráfico de evolução
 de carga) e a equivalente de peso em `nutricao` (`WeightProgressDataView`). Ao mexer nelas,
 o consumidor é o `<script>` da tela, não um template.
+
+### Guia de execução: catálogo global num JSON, imagem em `static/` (D-075 a D-078)
+
+`treino.ExerciseGuide` é o segundo catálogo sem dono do sistema, depois de `billing.Plan`:
+passos, erros comuns, músculos primários e secundários e o estado da ilustração. O `Exercise`
+pessoal aponta para ele por `guide` (opcional, `SET_NULL`), escolhido no formulário.
+
+- **A fonte é `treino/catalog/exercises.json`**, versionado. O banco só reflete o arquivo, via
+  `manage.py sync_exercise_guides` (idempotente, casa pelo `slug`, valida tudo antes de gravar).
+  O serviço web roda o comando no boot, depois do `migrate`, então todo deploy acerta o catálogo
+  sozinho. Admin do guia é só leitura: **mude o JSON, nunca a linha.**
+- **Imagem só em `static/treino/exercicios/<slug>.png`, no git.** Nunca `ImageField`, upload ou
+  `media/`. `has_illustration` fica verdadeiro só com `approved` no JSON **e** o PNG achado pelo
+  `staticfiles.finders`; é o que a tela consulta antes de montar o `{% static %}`, que no
+  WhiteNoise quebra o render se o arquivo faltar.
+- **Músculo é chave de `treino.models.Muscle`** (17, nomes em pt-BR), guardada em lista
+  `JSONField`. Cada chave tem os seus `path` no SVG do mapa (react-native-body-highlighter, MIT):
+  músculo novo exige o desenho junto. Não confunda com o `MuscleGroup` pessoal, que organiza as
+  fichas e não se liga a essa lista.
+- Guia fora do catálogo só sai do banco se nenhum exercício o usa.
+- **A tela abre o guia num modal carregado sob demanda** (D-079): `_guide_button.html` (só com
+  `exercise.guide_id`, sem join) chama `treino:exercise_guide`, que devolve o fragmento
+  `_guide_body.html`; `_guide_modal.html` entra **uma vez** por tela. Não renderize o guia junto
+  com a página: o mapa pesa ~70 KB e a tela de registro lista todos os exercícios da divisão.
+- Imagem aprovada entra em `static/` já convertida (PNG8 de 64 cores, 1536×1024, ~120–270 KB), e
+  o prompt final fica em `treino/catalog/prompts/<slug>.txt` (`illustration.prompt_file`).
 
 ### Medicamento: quando tem dose, e não só se o tratamento está aberto
 

@@ -15,7 +15,7 @@ python -m venv .venv
 .\.venv\Scripts\python manage.py runserver
 ```
 
-Set `$env:DJANGO_DEBUG = '1'` in the shell first: `DJANGO_DEBUG` defaults to `0`, and with `DEBUG=False` settings raise `RuntimeError: DJANGO_SECRET_KEY é obrigatória quando DEBUG=False.` before any command can run. Run `.\.venv\Scripts\python manage.py check` for Django configuration validation. After model changes, run `manage.py makemigrations` and inspect the generated migration before applying it. Use `manage.py send_due_reminders` to exercise reminder synchronization and console email delivery. Use `manage.py seed_medico --email <email> --source <dossier.json> [--attachments-dir <dir>]` to load a personal health dossier; the command carries no data of its own and is idempotent, and it also loads training (muscle groups, exercises, routines, sessions — D-074). The example payload is `medico-seed.example.json`; real dossiers live in `medico-data/` and `medico-seed.json`, both gitignored as sensitive health data (DECISIONS.md D-041).
+Set `$env:DJANGO_DEBUG = '1'` in the shell first: `DJANGO_DEBUG` defaults to `0`, and with `DEBUG=False` settings raise `RuntimeError: DJANGO_SECRET_KEY é obrigatória quando DEBUG=False.` before any command can run. Run `.\.venv\Scripts\python manage.py check` for Django configuration validation. After model changes, run `manage.py makemigrations` and inspect the generated migration before applying it. Use `manage.py send_due_reminders` to exercise reminder synchronization and console email delivery. Use `manage.py seed_medico --email <email> --source <dossier.json> [--attachments-dir <dir>]` to load a personal health dossier; the command carries no data of its own and is idempotent, and it also loads training (muscle groups, exercises, routines, sessions — D-074; an exercise may carry `guide`, the catalogue slug). The example payload is `medico-seed.example.json`; real dossiers live in `medico-data/` and `medico-seed.json`, both gitignored as sensitive health data (DECISIONS.md D-041).
 
 ## Coding Style & Naming Conventions
 
@@ -109,6 +109,24 @@ and `next_day_after` (A/B rotation suggestion). `treino/protocol.py` is also pur
 protocol typesets without new columns; unstructured text still renders as plain paragraphs.
 `treino/exercicios/<pk>/evolucao.json` and `nutricao`'s weight-progress route return JSON
 despite subclassing `TemplateView`.
+
+`treino.ExerciseGuide` is a global catalogue with no owner, like `billing.Plan` (D-075 to
+D-078): execution steps, common mistakes, primary and secondary muscles, illustration state.
+A personal `Exercise` links to it through the optional `guide` FK (`SET_NULL`). The single
+source is the versioned `treino/catalog/exercises.json`; `manage.py sync_exercise_guides` loads
+it idempotently by `slug`, validating everything before writing, and the web service runs it
+on boot after `migrate`. The guide admin is read-only: change the JSON, never the row.
+Illustrations live only in `static/treino/exercicios/<slug>.png`, committed to git — never an
+`ImageField`, upload or `media/`. `has_illustration` is true only when the JSON says `approved`
+**and** `staticfiles.finders` finds the PNG, because a missing `{% static %}` file breaks the
+render under WhiteNoise. Muscles are `treino.models.Muscle` keys (17, pt-BR labels) stored in
+`JSONField` lists; each key owns its paths in the body-map SVG (react-native-body-highlighter,
+MIT), so a new muscle needs its drawing too. This list is unrelated to the personal
+`MuscleGroup`, which organizes routines. The screens open the guide in a `<dialog>` whose body is fetched on
+demand from `treino:exercise_guide` (D-079): include `treino/partials/_guide_button.html` per
+exercise and `_guide_modal.html` once per page; never render the guide inline with the page.
+Approved images are converted to 64-colour PNG8 at 1536×1024 before entering `static/`, and each
+final prompt is kept in `treino/catalog/prompts/<slug>.txt`.
 
 ## Vitalis AI (`assistente`) — D-062, D-064, D-065
 

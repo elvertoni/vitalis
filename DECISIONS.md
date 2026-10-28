@@ -1123,3 +1123,118 @@ dump inteiro não serve: as chaves primárias colidem com a conta nova e trariam
 - **Injetável do primeiro acesso não é sobrescrito:** medicamento do payload com o nome de um
   injetável que o dono já tem é pulado. Outra linha com o mesmo nome dobraria o lembrete (D-073).
 - Conferido num SQLite novo: duas rodadas seguidas dão as mesmas contagens do dump.
+
+### D-075 · Guia de execução é catálogo global, com o JSON como fonte única
+**Contexto:** o pedido é mostrar, ao abrir um exercício, a execução correta (ilustração de início
+e fim), os passos, os erros comuns e os músculos trabalhados. `Exercise` e `MuscleGroup` são dado
+pessoal, com nome livre: guardar a ilustração no exercício de cada pessoa geraria a mesma imagem
+de novo para cada "Supino reto", e "supino", "Supino Reto" e "supino reto barra" virariam três.
+**Decisão:**
+- **`treino.ExerciseGuide` é catálogo global**, sem `OwnedModel`, como `billing.Plan`. O
+  `Exercise` pessoal ganha `guide`, FK opcional com `SET_NULL`, escolhida num select do
+  formulário. O `OwnerFormMixin` não estreita esse campo porque o guia não tem coluna de dono,
+  e é o certo: o catálogo é o mesmo para todo mundo. Esse caminho nunca tinha rodado: o mixin
+  capturava `models.FieldDoesNotExist`, que não existe no Django 6, e o primeiro formulário com
+  FK para model sem dono caía em 500. Agora importa de `django.core.exceptions`.
+- **`treino/catalog/exercises.json`, versionado, é a única fonte.** Guarda o catálogo e o estado
+  de cada ilustração (`pending` | `generated` | `approved` | `rejected`, rodadas, itens
+  reprovados, motivo). O banco é reflexo, carregado por `sync_exercise_guides`, que valida o
+  arquivo inteiro antes de gravar e casa pelo `slug`. Não existe campo de status no banco, e o
+  admin do guia é só leitura: editar a linha seria desfeito no próximo deploy.
+- **Imagem aprovada vai para `static/treino/exercicios/<slug>.png` e entra no git.** Nada de
+  `ImageField`, upload ou `media/`: em produção `MEDIA_URL` não é servido, e o Pillow não está
+  nas dependências. `has_illustration` só fica verdadeiro com `approved` no JSON **e** o arquivo
+  achado pelo `staticfiles.finders` — sem isso o `{% static %}` quebraria o render no WhiteNoise.
+- **Músculos são `TextChoices` (`treino.models.Muscle`) em listas `JSONField`**, não um model
+  `Muscle`. Cada chave tem os seus `path` no SVG do mapa, então músculo novo exige mexer no
+  código de qualquer jeito; uma tabela só acrescentaria duas M2M e uma migration de semente.
+  O custo aceito: não dá para filtrar "exercícios que trabalham glúteo" no SQLite.
+- **Guia que sai do catálogo só sai do banco se ninguém o usa.** Vinculado a algum exercício,
+  fica, e o comando avisa.
+- **O vínculo dos exercícios já cadastrados vem pelo `seed_medico`** (chave opcional `guide` em
+  `exercises`, por slug). Os nomes reais da pessoa não entram no JSON versionado: alguns carregam
+  dado do tratamento (D-041).
+- Catálogo inicial: 50 guias, com os 16 exercícios da ficha do dono entre eles. Passos e erros
+  comuns são referência geral de execução — o sistema não prescreve treino (PRD).
+
+### D-076 · Mapa muscular com o SVG do react-native-body-highlighter
+**Contexto:** o mapa precisa de anatomia e rótulos exatos, e imagem gerada erra os dois. Foram
+comparados três SVGs de licença aberta: react-native-body-highlighter 3.2.0 (MIT), body-muscles
+1.0.0 (Apache-2.0) e react-body-highlighter 2.0.5 (MIT).
+**Decisão:**
+- **react-native-body-highlighter**, © 2022 ELABBASSI Hicham, MIT. Tem o desenho mais anatômico,
+  frente e costas; o body-muscles cobre mais regiões, mas é geométrico e fica fora das licenças
+  pedidas (MIT, CC0, CC-BY); o react-body-highlighter tem polígonos de baixa fidelidade.
+- **Lista controlada de 17 músculos**, nomes em pt-BR: peitoral, deltoide anterior, lateral e
+  posterior, trapézio, dorsal, lombar, bíceps, tríceps, antebraço, abdômen, oblíquos, glúteos,
+  quadríceps, isquiotibiais, adutores e panturrilha.
+- O desenho tem um deltoide por vista: o anterior pinta a região da frente, o posterior a das
+  costas e o lateral as duas. Glúteo é uma região só, então glúteo médio entra como glúteos.
+- O `MuscleGroup` pessoal continua existindo e não se liga a essa lista: ele organiza as fichas
+  e alimenta o volume por grupo e o `progression.step_for`; a lista só pinta o mapa.
+- **O partial é gerado, não escrito à mão.** `scripts/build_muscle_map.js` lê o pacote e grava
+  `templates/treino/partials/_muscle_map.html` com os `d` originais, idênticos aos do pacote
+  (conferido path a path), o texto da licença MIT no cabeçalho e um comentário de crédito no
+  HTML servido. Arredondar as coordenadas para encolher o arquivo quebrou os arcos compactos
+  (`a.6.6 0 011.3 1`) e o navegador recusou 167 paths; ficou a precisão original, ~70 KB.
+- **Cores:** primário `#5d674f`, secundário a mesma cor com `fill-opacity: 0.6` (a 0.4 não se
+  distinguia do `#dcdacd` sobre branco), o resto `#dcdacd`, e mãos, cabeça e joelhos em
+  `#e8eae4`. As classes `.mm-*` vivem em `templates/base.html`; o estado de cada região sai de
+  `treino/muscle_map.py` via `ExerciseGuide.muscle_map`.
+- Pelo tamanho, uma tela com vários exercícios (a de registro) não repete o partial por
+  exercício: o conteúdo do guia vem sob demanda, renderizado no servidor, ao abrir o modal.
+
+### D-077 · O boot do serviço web sincroniza o catálogo de guias
+**Contexto:** deploy leva código, nunca linha (D-061). Com o catálogo num JSON que muda a cada
+ilustração aprovada, semear produção à mão a cada mudança seria esquecido, e a tela ficaria com
+o guia antigo sem erro nenhum.
+**Decisão:** o `entrypoint.sh`, no modo web, roda `sync_exercise_guides` logo depois do
+`migrate`. O comando é idempotente e valida antes de gravar; se o catálogo tiver erro, nada é
+escrito, o boot registra o erro e o app sobe com o catálogo anterior. Uma migration de dados não
+serve: congelaria o catálogo na data em que foi escrita.
+
+### D-078 · Isométricos e bike mostram montagem e sustentação
+**Contexto:** a ilustração tem dois painéis, início e fim do movimento. Prancha frontal, prancha
+lateral, isometria de panturrilha e bike ergométrica não têm início e fim.
+**Decisão:** nos isométricos, o painel da esquerda mostra a montagem da posição (ex.: ajoelhado
+com os antebraços no chão) e o da direita, a sustentação. Na bike, um pedal no alto à esquerda e
+o mesmo pedal embaixo à direita. O `alt` de cada guia descreve os dois painéis desse jeito.
+
+### D-079 · O guia abre num modal carregado sob demanda; a imagem passa por um gerador fixo
+**Contexto:** o botão "Ver execução correta" aparece em seis telas, e a de registro lista todos os
+exercícios da divisão. Com o mapa muscular em ~70 KB (D-076), renderizar o guia de cada exercício
+junto com a página multiplicaria o peso pelo número de exercícios. As ilustrações saem do Codex
+CLI em PNG de 1536×1024 com ~1,2 MB cada.
+**Decisão:**
+- **Uma rota de fragmento**, `treino:exercise_guide` (`guias/<pk>/`, `ExerciseGuideView`), devolve
+  só o corpo do modal (`treino/partials/_guide_body.html`). Como o guia é catálogo global, a view
+  exige login e nada mais. O botão (`_guide_button.html`) lê `exercise.guide_id`, então nenhuma
+  tela ganha join, e só aparece com guia vinculado.
+- **`<dialog>` com `showModal()`** (`_guide_modal.html`, incluído uma vez por tela): deixa a
+  página inerte e fecha no Esc. Um laço de Tab prende o foco também contra a barra do navegador,
+  o foco volta ao botão que abriu, e o botão de fechar fica fixo no topo ao rolar, porque no
+  celular não há Esc e o guia é mais alto que a tela. A animação de entrada só roda com
+  `prefers-reduced-motion: no-preference`.
+- Sem ilustração aprovada, o modal mostra passos, erros comuns e mapa, sem `<img>`. A linha
+  "Referência geral de execução. Ajuste a técnica com seu profissional." é fixa no rodapé.
+- **A imagem aprovada é convertida antes de entrar em `static/`**: PNG8 de 64 cores, sem
+  metadados, redimensionada para 1536×1024 (ImageMagick, ferramenta local, fora do
+  `requirements.txt`). Quando o Codex devolve outra proporção (aconteceu com 2049×1366 e
+  1774×887), a margem é completada com a cor do próprio fundo até 3:2 antes de reduzir; nunca
+  se estica a imagem. Arte flat de paleta curta não perde nada visível, e o arquivo cai de
+  ~1,2 MB para ~120–270 KB. Todas ficam com o mesmo tamanho, então o `<img>` declara
+  `width="1536" height="1024"`.
+- **O prompt final de cada imagem fica versionado** em `treino/catalog/prompts/<slug>.txt`,
+  apontado por `illustration.prompt_file`, para a imagem poder ser refeita no mesmo estilo.
+- **Resultado:** 50 de 50 guias com imagem aprovada, 40 deles na primeira rodada. A referência
+  de personagem (`-i`) segurou rosto, cabelo, roupa e tênis; a única troca de personagem (pallof
+  press, rodada 2) foi reprovada. O que o gerador custou a acertar foi técnica fina, e três
+  rodadas reforçando só o trecho reprovado não bastaram para supino reto com barra, remada
+  curvada e pallof press. Para fechar o catálogo, esses três passaram do limite de três rodadas
+  com o prompt reescrito do zero, não remendado: supino aprovado na 4ª (a barra descrita por
+  marco do corpo, na metade entre ombro e fim das costelas), remada e pallof na 5ª (remada em
+  vista 3/4 com o tronco quase paralelo; pallof de frente, com os braços indo para a câmera).
+- **Pallof press é a única imagem sem seta.** O movimento vai direto para a câmera, e toda seta
+  desenhada saiu lateral ou para baixo, ensinando o movimento errado.
+- Rodar o `codex exec` sem terminal exige `< /dev/null`: com a entrada aberta, ele fica parado
+  em "Reading additional input from stdin" sem gerar nada.

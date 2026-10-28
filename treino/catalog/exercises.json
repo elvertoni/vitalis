@@ -1,0 +1,1575 @@
+{
+  "_comment": "Catálogo global de guias de execução — fonte única (DECISIONS.md D-075). Carregado por `python manage.py sync_exercise_guides`. Músculos: chaves de treino.models.Muscle. illustration.status: pending | generated | approved | rejected; só approved com o PNG em static/treino/exercicios/<slug>.png mostra imagem.",
+  "version": 1,
+  "guides": [
+    {
+      "slug": "supino-reto-barra",
+      "name": "Supino reto com barra",
+      "name_en": "Barbell bench press",
+      "equipment": "Barra com anilhas e banco reto",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "front_delt",
+        "triceps"
+      ],
+      "execution_steps": [
+        "Deite no banco com os olhos sob a barra e os pés firmes no chão.",
+        "Segure a barra um pouco além da largura dos ombros e aproxime as escápulas.",
+        "Desça a barra controlando até tocar de leve a parte baixa do peito, cotovelos a cerca de 45° do tronco.",
+        "Empurre a barra de volta até estender os braços, sem tirar o quadril do banco."
+      ],
+      "common_mistakes": [
+        "Cotovelos abertos a 90° do tronco, sobrecarregando o ombro.",
+        "Quicar a barra no peito.",
+        "Tirar o quadril do banco para empurrar mais."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 4,
+        "alt": "À esquerda, deitado no banco com a barra no peito; à direita, braços estendidos com a barra acima do peito.",
+        "prompt_file": "treino/catalog/prompts/supino-reto-barra.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "supino-reto-halteres",
+      "name": "Supino reto com halteres",
+      "name_en": "Dumbbell bench press",
+      "equipment": "Halteres e banco reto",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "front_delt",
+        "triceps"
+      ],
+      "execution_steps": [
+        "Deite no banco com um halter em cada mão, apoiados nas coxas, e leve-os à altura do peito.",
+        "Mantenha os pés no chão e as escápulas aproximadas.",
+        "Empurre os halteres para cima até quase encostarem, sem travar os cotovelos.",
+        "Desça devagar até os halteres ficarem ao lado do peito."
+      ],
+      "common_mistakes": [
+        "Descer além do conforto do ombro.",
+        "Halteres batendo um no outro no topo.",
+        "Punhos dobrados para trás."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, deitado com os halteres ao lado do peito; à direita, braços estendidos com os halteres acima do peito.",
+        "prompt_file": "treino/catalog/prompts/supino-reto-halteres.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "supino-inclinado-halteres",
+      "name": "Supino inclinado com halteres",
+      "name_en": "Incline dumbbell press",
+      "equipment": "Halteres e banco inclinado",
+      "primary_muscles": [
+        "chest",
+        "front_delt"
+      ],
+      "secondary_muscles": [
+        "triceps"
+      ],
+      "execution_steps": [
+        "Regule o banco entre 30° e 45° e sente com as costas apoiadas.",
+        "Leve os halteres à altura da parte alta do peito.",
+        "Empurre para cima e levemente para dentro até estender os braços.",
+        "Desça controlando até a posição inicial."
+      ],
+      "common_mistakes": [
+        "Banco inclinado demais, transferindo o trabalho para o ombro.",
+        "Arquear demais a lombar.",
+        "Descer rápido e sem controle."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado no banco inclinado com os halteres na altura do peito; à direita, braços estendidos acima da cabeça.",
+        "prompt_file": "treino/catalog/prompts/supino-inclinado-halteres.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "supino-inclinado-maquina",
+      "name": "Supino inclinado na máquina",
+      "name_en": "Incline machine chest press",
+      "equipment": "Máquina de supino inclinado",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "front_delt",
+        "triceps"
+      ],
+      "execution_steps": [
+        "Ajuste o banco para que as pegadas fiquem na altura da parte alta do peito.",
+        "Sente com as costas apoiadas e os pés no chão.",
+        "Empurre as pegadas até estender os braços, sem travar os cotovelos.",
+        "Volte devagar até sentir o peito alongar."
+      ],
+      "common_mistakes": [
+        "Banco baixo demais, com a pegada acima dos ombros.",
+        "Tirar as costas do encosto.",
+        "Deixar o peso bater no fim da volta."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado na máquina com as pegadas junto ao peito; à direita, braços estendidos à frente e para cima.",
+        "prompt_file": "treino/catalog/prompts/supino-inclinado-maquina.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "supino-maquina",
+      "name": "Supino na máquina",
+      "name_en": "Seated machine chest press",
+      "equipment": "Máquina de supino sentado",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "front_delt",
+        "triceps"
+      ],
+      "execution_steps": [
+        "Ajuste o banco para que as pegadas fiquem na linha do meio do peito.",
+        "Sente com as costas apoiadas e as escápulas aproximadas.",
+        "Empurre até estender os braços, sem travar os cotovelos.",
+        "Volte controlando até as mãos ficarem perto do peito."
+      ],
+      "common_mistakes": [
+        "Ombros subindo em direção às orelhas.",
+        "Amplitude curta por excesso de carga.",
+        "Deixar o peso bater no fim da volta."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado na máquina com as pegadas junto ao peito; à direita, braços estendidos à frente.",
+        "prompt_file": "treino/catalog/prompts/supino-maquina.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "crucifixo-halteres",
+      "name": "Crucifixo com halteres",
+      "name_en": "Dumbbell fly",
+      "equipment": "Halteres e banco reto",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "front_delt"
+      ],
+      "execution_steps": [
+        "Deite no banco com os halteres acima do peito e as palmas voltadas uma para a outra.",
+        "Dobre levemente os cotovelos e mantenha esse ângulo até o fim.",
+        "Abra os braços em arco até sentir o peito alongar, na altura do tronco.",
+        "Feche os braços no mesmo arco até os halteres se aproximarem."
+      ],
+      "common_mistakes": [
+        "Esticar os cotovelos por completo.",
+        "Descer os braços abaixo da linha do tronco.",
+        "Transformar o movimento em um supino."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, deitado com os braços abertos em arco; à direita, braços fechados com os halteres acima do peito.",
+        "prompt_file": "treino/catalog/prompts/crucifixo-halteres.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "crossover-polia",
+      "name": "Crossover na polia",
+      "name_en": "Cable crossover",
+      "equipment": "Polia dupla (crossover)",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "front_delt"
+      ],
+      "execution_steps": [
+        "Regule as polias no alto e segure uma pegada em cada mão.",
+        "Dê um passo à frente, incline levemente o tronco e dobre um pouco os cotovelos.",
+        "Puxe as mãos em arco para baixo e para a frente até se encontrarem diante do quadril.",
+        "Volte devagar até sentir o peito alongar."
+      ],
+      "common_mistakes": [
+        "Puxar com os braços dobrando os cotovelos.",
+        "Balançar o tronco para ajudar.",
+        "Deixar os braços irem para trás além da linha dos ombros."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé entre as polias com os braços abertos; à direita, mãos juntas à frente do quadril.",
+        "prompt_file": "treino/catalog/prompts/crossover-polia.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "peck-deck",
+      "name": "Voador (peck deck)",
+      "name_en": "Pec deck",
+      "equipment": "Máquina voador",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "front_delt"
+      ],
+      "execution_steps": [
+        "Ajuste o banco para que os braços fiquem na altura dos ombros.",
+        "Sente com as costas apoiadas e segure as pegadas ou apoie os antebraços.",
+        "Feche os braços à frente do peito, sem tirar as costas do encosto.",
+        "Volte devagar até os braços ficarem na linha do corpo."
+      ],
+      "common_mistakes": [
+        "Banco alto ou baixo demais.",
+        "Deixar os braços passarem da linha do corpo na volta.",
+        "Projetar a cabeça para a frente."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado na máquina com os braços abertos; à direita, braços fechados à frente do peito.",
+        "prompt_file": "treino/catalog/prompts/peck-deck.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "flexao-de-bracos",
+      "name": "Flexão de braços",
+      "name_en": "Push-up",
+      "equipment": "Peso do corpo",
+      "primary_muscles": [
+        "chest"
+      ],
+      "secondary_muscles": [
+        "triceps",
+        "front_delt",
+        "abs"
+      ],
+      "execution_steps": [
+        "Apoie as mãos no chão um pouco além da largura dos ombros e estenda as pernas.",
+        "Contraia abdômen e glúteos para manter o corpo em linha reta.",
+        "Desça o peito até perto do chão, com os cotovelos a cerca de 45° do tronco.",
+        "Empurre o chão até estender os braços."
+      ],
+      "common_mistakes": [
+        "Quadril caindo ou empinado.",
+        "Cotovelos totalmente abertos para os lados.",
+        "Descer só a cabeça, sem levar o peito."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, corpo em prancha com os braços estendidos; à direita, peito próximo ao chão com os cotovelos dobrados.",
+        "prompt_file": "treino/catalog/prompts/flexao-de-bracos.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "puxada-frontal",
+      "name": "Puxada frontal",
+      "name_en": "Lat pulldown",
+      "equipment": "Polia alta com barra",
+      "primary_muscles": [
+        "lats"
+      ],
+      "secondary_muscles": [
+        "biceps",
+        "rear_delt",
+        "traps"
+      ],
+      "execution_steps": [
+        "Sente com as coxas presas sob o apoio e segure a barra um pouco além da largura dos ombros.",
+        "Incline levemente o tronco para trás e mantenha o peito aberto.",
+        "Puxe a barra até a parte alta do peito, levando os cotovelos para baixo.",
+        "Volte devagar até estender os braços."
+      ],
+      "common_mistakes": [
+        "Puxar a barra atrás da nuca.",
+        "Jogar o tronco para trás para ajudar.",
+        "Encolher os ombros durante a puxada."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com os braços estendidos segurando a barra; à direita, barra na altura do peito com os cotovelos para baixo.",
+        "prompt_file": "treino/catalog/prompts/puxada-frontal.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "remada-sentada-polia",
+      "name": "Remada sentada na polia",
+      "name_en": "Seated cable row",
+      "equipment": "Polia baixa com triângulo",
+      "primary_muscles": [
+        "lats",
+        "traps"
+      ],
+      "secondary_muscles": [
+        "biceps",
+        "rear_delt"
+      ],
+      "execution_steps": [
+        "Sente com os pés apoiados e os joelhos levemente dobrados, segurando o triângulo.",
+        "Mantenha a coluna neutra e o peito aberto.",
+        "Puxe o triângulo até o abdômen, aproximando as escápulas.",
+        "Volte estendendo os braços, sem arredondar as costas."
+      ],
+      "common_mistakes": [
+        "Balançar o tronco para a frente e para trás.",
+        "Arredondar a lombar na volta.",
+        "Puxar só com os braços, sem aproximar as escápulas."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com os braços estendidos à frente; à direita, triângulo junto ao abdômen com os cotovelos para trás.",
+        "prompt_file": "treino/catalog/prompts/remada-sentada-polia.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "remada-curvada-barra",
+      "name": "Remada curvada com barra",
+      "name_en": "Bent-over barbell row",
+      "equipment": "Barra com anilhas",
+      "primary_muscles": [
+        "lats",
+        "traps"
+      ],
+      "secondary_muscles": [
+        "rear_delt",
+        "biceps",
+        "lower_back"
+      ],
+      "execution_steps": [
+        "Segure a barra com as mãos na largura dos ombros e os joelhos levemente dobrados.",
+        "Incline o tronco à frente, a cerca de 45°, com a coluna neutra.",
+        "Puxe a barra até a parte baixa do abdômen, levando os cotovelos para trás.",
+        "Desça controlando até estender os braços."
+      ],
+      "common_mistakes": [
+        "Arredondar a lombar.",
+        "Levantar o tronco a cada repetição.",
+        "Usar impulso das pernas."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 5,
+        "alt": "À esquerda, tronco inclinado com a barra pendurada nos braços estendidos; à direita, barra junto ao abdômen.",
+        "prompt_file": "treino/catalog/prompts/remada-curvada-barra.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "remada-unilateral-halter",
+      "name": "Remada unilateral com halter",
+      "name_en": "One-arm dumbbell row",
+      "equipment": "Halter e banco reto",
+      "primary_muscles": [
+        "lats"
+      ],
+      "secondary_muscles": [
+        "traps",
+        "biceps",
+        "rear_delt"
+      ],
+      "execution_steps": [
+        "Apoie um joelho e a mão do mesmo lado no banco, com a coluna neutra.",
+        "Segure o halter com o outro braço estendido.",
+        "Puxe o halter em direção ao quadril, mantendo o cotovelo junto ao corpo.",
+        "Desça devagar até estender o braço."
+      ],
+      "common_mistakes": [
+        "Girar o tronco para subir o peso.",
+        "Puxar o halter em direção ao ombro, e não ao quadril.",
+        "Arredondar as costas."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, apoiado no banco com o halter no braço estendido; à direita, halter junto ao quadril com o cotovelo para cima.",
+        "prompt_file": "treino/catalog/prompts/remada-unilateral-halter.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "barra-fixa",
+      "name": "Barra fixa",
+      "name_en": "Pull-up",
+      "equipment": "Barra fixa",
+      "primary_muscles": [
+        "lats"
+      ],
+      "secondary_muscles": [
+        "biceps",
+        "forearm"
+      ],
+      "execution_steps": [
+        "Segure a barra com as palmas para a frente, um pouco além da largura dos ombros.",
+        "Comece pendurado, com os braços estendidos e o abdômen firme.",
+        "Puxe o corpo até o queixo passar a barra, levando os cotovelos para baixo.",
+        "Desça devagar até estender os braços."
+      ],
+      "common_mistakes": [
+        "Balançar o corpo para subir.",
+        "Subir só até a metade.",
+        "Soltar o corpo de uma vez na descida."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 3,
+        "alt": "À esquerda, pendurado na barra com os braços estendidos; à direita, queixo acima da barra.",
+        "prompt_file": "treino/catalog/prompts/barra-fixa.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "pulldown-braco-estendido",
+      "name": "Pulldown com braço estendido",
+      "name_en": "Straight-arm cable pulldown",
+      "equipment": "Polia alta com barra ou corda",
+      "primary_muscles": [
+        "lats"
+      ],
+      "secondary_muscles": [
+        "triceps"
+      ],
+      "execution_steps": [
+        "De pé diante da polia, segure a barra com os braços estendidos à frente, na altura dos ombros.",
+        "Incline levemente o tronco e mantenha os cotovelos quase retos.",
+        "Leve a barra em arco até as coxas, usando as costas.",
+        "Volte devagar até a altura dos ombros."
+      ],
+      "common_mistakes": [
+        "Dobrar os cotovelos e transformar em tríceps.",
+        "Balançar o tronco.",
+        "Subir a barra acima da cabeça na volta."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, braços estendidos à frente na altura dos ombros; à direita, barra junto às coxas com os braços ainda estendidos.",
+        "prompt_file": "treino/catalog/prompts/pulldown-braco-estendido.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "levantamento-terra",
+      "name": "Levantamento terra",
+      "name_en": "Conventional deadlift",
+      "equipment": "Barra com anilhas",
+      "primary_muscles": [
+        "glutes",
+        "hamstrings",
+        "lower_back"
+      ],
+      "secondary_muscles": [
+        "quads",
+        "traps",
+        "forearm"
+      ],
+      "execution_steps": [
+        "Fique com os pés na largura do quadril e a barra sobre o meio do pé.",
+        "Dobre quadril e joelhos para segurar a barra, com a coluna neutra e o peito aberto.",
+        "Empurre o chão e estenda quadril e joelhos juntos, com a barra rente às pernas.",
+        "Desça a barra levando o quadril para trás, sem arredondar as costas."
+      ],
+      "common_mistakes": [
+        "Arredondar a lombar.",
+        "Afastar a barra do corpo.",
+        "Hiperestender a coluna no topo."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 2,
+        "alt": "À esquerda, agachado segurando a barra no chão com a coluna reta; à direita, de pé com a barra na altura das coxas.",
+        "prompt_file": "treino/catalog/prompts/levantamento-terra.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "hiperextensao-lombar",
+      "name": "Hiperextensão lombar",
+      "name_en": "45-degree back extension",
+      "equipment": "Banco romano de 45°",
+      "primary_muscles": [
+        "lower_back"
+      ],
+      "secondary_muscles": [
+        "glutes",
+        "hamstrings"
+      ],
+      "execution_steps": [
+        "Apoie o quadril no banco e prenda os pés no suporte.",
+        "Cruze os braços no peito e desça o tronco dobrando o quadril.",
+        "Suba até o corpo ficar em linha reta, sem passar dela.",
+        "Desça devagar, com a coluna neutra."
+      ],
+      "common_mistakes": [
+        "Subir além da linha do corpo, hiperestendendo a lombar.",
+        "Fazer o movimento com impulso.",
+        "Apoio do banco alto demais, travando o quadril."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, tronco inclinado para baixo no banco; à direita, corpo em linha reta.",
+        "prompt_file": "treino/catalog/prompts/hiperextensao-lombar.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "desenvolvimento-halteres",
+      "name": "Desenvolvimento com halteres",
+      "name_en": "Seated dumbbell shoulder press",
+      "equipment": "Halteres e banco com encosto",
+      "primary_muscles": [
+        "front_delt",
+        "side_delt"
+      ],
+      "secondary_muscles": [
+        "triceps",
+        "traps"
+      ],
+      "execution_steps": [
+        "Sente com as costas apoiadas e os halteres na altura dos ombros, palmas para a frente.",
+        "Mantenha o abdômen firme e os pés no chão.",
+        "Empurre os halteres para cima até quase estender os braços.",
+        "Desça controlando até a altura das orelhas."
+      ],
+      "common_mistakes": [
+        "Arquear demais a lombar.",
+        "Travar os cotovelos no topo.",
+        "Descer os halteres muito abaixo dos ombros."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com os halteres na altura dos ombros; à direita, braços estendidos acima da cabeça.",
+        "prompt_file": "treino/catalog/prompts/desenvolvimento-halteres.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "desenvolvimento-maquina",
+      "name": "Desenvolvimento na máquina",
+      "name_en": "Machine shoulder press",
+      "equipment": "Máquina de desenvolvimento",
+      "primary_muscles": [
+        "front_delt",
+        "side_delt"
+      ],
+      "secondary_muscles": [
+        "triceps",
+        "traps"
+      ],
+      "execution_steps": [
+        "Ajuste o banco para que as pegadas fiquem na altura dos ombros.",
+        "Sente com as costas apoiadas.",
+        "Empurre as pegadas para cima até quase estender os braços.",
+        "Volte devagar até a altura dos ombros."
+      ],
+      "common_mistakes": [
+        "Tirar as costas do encosto.",
+        "Encolher os ombros ao empurrar.",
+        "Amplitude curta por excesso de carga."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado na máquina com as pegadas na altura dos ombros; à direita, braços estendidos acima da cabeça.",
+        "prompt_file": "treino/catalog/prompts/desenvolvimento-maquina.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "elevacao-lateral",
+      "name": "Elevação lateral",
+      "name_en": "Dumbbell lateral raise",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "side_delt"
+      ],
+      "secondary_muscles": [
+        "traps"
+      ],
+      "execution_steps": [
+        "De pé, segure um halter em cada mão ao lado do corpo, cotovelos levemente dobrados.",
+        "Eleve os braços para os lados até a altura dos ombros.",
+        "Mantenha os cotovelos um pouco acima dos punhos.",
+        "Desça devagar até a posição inicial."
+      ],
+      "common_mistakes": [
+        "Subir os braços acima da linha dos ombros.",
+        "Balançar o tronco para subir o peso.",
+        "Encolher os ombros."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com os halteres ao lado do corpo; à direita, braços abertos na altura dos ombros.",
+        "prompt_file": "treino/catalog/prompts/elevacao-lateral.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "elevacao-frontal",
+      "name": "Elevação frontal",
+      "name_en": "Dumbbell front raise",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "front_delt"
+      ],
+      "secondary_muscles": [
+        "chest"
+      ],
+      "execution_steps": [
+        "De pé, segure os halteres à frente das coxas.",
+        "Eleve um ou os dois braços à frente até a altura dos ombros.",
+        "Mantenha os cotovelos levemente dobrados.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Balançar o tronco.",
+        "Subir acima da cabeça.",
+        "Deixar o peso cair na descida."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com os halteres à frente das coxas; à direita, braços estendidos à frente na altura dos ombros.",
+        "prompt_file": "treino/catalog/prompts/elevacao-frontal.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "crucifixo-inverso",
+      "name": "Crucifixo inverso",
+      "name_en": "Reverse dumbbell fly",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "rear_delt"
+      ],
+      "secondary_muscles": [
+        "traps"
+      ],
+      "execution_steps": [
+        "Incline o tronco à frente, com a coluna neutra, e segure os halteres sob o peito.",
+        "Dobre levemente os cotovelos.",
+        "Abra os braços para os lados até a linha dos ombros.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Puxar com os cotovelos, como numa remada.",
+        "Levantar o tronco durante o movimento.",
+        "Usar carga que obrigue a balançar."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, tronco inclinado com os halteres sob o peito; à direita, braços abertos na linha dos ombros.",
+        "prompt_file": "treino/catalog/prompts/crucifixo-inverso.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "face-pull",
+      "name": "Face pull",
+      "name_en": "Cable face pull",
+      "equipment": "Polia alta com corda",
+      "primary_muscles": [
+        "rear_delt",
+        "traps"
+      ],
+      "secondary_muscles": [
+        "biceps"
+      ],
+      "execution_steps": [
+        "Regule a polia na altura do rosto e segure a corda com as palmas para baixo.",
+        "Dê um passo para trás, com os braços estendidos.",
+        "Puxe a corda em direção ao rosto, abrindo as mãos e levando os cotovelos para trás e para cima.",
+        "Volte devagar."
+      ],
+      "common_mistakes": [
+        "Cotovelos abaixo da linha dos ombros.",
+        "Jogar o tronco para trás.",
+        "Puxar a corda até o peito, e não até o rosto."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com os braços estendidos segurando a corda; à direita, corda junto ao rosto com os cotovelos abertos.",
+        "prompt_file": "treino/catalog/prompts/face-pull.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "encolhimento-halteres",
+      "name": "Encolhimento com halteres",
+      "name_en": "Dumbbell shrug",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "traps"
+      ],
+      "secondary_muscles": [
+        "forearm"
+      ],
+      "execution_steps": [
+        "De pé, segure os halteres ao lado do corpo com os braços estendidos.",
+        "Eleve os ombros em direção às orelhas, sem dobrar os cotovelos.",
+        "Segure um instante no topo.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Girar os ombros.",
+        "Dobrar os cotovelos para ajudar.",
+        "Projetar a cabeça para a frente."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com os ombros relaxados; à direita, ombros elevados em direção às orelhas.",
+        "prompt_file": "treino/catalog/prompts/encolhimento-halteres.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "rosca-direta",
+      "name": "Rosca direta",
+      "name_en": "Barbell curl",
+      "equipment": "Barra reta ou W",
+      "primary_muscles": [
+        "biceps"
+      ],
+      "secondary_muscles": [
+        "forearm"
+      ],
+      "execution_steps": [
+        "De pé, segure a barra com as palmas para a frente, na largura dos ombros.",
+        "Mantenha os cotovelos junto ao tronco.",
+        "Dobre os cotovelos e suba a barra até a altura dos ombros.",
+        "Desça devagar até estender os braços."
+      ],
+      "common_mistakes": [
+        "Balançar o tronco.",
+        "Levar os cotovelos para a frente.",
+        "Descer só até a metade."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com a barra à frente das coxas; à direita, cotovelos dobrados com a barra na altura dos ombros.",
+        "prompt_file": "treino/catalog/prompts/rosca-direta.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "rosca-alternada",
+      "name": "Rosca alternada",
+      "name_en": "Alternating dumbbell curl",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "biceps"
+      ],
+      "secondary_muscles": [
+        "forearm"
+      ],
+      "execution_steps": [
+        "De pé ou sentado, segure os halteres ao lado do corpo.",
+        "Suba um halter dobrando o cotovelo e girando a palma para cima.",
+        "Mantenha o cotovelo parado junto ao tronco.",
+        "Desça devagar e repita com o outro braço."
+      ],
+      "common_mistakes": [
+        "Balançar o tronco.",
+        "Cotovelo saindo para a frente.",
+        "Descida rápida."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com os halteres ao lado do corpo; à direita, um braço dobrado com o halter na altura do ombro.",
+        "prompt_file": "treino/catalog/prompts/rosca-alternada.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "rosca-martelo",
+      "name": "Rosca martelo",
+      "name_en": "Hammer curl",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "biceps",
+        "forearm"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "De pé, segure os halteres ao lado do corpo com as palmas voltadas para as coxas.",
+        "Dobre os cotovelos sem girar os punhos.",
+        "Suba até a altura dos ombros.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Girar o punho durante a subida.",
+        "Balançar o tronco.",
+        "Cotovelos saindo do lado do corpo."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com os halteres ao lado do corpo; à direita, cotovelos dobrados com os halteres na vertical.",
+        "prompt_file": "treino/catalog/prompts/rosca-martelo.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "triceps-polia",
+      "name": "Tríceps na polia",
+      "name_en": "Cable triceps pushdown",
+      "equipment": "Polia alta com barra ou corda",
+      "primary_muscles": [
+        "triceps"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "De pé diante da polia, segure a barra com os cotovelos junto ao tronco.",
+        "Comece com os antebraços na horizontal.",
+        "Estenda os cotovelos empurrando a barra até as coxas.",
+        "Volte devagar até os antebraços na horizontal."
+      ],
+      "common_mistakes": [
+        "Cotovelos saindo do lado do corpo.",
+        "Inclinar o tronco sobre a barra.",
+        "Subir a barra acima do peito."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, cotovelos dobrados com a barra na altura do peito; à direita, braços estendidos com a barra junto às coxas.",
+        "prompt_file": "treino/catalog/prompts/triceps-polia.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "triceps-frances",
+      "name": "Tríceps francês",
+      "name_en": "Overhead dumbbell triceps extension",
+      "equipment": "Halter",
+      "primary_muscles": [
+        "triceps"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Sente com as costas apoiadas e segure um halter com as duas mãos acima da cabeça.",
+        "Mantenha os cotovelos apontados para cima e perto da cabeça.",
+        "Desça o halter atrás da cabeça dobrando os cotovelos.",
+        "Estenda os braços de volta."
+      ],
+      "common_mistakes": [
+        "Cotovelos abrindo para os lados.",
+        "Arquear a lombar.",
+        "Descer o halter rápido."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, halter atrás da cabeça com os cotovelos dobrados; à direita, braços estendidos acima da cabeça.",
+        "prompt_file": "treino/catalog/prompts/triceps-frances.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "mergulho-banco",
+      "name": "Mergulho no banco",
+      "name_en": "Bench dip",
+      "equipment": "Banco",
+      "primary_muscles": [
+        "triceps"
+      ],
+      "secondary_muscles": [
+        "chest",
+        "front_delt"
+      ],
+      "execution_steps": [
+        "Apoie as mãos na borda do banco, atrás do quadril, e estenda as pernas à frente.",
+        "Desça o corpo dobrando os cotovelos para trás.",
+        "Pare quando os braços chegarem a cerca de 90°.",
+        "Empurre até estender os braços."
+      ],
+      "common_mistakes": [
+        "Descer demais, forçando o ombro.",
+        "Cotovelos abrindo para os lados.",
+        "Afastar o quadril do banco."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, apoiado no banco com os braços estendidos; à direita, corpo abaixado com os cotovelos dobrados.",
+        "prompt_file": "treino/catalog/prompts/mergulho-banco.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "agachamento-livre",
+      "name": "Agachamento livre",
+      "name_en": "Barbell back squat",
+      "equipment": "Barra com anilhas e suporte",
+      "primary_muscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondary_muscles": [
+        "adductors",
+        "hamstrings",
+        "lower_back"
+      ],
+      "execution_steps": [
+        "Apoie a barra no alto das costas e fique com os pés na largura dos ombros.",
+        "Respire, contraia o abdômen e mantenha a coluna neutra.",
+        "Desça levando o quadril para trás e para baixo, joelhos na direção dos pés.",
+        "Suba empurrando o chão, com os calcanhares apoiados."
+      ],
+      "common_mistakes": [
+        "Joelhos caindo para dentro.",
+        "Calcanhares saindo do chão.",
+        "Arredondar a lombar no fundo."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com a barra nas costas; à direita, no fundo do agachamento com os calcanhares no chão.",
+        "prompt_file": "treino/catalog/prompts/agachamento-livre.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "agachamento-goblet",
+      "name": "Agachamento goblet",
+      "name_en": "Goblet squat",
+      "equipment": "Halter ou kettlebell",
+      "primary_muscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondary_muscles": [
+        "adductors",
+        "abs"
+      ],
+      "execution_steps": [
+        "Segure o halter na vertical junto ao peito.",
+        "Fique com os pés um pouco além da largura dos ombros.",
+        "Desça mantendo o tronco ereto e os cotovelos entre os joelhos.",
+        "Suba empurrando o chão."
+      ],
+      "common_mistakes": [
+        "Inclinar o tronco à frente.",
+        "Joelhos caindo para dentro.",
+        "Afastar o peso do peito."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé segurando o halter junto ao peito; à direita, agachado com o tronco ereto.",
+        "prompt_file": "treino/catalog/prompts/agachamento-goblet.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "leg-press-45",
+      "name": "Leg press 45°",
+      "name_en": "45-degree leg press",
+      "equipment": "Máquina leg press",
+      "primary_muscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondary_muscles": [
+        "adductors",
+        "hamstrings"
+      ],
+      "execution_steps": [
+        "Sente com as costas e o quadril apoiados e os pés na largura dos ombros na plataforma.",
+        "Destrave a plataforma.",
+        "Desça dobrando os joelhos até cerca de 90°, sem o quadril sair do banco.",
+        "Empurre até quase estender as pernas, sem travar os joelhos."
+      ],
+      "common_mistakes": [
+        "Travar os joelhos no topo.",
+        "Descer tanto que o quadril sai do banco.",
+        "Joelhos caindo para dentro."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 2,
+        "alt": "À esquerda, joelhos dobrados com a plataforma baixa; à direita, pernas quase estendidas empurrando a plataforma.",
+        "prompt_file": "treino/catalog/prompts/leg-press-45.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "cadeira-extensora",
+      "name": "Cadeira extensora",
+      "name_en": "Leg extension",
+      "equipment": "Máquina extensora",
+      "primary_muscles": [
+        "quads"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Ajuste o encosto para que o joelho fique alinhado ao eixo da máquina.",
+        "Apoie o rolo logo acima do tornozelo.",
+        "Estenda os joelhos até quase retos.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Eixo da máquina desalinhado com o joelho.",
+        "Chutar o peso com impulso.",
+        "Tirar o quadril do banco."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com os joelhos dobrados; à direita, pernas estendidas à frente.",
+        "prompt_file": "treino/catalog/prompts/cadeira-extensora.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "mesa-flexora",
+      "name": "Mesa flexora deitada",
+      "name_en": "Lying leg curl",
+      "equipment": "Máquina flexora deitada",
+      "primary_muscles": [
+        "hamstrings"
+      ],
+      "secondary_muscles": [
+        "calves"
+      ],
+      "execution_steps": [
+        "Deite de bruços com os joelhos logo após a borda do banco.",
+        "Apoie o rolo acima dos calcanhares.",
+        "Dobre os joelhos trazendo o rolo em direção aos glúteos.",
+        "Desça devagar até quase estender as pernas."
+      ],
+      "common_mistakes": [
+        "Levantar o quadril do banco.",
+        "Fazer com impulso.",
+        "Soltar o peso na descida."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, deitado de bruços com as pernas estendidas; à direita, joelhos dobrados com o rolo perto dos glúteos.",
+        "prompt_file": "treino/catalog/prompts/mesa-flexora.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "cadeira-flexora",
+      "name": "Cadeira flexora",
+      "name_en": "Seated leg curl",
+      "equipment": "Máquina flexora sentada",
+      "primary_muscles": [
+        "hamstrings"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Sente com o joelho alinhado ao eixo da máquina e prenda as coxas sob o apoio.",
+        "Apoie o rolo acima dos calcanhares.",
+        "Dobre os joelhos levando o rolo para baixo e para trás.",
+        "Volte devagar."
+      ],
+      "common_mistakes": [
+        "Eixo da máquina desalinhado com o joelho.",
+        "Escorregar no banco.",
+        "Voltar rápido."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com as pernas estendidas; à direita, joelhos dobrados com o rolo sob o banco.",
+        "prompt_file": "treino/catalog/prompts/cadeira-flexora.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "stiff-halteres",
+      "name": "Stiff com halteres",
+      "name_en": "Dumbbell Romanian deadlift",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "hamstrings",
+        "glutes"
+      ],
+      "secondary_muscles": [
+        "lower_back"
+      ],
+      "execution_steps": [
+        "De pé, segure os halteres à frente das coxas, joelhos levemente dobrados.",
+        "Leve o quadril para trás e incline o tronco, com a coluna neutra.",
+        "Desça os halteres rente às pernas até sentir a parte de trás das coxas alongar.",
+        "Suba empurrando o quadril para a frente."
+      ],
+      "common_mistakes": [
+        "Arredondar a lombar.",
+        "Dobrar demais os joelhos e virar agachamento.",
+        "Afastar os halteres das pernas."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com os halteres à frente das coxas; à direita, tronco inclinado com os halteres na altura das canelas.",
+        "prompt_file": "treino/catalog/prompts/stiff-halteres.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "afundo",
+      "name": "Afundo",
+      "name_en": "Dumbbell split squat",
+      "equipment": "Halteres",
+      "primary_muscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondary_muscles": [
+        "adductors",
+        "hamstrings"
+      ],
+      "execution_steps": [
+        "Fique com um pé à frente e outro atrás, segurando os halteres ao lado do corpo.",
+        "Desça o joelho de trás em direção ao chão.",
+        "Mantenha o tronco ereto e o joelho da frente na direção do pé.",
+        "Suba empurrando o chão com a perna da frente."
+      ],
+      "common_mistakes": [
+        "Joelho da frente caindo para dentro.",
+        "Passos curtos demais.",
+        "Inclinar o tronco à frente."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com um pé à frente do outro; à direita, joelho de trás próximo ao chão.",
+        "prompt_file": "treino/catalog/prompts/afundo.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "elevacao-pelvica",
+      "name": "Elevação pélvica (hip thrust)",
+      "name_en": "Barbell hip thrust",
+      "equipment": "Barra com anilhas e banco",
+      "primary_muscles": [
+        "glutes"
+      ],
+      "secondary_muscles": [
+        "hamstrings"
+      ],
+      "execution_steps": [
+        "Apoie a parte alta das costas no banco e a barra sobre o quadril.",
+        "Pés na largura do quadril, joelhos dobrados.",
+        "Empurre o quadril para cima até o tronco ficar alinhado às coxas.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Hiperestender a lombar no topo.",
+        "Pés longe demais do quadril.",
+        "Subir sem contrair os glúteos."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, costas no banco com o quadril baixo; à direita, quadril elevado com o tronco alinhado às coxas.",
+        "prompt_file": "treino/catalog/prompts/elevacao-pelvica.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "cadeira-abdutora",
+      "name": "Cadeira abdutora",
+      "name_en": "Hip abduction machine",
+      "equipment": "Máquina abdutora",
+      "primary_muscles": [
+        "glutes"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Sente com as costas apoiadas e as pernas contra os apoios externos.",
+        "Afaste as pernas para os lados.",
+        "Segure um instante na abertura máxima.",
+        "Volte devagar."
+      ],
+      "common_mistakes": [
+        "Inclinar o tronco à frente.",
+        "Deixar o peso bater na volta.",
+        "Fazer com impulso."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com as pernas juntas; à direita, pernas afastadas para os lados.",
+        "prompt_file": "treino/catalog/prompts/cadeira-abdutora.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "cadeira-adutora",
+      "name": "Cadeira adutora",
+      "name_en": "Hip adduction machine",
+      "equipment": "Máquina adutora",
+      "primary_muscles": [
+        "adductors"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Sente com as costas apoiadas e as pernas abertas contra os apoios internos.",
+        "Feche as pernas até os apoios se encontrarem.",
+        "Segure um instante.",
+        "Volte devagar."
+      ],
+      "common_mistakes": [
+        "Abrir além do conforto na volta.",
+        "Fazer com impulso.",
+        "Tirar as costas do encosto."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com as pernas abertas; à direita, pernas fechadas.",
+        "prompt_file": "treino/catalog/prompts/cadeira-adutora.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "panturrilha-em-pe",
+      "name": "Panturrilha em pé",
+      "name_en": "Standing calf raise",
+      "equipment": "Máquina de panturrilha em pé ou degrau",
+      "primary_muscles": [
+        "calves"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Apoie a ponta dos pés no degrau, com os calcanhares para fora.",
+        "Mantenha os joelhos estendidos, sem travar.",
+        "Suba na ponta dos pés o mais alto possível.",
+        "Desça devagar até os calcanhares ficarem um pouco abaixo do degrau."
+      ],
+      "common_mistakes": [
+        "Quicar no fundo.",
+        "Dobrar os joelhos para ajudar.",
+        "Amplitude curta."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, calcanhares abaixo do degrau; à direita, na ponta dos pés.",
+        "prompt_file": "treino/catalog/prompts/panturrilha-em-pe.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "panturrilha-sentada",
+      "name": "Panturrilha sentada na máquina",
+      "name_en": "Seated calf raise",
+      "equipment": "Máquina de panturrilha sentada",
+      "primary_muscles": [
+        "calves"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Sente com o apoio sobre as coxas, perto dos joelhos, e a ponta dos pés na plataforma.",
+        "Destrave a máquina.",
+        "Suba os calcanhares o mais alto possível.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Quicar no fundo.",
+        "Usar o tronco para empurrar.",
+        "Apoio longe dos joelhos."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, sentado com os calcanhares baixos; à direita, calcanhares elevados.",
+        "prompt_file": "treino/catalog/prompts/panturrilha-sentada.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "isometria-panturrilha",
+      "name": "Isometria de panturrilha",
+      "name_en": "Isometric calf raise hold",
+      "equipment": "Degrau ou parede para apoio",
+      "primary_muscles": [
+        "calves"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Fique de pé com as mãos apoiadas na parede.",
+        "Suba na ponta dos pés até a altura combinada.",
+        "Segure a posição pelo tempo prescrito, respirando normalmente.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Prender a respiração.",
+        "Deixar os calcanhares descerem durante o tempo.",
+        "Inclinar o corpo sobre a parede."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, de pé com as mãos na parede; à direita, na ponta dos pés sustentando a posição.",
+        "prompt_file": "treino/catalog/prompts/isometria-panturrilha.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "prancha-frontal",
+      "name": "Prancha frontal",
+      "name_en": "Front plank",
+      "equipment": "Colchonete",
+      "primary_muscles": [
+        "abs"
+      ],
+      "secondary_muscles": [
+        "obliques",
+        "lower_back",
+        "glutes"
+      ],
+      "execution_steps": [
+        "Apoie os antebraços no chão, com os cotovelos sob os ombros.",
+        "Estenda as pernas e apoie as pontas dos pés.",
+        "Mantenha o corpo em linha reta da cabeça aos calcanhares.",
+        "Sustente pelo tempo prescrito, respirando normalmente."
+      ],
+      "common_mistakes": [
+        "Quadril caindo.",
+        "Quadril alto demais.",
+        "Prender a respiração."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, ajoelhado com os antebraços no chão; à direita, corpo em linha reta apoiado nos antebraços e nos pés.",
+        "prompt_file": "treino/catalog/prompts/prancha-frontal.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "prancha-lateral",
+      "name": "Prancha lateral",
+      "name_en": "Side plank",
+      "equipment": "Colchonete",
+      "primary_muscles": [
+        "obliques"
+      ],
+      "secondary_muscles": [
+        "abs",
+        "glutes"
+      ],
+      "execution_steps": [
+        "Deite de lado com o antebraço no chão e o cotovelo sob o ombro.",
+        "Empilhe as pernas.",
+        "Eleve o quadril até o corpo ficar em linha reta.",
+        "Sustente pelo tempo prescrito."
+      ],
+      "common_mistakes": [
+        "Quadril caindo.",
+        "Ombro longe do cotovelo.",
+        "Girar o tronco para a frente."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, deitado de lado apoiado no antebraço; à direita, quadril elevado com o corpo em linha reta.",
+        "prompt_file": "treino/catalog/prompts/prancha-lateral.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "pallof-press",
+      "name": "Pallof press na polia",
+      "name_en": "Cable Pallof press",
+      "equipment": "Polia na altura do peito",
+      "primary_muscles": [
+        "obliques",
+        "abs"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "De lado para a polia, segure a pegada com as duas mãos junto ao peito.",
+        "Afaste-se até o cabo ficar tenso e dobre levemente os joelhos.",
+        "Estenda os braços à frente sem deixar o tronco girar.",
+        "Volte as mãos ao peito."
+      ],
+      "common_mistakes": [
+        "Deixar o tronco girar em direção à polia.",
+        "Pés juntos demais.",
+        "Encolher os ombros."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 5,
+        "alt": "À esquerda, de lado para a polia com as mãos no peito; à direita, braços estendidos à frente.",
+        "prompt_file": "treino/catalog/prompts/pallof-press.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "abdominal-crunch",
+      "name": "Abdominal crunch",
+      "name_en": "Crunch",
+      "equipment": "Colchonete",
+      "primary_muscles": [
+        "abs"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Deite de costas com os joelhos dobrados e os pés no chão.",
+        "Apoie as mãos atrás da cabeça ou cruze os braços no peito.",
+        "Enrole o tronco tirando as escápulas do chão.",
+        "Desça devagar."
+      ],
+      "common_mistakes": [
+        "Puxar a cabeça com as mãos.",
+        "Subir com impulso.",
+        "Tirar a lombar do chão."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, deitado de costas com os joelhos dobrados; à direita, escápulas fora do chão.",
+        "prompt_file": "treino/catalog/prompts/abdominal-crunch.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "elevacao-de-pernas",
+      "name": "Elevação de pernas",
+      "name_en": "Lying leg raise",
+      "equipment": "Colchonete",
+      "primary_muscles": [
+        "abs"
+      ],
+      "secondary_muscles": [],
+      "execution_steps": [
+        "Deite de costas com as pernas estendidas e as mãos ao lado do corpo.",
+        "Mantenha a lombar encostada no chão.",
+        "Eleve as pernas até ficarem na vertical.",
+        "Desça devagar, sem deixar a lombar descolar."
+      ],
+      "common_mistakes": [
+        "Lombar descolando do chão.",
+        "Descer as pernas de uma vez.",
+        "Usar impulso."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, deitado com as pernas estendidas no chão; à direita, pernas elevadas na vertical.",
+        "prompt_file": "treino/catalog/prompts/elevacao-de-pernas.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    },
+    {
+      "slug": "bike-ergometrica",
+      "name": "Bike ergométrica",
+      "name_en": "Stationary bike",
+      "equipment": "Bicicleta ergométrica",
+      "primary_muscles": [
+        "quads"
+      ],
+      "secondary_muscles": [
+        "glutes",
+        "hamstrings",
+        "calves"
+      ],
+      "execution_steps": [
+        "Regule o banco para que o joelho fique levemente dobrado com o pedal embaixo.",
+        "Segure o guidão sem apoiar o peso do corpo nele.",
+        "Pedale em ritmo constante, mantendo o tronco estável.",
+        "Ajuste a carga para a intensidade prescrita."
+      ],
+      "common_mistakes": [
+        "Banco baixo demais, com o joelho muito dobrado.",
+        "Balançar o quadril no banco.",
+        "Apoiar o peso do corpo no guidão."
+      ],
+      "illustration": {
+        "status": "approved",
+        "rounds": 1,
+        "alt": "À esquerda, pedalando com um pedal no alto; à direita, o mesmo pedal embaixo, joelho quase estendido.",
+        "prompt_file": "treino/catalog/prompts/bike-ergometrica.txt",
+        "failed_items": [],
+        "rejection_reason": ""
+      }
+    }
+  ]
+}

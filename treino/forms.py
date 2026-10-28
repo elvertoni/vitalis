@@ -34,7 +34,7 @@ class MuscleGroupForm(StyledFormMixin, forms.ModelForm):
 class ExerciseForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = Exercise
-        fields = ['name', 'muscle_group', 'type', 'notes']
+        fields = ['name', 'muscle_group', 'type', 'guide', 'notes']
         widgets = {'notes': forms.Textarea(attrs={'rows': 3})}
 
 

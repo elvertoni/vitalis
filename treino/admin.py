@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Exercise,
+    ExerciseGuide,
     MuscleGroup,
     RoutineDay,
     RoutineExerciseTarget,
@@ -18,9 +19,27 @@ class MuscleGroupAdmin(admin.ModelAdmin):
     search_fields = ['name', 'user__email']
 
 
+@admin.register(ExerciseGuide)
+class ExerciseGuideAdmin(admin.ModelAdmin):
+    """Só leitura: a fonte é treino/catalog/exercises.json, e o deploy sobrescreve o banco."""
+
+    list_display = ['name', 'slug', 'equipment', 'has_illustration']
+    list_filter = ['has_illustration']
+    search_fields = ['name', 'slug']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Exercise)
 class ExerciseAdmin(admin.ModelAdmin):
-    list_display = ['name', 'muscle_group', 'type', 'user']
+    list_display = ['name', 'muscle_group', 'type', 'guide', 'user']
     list_filter = ['type']
     search_fields = ['name', 'user__email']
 

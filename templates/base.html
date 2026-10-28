@@ -22,6 +22,23 @@
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        /* Mapa muscular (treino/partials/_muscle_map.html): o estado vem do servidor. */
+        .mm-primary { fill: #5d674f; }
+        .mm-secondary { fill: #5d674f; fill-opacity: 0.6; }
+        .mm-idle { fill: #dcdacd; }
+        .mm-base { fill: #e8eae4; }
+        .mm-outline { fill: none; stroke: #a0a09e; stroke-width: 2; vector-effect: non-scaling-stroke; }
+        .mm-primary, .mm-secondary, .mm-idle, .mm-base { stroke: #ffffff; stroke-width: 1.5; }
+
+        /* Modal do guia (treino/partials/_guide_modal.html): sobe e aparece só sem pedido de
+           movimento reduzido. */
+        @media (prefers-reduced-motion: no-preference) {
+            .guide-modal[open] { animation: guide-in 200ms ease-out; }
+            .guide-modal[open]::backdrop { animation: guide-fade 200ms ease-out; }
+        }
+        @keyframes guide-in { from { opacity: 0; transform: translateY(1rem); } }
+        @keyframes guide-fade { from { opacity: 0; } }
+
         @media (prefers-reduced-motion: reduce) {
             /* Sem deslocamento, zoom ou giro. A troca de estado segue visível: cor e opacidade
                ainda fazem um fade curto, que não provoca enjoo e mostra o que mudou. */
